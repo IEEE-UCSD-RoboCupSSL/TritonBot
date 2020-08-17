@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
 #include "../build/vFirmware_API.pb.h"
+#include "systime.hpp"
 
 int main(int argc, char* argv[])
 {
