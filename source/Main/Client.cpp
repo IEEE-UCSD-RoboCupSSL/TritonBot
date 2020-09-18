@@ -3,8 +3,11 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
-#include "../build/vFirmware_API.pb.h"
-#include "systime.hpp"
+#include "Utility/systime.hpp"
+#include "PubSubModule/thread_pool.hpp"
+
+
+#include "ProtoGenerated/vFirmware_API.pb.h"
 
 int main(int argc, char* argv[])
 {

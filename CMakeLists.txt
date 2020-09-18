@@ -1,39 +1,133 @@
-cmake_minimum_required(VERSION 3.16)
+# cmake usage tips
+
+# run cmake 
+# 1. if build/ folder not exist, mkdir build
+# 2. cd build/
+# 3. cmake ..
+# 4. make
+
+# rerun cmake after modifications on CMakeLists.txt
+# 1. cd build/
+# 2. make clean
+# 3. cmake ..
+# 4. make
 
 
-set(CMAKE_C_COMPILER "clang")
-set(CMAKE_CXX_COMPILER "clang++")
 
+
+#specify minimum required cmake version
+cmake_minimum_required(VERSION 3.10)
+
+
+
+#set project name
 project(TritonBot)
 
-set(CMAKE_CXX_STANDARD 14)
+#set target name
+set(Target TritonBot.exe)
+
+#set compiler
+#set(CMAKE_C_COMPILER "gcc")
+#set(CMAKE_CXX_COMPILER "g++ ")
+set(CMAKE_C_COMPILER "clang")
+set(CMAKE_CXX_COMPILER "clang++")
+add_compile_options("-Qunused-arguments")
+
+#set c++ version
+set(CMAKE_CXX_STANDARD 17)
+
+#set build type: Possible values are empty, Debug, Release, RelWithDebInfo and MinSizeRel
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS "-Wall") #enable all warnings, which can be annoying sometimes, mute it by comment out this line
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3") #optimization level: O1(lowest), O2, or O3(highest)
+
+#something good to have
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-enable_testing()
 
-AUX_SOURCE_DIRECTORY(./src SRCFILES)
-
-find_package(Boost REQUIRED COMPONENTS date_time chrono system thread log)
+#find dependent packages 
+#minimum version 1.65.1 (default for Ubuntu 18.04)
+find_package(Boost 1.65.1 REQUIRED COMPONENTS date_time chrono system thread log)
+#armadillo math library
 find_package(Armadillo REQUIRED)
+#google protobuf library
 find_package(Protobuf REQUIRED)
 
-add_definitions(-DBOOST_LOG_DYN_LINK)
 
-include_directories(${ARMADILLO_INCLUDE_DIRS})
+#set include directories
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
-include_directories(${Protobuf_INCLUDE_DIRS})
-PROTOBUF_GENERATE_CPP(PROTO_SRC PROTO_HEADER ./proto/vFirmware_API.proto)
+include_directories(${ARMADILLO_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/proto/)
 
-add_library(proto ${PROTO_HEADER} ${PROTO_SRC})
-target_link_libraries(proto INTERFACE ${Boost_LIBRARIES} ${PROTOBUF_LIBRARIES})
 
-add_library(TritonBot ./Client.cpp ${SRCFILES})
-target_link_libraries(TritonBot PUBLIC proto ${Armadillo_Libraries} ${Boost_Libraries})
 
-add_executable(TritonBot.exe ./Client.cpp ${SRCFILES})
-target_link_libraries(TritonBot.exe PUBLIC proto ${Armadillo_Libraries} ${Boost_Libraries})
 
-add_subdirectory(googletest)
-add_subdirectory(test)
+#set variable to represent source files in the source folders
+# - make sure to rerun cmake everytime a file is added to or remnove from the folders
+aux_source_directory(./source/Main Main_srcs)
+aux_source_directory(./source/Control Control_srcs)
+aux_source_directory(./source/Utility Utility_srcs)
 
+
+
+
+
+#add macro definitions "#define xxx"
+add_definitions(-DBOOST_LOG_DYN_LINK) #macro needed by boost logger
+
+
+
+
+###--------------------------------Protobuf--------------------------------###
+#run protoc to auto generate protobuf source code
+file(GLOB PROTO_DEFS "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
+set(PROTO_GEN_MSG  "${CMAKE_CURRENT_SOURCE_DIR}/proto/proto_generated.cmake_msg")
+add_custom_command( OUTPUT ${PROTO_GEN_MSG}
+                    COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated
+                    COMMAND protoc  -I=${CMAKE_CURRENT_SOURCE_DIR}/proto/ 
+                                    --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated 
+                                    ${PROTO_DEFS}
+                    COMMAND touch ${PROTO_GEN_MSG}
+                    DEPENDS ${PROTO_DEFS}
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                    COMMENT "Generating Protobuf Source Code in ${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated"
+                    VERBATIM
+                   )
+
+add_custom_target(PROTO_GEN DEPENDS ${PROTO_GEN_MSG})
+file(GLOB PROTO_PRIVATE_INC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.h")
+file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
+###------------------------------------------------------------------------###
+
+
+
+#add target to be built
+add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC})
+
+# need to generate proto sources before compiling everything else
+add_dependencies(${Target} PROTO_GEN) 
+
+#specify the libraries to be linked to the target added by [add_executable]
+target_link_libraries(${Target} PUBLIC  ${Boost_Libraries} Boost::date_time 
+                                                           Boost::chrono 
+                                                           Boost::system 
+                                                           Boost::thread 
+                                                           Boost::log
+                                        ${Armadillo_Libraries}
+                                        ${PROTOBUF_LIBRARIES}
+                      )
+
+
+
+
+#add a custom clean target to clean autogenerated source code of protobuf, 
+#   you usually don't need to clean them unless the source code is corrupted 
+add_custom_target(clean-proto-generated
+    COMMAND rm -rf ${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated
+    COMMAND rm -f ${CMAKE_CURRENT_SOURCE_DIR}/proto/proto_generated.cmake_msg  
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    COMMENT "Removed Auto Generated Protobuf Source Code"
+    VERBATIM
+)
