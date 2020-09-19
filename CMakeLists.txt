@@ -69,7 +69,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/proto/)
 aux_source_directory(./source/Main Main_srcs)
 aux_source_directory(./source/Control Control_srcs)
 aux_source_directory(./source/Utility Utility_srcs)
-
+aux_source_directory(./source/MicroCtrlerInterface MCInterface_srcs)
 
 
 
@@ -104,7 +104,8 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 
 
 #add target to be built
-add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC})
+add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
+               ${MCInterface_srcs})
 
 # need to generate proto sources before compiling everything else
 add_dependencies(${Target} PROTO_GEN) 
@@ -131,3 +132,9 @@ add_custom_target(clean-proto-generated
     COMMENT "Removed Auto Generated Protobuf Source Code"
     VERBATIM
 )
+
+
+#Tests
+enable_testing()
+#add_subdirectory(googletest)
+#add_subdirectory(test)

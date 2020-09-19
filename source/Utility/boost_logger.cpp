@@ -119,11 +119,13 @@ B_Log& B_Log::operator()(severity_level sev) {
 B_Log& operator<<(B_Log& logger, std::string str)
 {
     BOOST_LOG_SEV(*(logger.slog), logger.sev) << str; 
+    logger.sink.get()->flush();
     return logger;
 }
 
 B_Log& operator<<(B_Log& logger, const char* str) {
     BOOST_LOG_SEV(*(logger.slog), logger.sev) << std::string(str);
+    logger.sink.get()->flush();
     return logger;
 }
 
@@ -145,6 +147,8 @@ std::ostream& operator<< (std::ostream& strm, severity_level level)
     else
         strm << static_cast< int >(level);
 
+    strm.flush();
+
     return strm;
 }
 
@@ -153,4 +157,5 @@ std::ostream& operator<< (std::ostream& strm, severity_level level)
 
 void B_Log::log(severity_level sev, std::string str) {
     BOOST_LOG_SEV(*(this->slog), sev) << std::string(str);
+    sink.get()->flush();
 }
