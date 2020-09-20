@@ -1,6 +1,6 @@
-add_executable(Test Test.cpp)
+add_executable(Test Test.cpp )
 target_link_libraries(Test PUBLIC
-    gtest_main
+    gtest_main test_srcs
 )
 
 add_test(

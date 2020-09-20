@@ -12,6 +12,13 @@
 #include "Utility/boost_logger.hpp"
 #include "Config/config.hpp"
 
+
+static void handle_sensor_init( boost::mutex *mu, 
+                                boost::asio::ip::tcp::socket *socket,
+                                bool turn_init_on
+                                );
+
+
 void VFirmClient::task(ThreadPool& thread_pool) {
    
     B_Log logger;
@@ -42,16 +49,22 @@ void VFirmClient::task(ThreadPool& thread_pool) {
         logger(Info) << "\033[0;32m Thread Started \033[0m";
         
         ITPS::Subscriber<VF_Commands> vf_cmd_sub("vfirm-client", "commands", vf_cmd_mq_size);
-
+        ITPS::Subscriber<bool> init_sensors_sub("vfirm-client", "init sensors");
+        
         while(!vf_cmd_sub.subscribe());
+        while(!init_sensors_sub.subscribe());
+        init_sensors_sub.add_on_published_callback(boost::bind(&handle_sensor_init, &mu, &socket, _1));
+        
+        
         std::string write;
         VF_Commands cmd;
         try {    
             while(1) { 
-                cmd = vf_cmd_sub.pop_msg();
-                
+                cmd = vf_cmd_sub.pop_msg(); // To-Do: add timeout
+                cmd.set_init(false);
                 cmd.SerializeToString(&write);
-
+                write += '\n'; // Don't forget the newline, the server side use it as delim !!!!!
+                
                 mu.lock();
                 boost::asio::write(socket, boost::asio::buffer(write));
                 mu.unlock();
@@ -99,4 +112,37 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     
     while(1);
     
+}
+
+static void handle_sensor_init( boost::mutex *mu, 
+                                boost::asio::ip::tcp::socket *socket,
+                                bool turn_init_on) {
+    VF_Commands cmd;
+    Vec_2D zero_vec;
+    std::string write;
+    B_Log logger;
+
+
+    logger.add_tag("VFirmClient Module:handle sensor init");
+
+    mu->lock();
+    
+    zero_vec.set_x(0.00);
+    zero_vec.set_y(0.00);
+
+    cmd.set_init(turn_init_on);
+    cmd.set_allocated_translational_output(&zero_vec);
+    cmd.set_rotational_output(0.00);
+    cmd.set_allocated_kicker(&zero_vec);
+    cmd.set_dribbler(false);
+
+    cmd.SerializeToString(&write);
+    write += '\n'; // Don't forget the newline, the server side use it as delim !!!!!
+    boost::asio::write(*socket, boost::asio::buffer(write));
+    cmd.release_translational_output();  // for every set_allocated_xxx, release is needed to free the memory properly. Happy C++ coding :(  see, java is so awesome :)
+    cmd.release_kicker();
+
+    mu->unlock();
+    
+    logger(Info) << "\033[0;32m Init Sensors \033[0m";
 }

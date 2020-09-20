@@ -19,6 +19,14 @@ enable_testing()
 cmake_minimum_required(VERSION 3.10)
 
 
+#set compiler
+#set(CMAKE_C_COMPILER "gcc")
+#set(CMAKE_CXX_COMPILER "g++")
+set(CMAKE_C_COMPILER "clang")
+set(CMAKE_CXX_COMPILER "clang++")
+add_compile_options("-Qunused-arguments")
+
+
 
 #set project name
 project(TritonBot)
@@ -26,12 +34,6 @@ project(TritonBot)
 #set target name
 set(Target TritonBot.exe)
 
-#set compiler
-set(CMAKE_C_COMPILER "gcc")
-set(CMAKE_CXX_COMPILER "g++")
-#set(CMAKE_C_COMPILER "clang")
-#set(CMAKE_CXX_COMPILER "clang++")
-#add_compile_options("-Qunused-arguments")
 
 #set c++ version
 set(CMAKE_CXX_STANDARD 17)
@@ -104,6 +106,8 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 ###------------------------------------------------------------------------###
 
 
+add_library(test_srcs STATIC ${Main_srcs} ${Proto_srcs} ${ControlModule_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
+${MCInterface_srcs} ${EKF_srcs})
 
 #add target to be built
 add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${ControlModule_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
@@ -138,5 +142,5 @@ add_custom_target(clean-proto-generated
 
 #Tests
 
-add_subdirectory(googletest)
-add_subdirectory(test)
+#add_subdirectory(googletest)
+#add_subdirectory(test)
