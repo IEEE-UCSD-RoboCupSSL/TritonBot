@@ -13,7 +13,7 @@
 # 4. make
 
 
-
+enable_testing()
 
 #specify minimum required cmake version
 cmake_minimum_required(VERSION 3.10)
@@ -27,11 +27,11 @@ project(TritonBot)
 set(Target TritonBot.exe)
 
 #set compiler
-#set(CMAKE_C_COMPILER "gcc")
-#set(CMAKE_CXX_COMPILER "g++ ")
-set(CMAKE_C_COMPILER "clang")
-set(CMAKE_CXX_COMPILER "clang++")
-add_compile_options("-Qunused-arguments")
+set(CMAKE_C_COMPILER "gcc")
+set(CMAKE_CXX_COMPILER "g++")
+#set(CMAKE_C_COMPILER "clang")
+#set(CMAKE_CXX_COMPILER "clang++")
+#add_compile_options("-Qunused-arguments")
 
 #set c++ version
 set(CMAKE_CXX_STANDARD 17)
@@ -67,9 +67,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/proto/)
 #set variable to represent source files in the source folders
 # - make sure to rerun cmake everytime a file is added to or remnove from the folders
 aux_source_directory(./source/Main Main_srcs)
-aux_source_directory(./source/Control Control_srcs)
+aux_source_directory(./source/ControlModule Control_srcs)
 aux_source_directory(./source/Utility Utility_srcs)
 aux_source_directory(./source/MicroCtrlerInterface MCInterface_srcs)
+aux_source_directory(./source/EKF-Module EKF_srcs)
+
 
 
 
@@ -104,8 +106,8 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 
 
 #add target to be built
-add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
-               ${MCInterface_srcs})
+add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${ControlModule_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
+               ${MCInterface_srcs} ${EKF_srcs})
 
 # need to generate proto sources before compiling everything else
 add_dependencies(${Target} PROTO_GEN) 
@@ -135,6 +137,6 @@ add_custom_target(clean-proto-generated
 
 
 #Tests
-enable_testing()
-#add_subdirectory(googletest)
-#add_subdirectory(test)
+
+add_subdirectory(googletest)
+add_subdirectory(test)

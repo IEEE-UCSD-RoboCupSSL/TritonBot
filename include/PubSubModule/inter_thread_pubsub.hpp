@@ -215,11 +215,13 @@ namespace ITPS {
 
             // For Trivial Mode only
             Msg latest_msg() {
+                // non-blocking
                 return channel->get_msg();
             }   
 
             // For Message Queue Mode only
             Msg pop_msg() {
+                // conditionally blocking
                 return msg_queue->consume();
             }
 

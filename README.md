@@ -22,3 +22,10 @@ make
 ### Project Structure
 
 ........ run tree
+
+
+### Google Test
+```
+git submodule init
+git submodule update
+```
