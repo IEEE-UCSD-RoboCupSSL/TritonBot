@@ -48,7 +48,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
         logger.add_tag("VFirmClient Module:cmd thread");
         logger(Info) << "\033[0;32m Thread Started \033[0m";
         
-        ITPS::Subscriber<VF_Commands> vf_cmd_sub("vfirm-client", "commands", vf_cmd_mq_size);
+        ITPS::Subscriber<VF_Commands> vf_cmd_sub("vfirm-client", "commands", vf_cmd_mq_size); //construct with a message queue as buffer
         ITPS::Subscriber<bool> init_sensors_sub("vfirm-client", "init sensors");
         
         while(!vf_cmd_sub.subscribe());
@@ -65,9 +65,9 @@ void VFirmClient::task(ThreadPool& thread_pool) {
                 cmd.SerializeToString(&write);
                 write += '\n'; // Don't forget the newline, the server side use it as delim !!!!!
                 
-                mu.lock();
+                // mu.lock();
                 boost::asio::write(socket, boost::asio::buffer(write));
-                mu.unlock();
+                // mu.unlock();
             }
         }
         catch(std::exception& e)
@@ -92,15 +92,16 @@ void VFirmClient::task(ThreadPool& thread_pool) {
         
         try {
             while(1) {
-                
+                // mu.lock();
                 boost::asio::read_until(socket, read_buffer, "\n");
-
-                mu.lock();
+                // mu.unlock();
+                
                 received = std::string(std::istreambuf_iterator<char>(input_stream), {});
-                mu.unlock();
+
                 
                 data.ParseFromString(received);
                 vf_data_pub.publish(data);
+
             }
         }
         catch(std::exception& e)
