@@ -8,3 +8,5 @@ unsigned int vfirm_port = 8888;
 
 unsigned int vf_cmd_mq_size = 10;
 unsigned int vf_data_mq_size = 10;
+
+unsigned int cmd_sub_timeout = 100; // 100 ms

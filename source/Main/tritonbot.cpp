@@ -10,7 +10,7 @@ int main(int arc, char *argv[]) {
 
     B_Log::static_init();
     B_Log::set_shorter_format();
-    B_Log::sink->set_filter(severity >= Info);
+    B_Log::sink->set_filter(severity >= Debug);
     B_Log logger;
 
 /* thread pool version */
