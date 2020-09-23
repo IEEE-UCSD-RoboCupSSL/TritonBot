@@ -15,40 +15,56 @@
 
 using namespace boost;
 
+static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger) {
+    VF_Commands cmd;
+    Vec_2D zero_vec;
+    std::string write;
+    
+    zero_vec.set_x(0.00);
+    zero_vec.set_y(0.00);
+
+    cmd.set_init(true);
+    cmd.set_allocated_translational_output(&zero_vec);
+    cmd.set_rotational_output(0.00);
+    cmd.set_allocated_kicker(&zero_vec);
+    cmd.set_dribbler(false);
+    cmd.SerializeToString(&write);
+    write += '\n'; // Don't forget the newline, the server side use it as delim !!!!!
+    boost::asio::write(socket, boost::asio::buffer(write));
+    delay(500);
+
+    cmd.set_init(false);
+    cmd.SerializeToString(&write);
+    write += '\n'; // Don't forget the newline, the server side use it as delim !!!!!
+    boost::asio::write(socket, boost::asio::buffer(write));
+
+    cmd.release_translational_output();  // for every set_allocated_xxx, release is needed to free the memory properly. Happy C++ coding :(  see, java is so awesome :)
+    cmd.release_kicker();
+    logger(Info) << "\033[0;32m request to initialize sensors is sent to vfirm \033[0m";
+}
+
+
 static void on_socket_connected(B_Log& logger, const system::error_code& error) {
+    if(error) {
+        logger.log(Error, error.message());
+    }
     logger(Info) << "\033[0;32m socket connected \033[0m";
 }
 
-// static void init_sensor_packet(VF_Commands& cmd) {
-//     Vec_2D zero_vec;
-//     std::string write;
-    
-//     zero_vec.set_x(0.00);
-//     zero_vec.set_y(0.00);
-
-//     cmd.set_init(true);
-//     cmd.set_allocated_translational_output(&zero_vec);
-//     cmd.set_rotational_output(0.00);
-//     cmd.set_allocated_kicker(&zero_vec);
-//     cmd.set_dribbler(false);
-
-//     cmd.SerializeToString(&write);
-//     write += '\n'; // Don't forget the newline, the server side use it as delim !!!!!
-//     asio::write(*socket, asio::buffer(write));
-//     cmd.release_translational_output();  // for every set_allocated_xxx, release is needed to free the memory properly. Happy C++ coding :(  see, java is so awesome :)
-//     cmd.release_kicker();
-// }
 static void on_data_received(asio::ip::tcp::socket& socket, asio::streambuf& read_buf, 
                              ITPS::Publisher<VF_Data>& vf_data_pub, B_Log& logger,  
                              const system::error_code& error) {
+    if(error) {
+        logger.log(Error, error.message());
+    }
     VF_Data data;                             
-    asio::streambuf read_buffer;
-    std::istream input_stream(&read_buffer); // check me
+    std::istream input_stream(&read_buf); // check me
     std::string received;
 
     // where is read_buf used? checkout few lines above
     received = std::string(std::istreambuf_iterator<char>(input_stream), {});            
     data.ParseFromString(received);
+
     vf_data_pub.publish(data);
     logger.log( Info, "Trans_Dis: " + repr(data.translational_displacement().x()) + ' ' + repr(data.translational_displacement().y()));
     logger.log( Info, "Trans_Vel:" + repr(data.translational_velocity().x()) + ' ' + repr(data.translational_velocity().y()));
@@ -62,6 +78,7 @@ static void on_data_received(asio::ip::tcp::socket& socket, asio::streambuf& rea
 
 }
 static void on_cmd_sent();
+
 
 
 void VFirmClient::task(ThreadPool& thread_pool) {
@@ -82,7 +99,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
         socket.open(asio::ip::tcp::v4());
         socket.async_connect(ep, boost::bind(&on_socket_connected, boost::ref(logger), asio::placeholders::error));
          
-        // socket.async_write_some();
+        init_sensors(socket, logger);
 
         asio::async_read_until(socket, read_buf, "\n",
                                     boost::bind(&on_data_received, boost::ref(socket), boost::ref(read_buf), 
