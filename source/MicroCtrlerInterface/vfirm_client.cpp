@@ -22,7 +22,14 @@ static VF_Commands default_cmd;
 static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger);
 
 // callback functions
-static void on_socket_connected(B_Log& logger, const system::error_code& error);
+static void on_socket_connected(asio::ip::tcp::socket& socket, 
+                                std::string& write_buf,
+                                asio::streambuf& read_buf, 
+                                ITPS::Publisher<VF_Data>& vf_data_pub, 
+                                ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                                ITPS::Subscriber<bool>& init_sensors_sub,
+                                B_Log& logger,  
+                                const system::error_code& error);
 
 static void on_data_received(asio::ip::tcp::socket& socket, 
                              std::string& write_buf,
@@ -75,15 +82,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     try {
         // Establish TCP connection with vfirm.exe
         socket.open(asio::ip::tcp::v4());
-        socket.async_connect(ep, boost::bind(&on_socket_connected, boost::ref(logger), asio::placeholders::error));
-         
-        // init_sensors(socket, logger);
-
-        /* start the infinite cycle of [read 1 data] => [send 1 cmd] => [read 1 data] => [send 1 cmd] ....
-         * by first begin with a read from the socket
-         */
-        asio::async_read_until(socket, read_buf, "\n",
-                                    boost::bind(&on_data_received, 
+        socket.async_connect(ep, boost::bind(&on_socket_connected, 
                                                 boost::ref(socket),
                                                 boost::ref(write_buf), 
                                                 boost::ref(read_buf), 
@@ -91,7 +90,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
                                                 boost::ref(vf_cmd_sub), 
                                                 boost::ref(init_sensors_sub),
                                                 boost::ref(logger), 
-                                                asio::placeholders::error)); 
+                                                asio::placeholders::error));
     }
     catch(std::exception& e)
     {
@@ -107,11 +106,33 @@ void VFirmClient::task(ThreadPool& thread_pool) {
 
 //====================================================================================//
 /* callback handler when socket connection is established */
-static void on_socket_connected(B_Log& logger, const system::error_code& error) {
+static void on_socket_connected(asio::ip::tcp::socket& socket, 
+                                std::string& write_buf,
+                                asio::streambuf& read_buf, 
+                                ITPS::Publisher<VF_Data>& vf_data_pub, 
+                                ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                                ITPS::Subscriber<bool>& init_sensors_sub,
+                                B_Log& logger,  
+                                const system::error_code& error) {
     if(error) {
         logger.log(Error, error.message());
     }
     logger(Info) << "\033[0;32m socket connected \033[0m";
+
+
+    /* start the infinite cycle of [read 1 data] => [send 1 cmd] => [read 1 data] => [send 1 cmd] ....
+        * by first begin with a read from the socket
+        */
+    asio::async_read_until(socket, read_buf, "\n",
+                                boost::bind(&on_data_received, 
+                                            boost::ref(socket),
+                                            boost::ref(write_buf), 
+                                            boost::ref(read_buf), 
+                                            boost::ref(vf_data_pub), 
+                                            boost::ref(vf_cmd_sub), 
+                                            boost::ref(init_sensors_sub),
+                                            boost::ref(logger), 
+                                            asio::placeholders::error)); 
 }
 
 
