@@ -1,4 +1,5 @@
 /*
+ * Author: Hongtao Zhang
  * An Observer Pattern C++ implementation using boost library
  */
 

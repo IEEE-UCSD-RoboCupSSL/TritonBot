@@ -56,3 +56,5 @@ typedef boost::shared_mutex reader_writer_mutex;
 #define reader_lock(mutex) boost::shared_lock<reader_writer_mutex>  __reader_lock(mutex); 
 
 #define repr std::to_string
+
+#define UNUSED(expr) do { (void)(expr); } while (0)

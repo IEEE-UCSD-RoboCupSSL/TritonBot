@@ -1,3 +1,5 @@
+/* Author: Hongtao Zhang */ 
+
 #pragma once
 
 /* Reference: https://gist.github.com/dpressel/de9ea7603fa3f20b55bf by Daniel Pressel

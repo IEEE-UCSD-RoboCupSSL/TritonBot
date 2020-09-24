@@ -1,6 +1,8 @@
 /*
+ * Author: Hongtao Zhang
  * An Inter-Thread Publisher Subscriber Pattern (ITPS) C++ implementation using boost library
  */
+
 
 
 #pragma once
@@ -115,7 +117,7 @@ namespace ITPS {
                 ITPS_writer_lock(msg_mutex);
                 this->message = msg;
                 
-                /* enqueue MQ*/
+                /* enqueue MQ */
                 for(auto& queue: msg_queues) {
                     queue->produce(msg);
                 }
@@ -218,6 +220,11 @@ namespace ITPS {
                 // non-blocking
                 return channel->get_msg();
             }   
+
+            // For Trivial Mode only
+            void reset_latest_msg_sink(Msg msg) {
+                channel->set_msg(msg);
+            }
 
             // For Message Queue Mode only
             Msg pop_msg() {

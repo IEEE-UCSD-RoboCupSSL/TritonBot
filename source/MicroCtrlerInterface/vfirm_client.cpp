@@ -17,10 +17,11 @@ using namespace boost;
 
 static VF_Commands default_cmd;
 
-//========================== Local Function Declaration ==============================/
+//========================== Local Function Declaration ==============================//
 
 static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger);
 
+// callback functions
 static void on_socket_connected(B_Log& logger, const system::error_code& error);
 
 static void on_data_received(asio::ip::tcp::socket& socket, 
@@ -28,6 +29,7 @@ static void on_data_received(asio::ip::tcp::socket& socket,
                              asio::streambuf& read_buf, 
                              ITPS::Publisher<VF_Data>& vf_data_pub, 
                              ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                             ITPS::Subscriber<bool>& init_sensors_sub,
                              B_Log& logger,  
                              const system::error_code& error);
 
@@ -36,14 +38,19 @@ static void on_cmd_sent(asio::ip::tcp::socket& socket,
                         asio::streambuf& read_buf, 
                         ITPS::Publisher<VF_Data>& vf_data_pub, 
                         ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                        ITPS::Subscriber<bool>& init_sensors_sub,
                         B_Log& logger,  
                         const system::error_code& error);
-//====================================================================================/
+//====================================================================================//
 
 
 
+
+//====================================================================================//
+/* Main Task to be run on a new thread from the thread pool */
 void VFirmClient::task(ThreadPool& thread_pool) {
-   
+    UNUSED(thread_pool); // no child thread is needed in a async scheme
+
     B_Log logger;
     logger.add_tag("VFirmClient Module");
 
@@ -56,22 +63,25 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     // publisher to publish data sent from vfirm: [vfirm socket] => [vf_data_pub] => [EKF module]
     ITPS::Publisher<VF_Data> vf_data_pub("vfirm-client", "data");
 
-    // subscriber to listen to commands to send to vfirm:  [control module] => [vf_cmd_sub] => vfirm socket
+    // subscriber to listen to commands to be sent to vfirm:  [control module] => [vf_cmd_sub] => vfirm socket
     ITPS::Subscriber<VF_Commands> vf_cmd_sub("vfirm-client", "commands", vf_cmd_mq_size); //construct with a message queue as buffer
 
+    // subscriber to listen to a signal to trigger sensor re/initilization sequence 
+    ITPS::Subscriber<bool> init_sensors_sub("vfirm-client", "re/init sensors");
 
     while(!vf_cmd_sub.subscribe());
-
-
+    while(!init_sensors_sub.subscribe());
 
     try {
         // Establish TCP connection with vfirm.exe
-
         socket.open(asio::ip::tcp::v4());
         socket.async_connect(ep, boost::bind(&on_socket_connected, boost::ref(logger), asio::placeholders::error));
          
-        init_sensors(socket, logger);
+        // init_sensors(socket, logger);
 
+        /* start the infinite cycle of [read 1 data] => [send 1 cmd] => [read 1 data] => [send 1 cmd] ....
+         * by first begin with a read from the socket
+         */
         asio::async_read_until(socket, read_buf, "\n",
                                     boost::bind(&on_data_received, 
                                                 boost::ref(socket),
@@ -79,6 +89,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
                                                 boost::ref(read_buf), 
                                                 boost::ref(vf_data_pub), 
                                                 boost::ref(vf_cmd_sub), 
+                                                boost::ref(init_sensors_sub),
                                                 boost::ref(logger), 
                                                 asio::placeholders::error)); 
     }
@@ -87,83 +98,112 @@ void VFirmClient::task(ThreadPool& thread_pool) {
         logger.log(Error, "\033[0;31m [Exception] "  + std::string(e.what()) + " \033[0m");
     }
 
-    io_service.run();
+    io_service.run(); // this line blocks until the async tasks queue becomes empty
+}
+//====================================================================================//
 
 
-    // mutex mu;
 
-    // // cmd thread
-    // thread_pool.execute( [&]() {
-    //     B_Log logger;
-    //     logger.add_tag("VFirmClient Module:cmd thread");
-    //     logger(Info) << "\033[0;32m Thread Started \033[0m";
-        
-    //     ITPS::Subscriber<VF_Commands> vf_cmd_sub("vfirm-client", "commands", vf_cmd_mq_size); //construct with a message queue as buffer
-    //     ITPS::Subscriber<bool> init_sensors_sub("vfirm-client", "init sensors");
-        
-    //     while(!vf_cmd_sub.subscribe());
-    //     while(!init_sensors_sub.subscribe());
-    //     init_sensors_sub.add_on_published_callback(bind(&handle_sensor_init, &mu, &socket, _1));
-        
-        
-    //     std::string write;
-    //     VF_Commands cmd;
-    //     try {    
-    //         while(1) { 
-    //             cmd = vf_cmd_sub.pop_msg(); // To-Do: add timeout
-    //             cmd.set_init(false);
-    //             cmd.SerializeToString(&write);
-    //             write += '\n'; // Don't forget the newline, the server side use it as delim !!!!!
-                
-    //             // mu.lock();
-    //             asio::write(socket, asio::buffer(write));
-    //             // mu.unlock();
-    //         }
-    //     }
-    //     catch(std::exception& e)
-    //     {
-    //         logger.log(Error, "\033[0;31m [Exception] "  + std::string(e.what()) + " \033[0m");
-    //     }
-    // });
 
-    // // data thread
-    // thread_pool.execute( [&]() {
-    //     B_Log logger;
-    //     logger.add_tag("VFirmClient Module:data thread");
-    //     logger(Info) << "\033[0;32m Thread Started \033[0m";
-
-    //     ITPS::Publisher<VF_Data> vf_data_pub("vfirm-client", "data");
-
-    //     asio::streambuf read_buffer;
-    //     std::istream input_stream(&read_buffer);
-    //     std::string received;
-
-    //     VF_Data data;
-        
-    //     try {
-    //         while(1) {
-    //             // mu.lock();
-    //             asio::read_until(socket, read_buffer, "\n");
-    //             // mu.unlock();
-                
-    //             received = std::string(std::istreambuf_iterator<char>(input_stream), {});
-
-                
-    //             data.ParseFromString(received);
-    //             vf_data_pub.publish(data);
-
-    //         }
-    //     }
-    //     catch(std::exception& e)
-    //     {
-    //         logger.log(Error, "\033[0;31m [Exception] "  + std::string(e.what()) + " \033[0m");
-    //     }
-    // });
-
-    
+//====================================================================================//
+/* callback handler when socket connection is established */
+static void on_socket_connected(B_Log& logger, const system::error_code& error) {
+    if(error) {
+        logger.log(Error, error.message());
+    }
+    logger(Info) << "\033[0;32m socket connected \033[0m";
 }
 
 
+
+/* callback handler when socket received a new data packet */
+static void on_data_received(asio::ip::tcp::socket& socket, 
+                             std::string& write_buf,
+                             asio::streambuf& read_buf, 
+                             ITPS::Publisher<VF_Data>& vf_data_pub, 
+                             ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                             ITPS::Subscriber<bool>& init_sensors_sub,
+                             B_Log& logger,  
+                             const system::error_code& error) {
+    if(error) {
+        logger.log(Error, error.message());
+    }
+    VF_Data data;                             
+    std::istream input_stream(&read_buf); // check me
+    std::string received;
+
+    // where is read_buf used? checkout few lines above
+    received = std::string(std::istreambuf_iterator<char>(input_stream), {});            
+    data.ParseFromString(received);
+
+    vf_data_pub.publish(data);
+
+    logger.log( Debug, "Trans_Dis: " + repr(data.translational_displacement().x()) + ' ' + repr(data.translational_displacement().y()));
+    logger.log( Debug, "Trans_Vel:" + repr(data.translational_velocity().x()) + ' ' + repr(data.translational_velocity().y()));
+    logger.log( Debug, "Rot_Dis:" + repr(data.rotational_displacement()));
+    logger.log( Debug, "Rot_Vel:" + repr(data.rotational_velocity()) + "\n :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) ");
+    
+
+    bool re_init = init_sensors_sub.latest_msg(); // non blocking
+    if(re_init) {
+        init_sensors(socket, logger);
+        init_sensors_sub.reset_latest_msg_sink(false);
+    }
+
+
+    VF_Commands cmd;
+    // conditionally blocking (this method blocks when the message queue is empty)
+    cmd = vf_cmd_sub.pop_msg(cmd_sub_timeout, default_cmd);
+
+    write_buf.clear(); // clear the string (as a std buffer)
+    cmd.set_init(false);
+    cmd.SerializeToString(&write_buf);
+    write_buf += '\n'; // Don't forget the newline, the server side use it as delim !!!!!
+
+    // set the write event
+    socket.async_write_some(asio::buffer(write_buf), 
+                             boost::bind(&on_cmd_sent, 
+                                        boost::ref(socket),
+                                        boost::ref(write_buf), 
+                                        boost::ref(read_buf), 
+                                        boost::ref(vf_data_pub), 
+                                        boost::ref(vf_cmd_sub),
+                                        boost::ref(init_sensors_sub),
+                                        boost::ref(logger), 
+                                        asio::placeholders::error));
+
+}
+
+
+
+/* callback handler when socket finished sending a command */
+static void on_cmd_sent(asio::ip::tcp::socket& socket, 
+                        std::string& write_buf,
+                        asio::streambuf& read_buf, 
+                        ITPS::Publisher<VF_Data>& vf_data_pub, 
+                        ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                        ITPS::Subscriber<bool>& init_sensors_sub,
+                        B_Log& logger,  
+                        const system::error_code& error) {
+    if(error) {
+        logger.log(Error, error.message());
+    } 
+
+    // set the next read event
+    asio::async_read_until(socket, read_buf, "\n",
+                            boost::bind(&on_data_received, 
+                                        boost::ref(socket),
+                                        boost::ref(write_buf), 
+                                        boost::ref(read_buf), 
+                                        boost::ref(vf_data_pub), 
+                                        boost::ref(vf_cmd_sub), 
+                                        boost::ref(init_sensors_sub),
+                                        boost::ref(logger), 
+                                        asio::placeholders::error)); 
+}
+//====================================================================================//
+
+/* sequence to send a cmd packet through socket to invoke sensor initialization */
 static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger) {
     VF_Commands cmd;
     Vec_2D zero_vec;
@@ -192,77 +232,4 @@ static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger) {
     cmd.release_translational_output();  // for every set_allocated_xxx, release is needed to free the memory properly. Happy C++ coding :(  see, java is so awesome :)
     cmd.release_kicker();
     logger(Info) << "\033[0;32m request to initialize sensors is sent to vfirm \033[0m";
-}
-
-
-static void on_socket_connected(B_Log& logger, const system::error_code& error) {
-    if(error) {
-        logger.log(Error, error.message());
-    }
-    logger(Info) << "\033[0;32m socket connected \033[0m";
-}
-
-static void on_data_received(asio::ip::tcp::socket& socket, 
-                             std::string& write_buf,
-                             asio::streambuf& read_buf, 
-                             ITPS::Publisher<VF_Data>& vf_data_pub, 
-                             ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
-                             B_Log& logger,  
-                             const system::error_code& error) {
-    if(error) {
-        logger.log(Error, error.message());
-    }
-    VF_Data data;                             
-    std::istream input_stream(&read_buf); // check me
-    std::string received;
-
-    // where is read_buf used? checkout few lines above
-    received = std::string(std::istreambuf_iterator<char>(input_stream), {});            
-    data.ParseFromString(received);
-
-    vf_data_pub.publish(data);
-
-    logger.log( Debug, "Trans_Dis: " + repr(data.translational_displacement().x()) + ' ' + repr(data.translational_displacement().y()));
-    logger.log( Debug, "Trans_Vel:" + repr(data.translational_velocity().x()) + ' ' + repr(data.translational_velocity().y()));
-    logger.log( Debug, "Rot_Dis:" + repr(data.rotational_displacement()));
-    logger.log( Debug, "Rot_Vel:" + repr(data.rotational_velocity()) + "\n :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) ");
-    
-
-    VF_Commands cmd;
-    // conditionally blocking (this method blocks when the message queue is empty)
-    cmd = vf_cmd_sub.pop_msg(cmd_sub_timeout, default_cmd);
-
-    // set the write event
-    socket.async_write_some(asio::buffer(write_buf), 
-                             boost::bind(&on_cmd_sent, 
-                                        boost::ref(socket),
-                                        boost::ref(write_buf), 
-                                        boost::ref(read_buf), 
-                                        boost::ref(vf_data_pub), 
-                                        boost::ref(vf_cmd_sub), 
-                                        boost::ref(logger), 
-                                        asio::placeholders::error));
-
-}
-static void on_cmd_sent(asio::ip::tcp::socket& socket, 
-                        std::string& write_buf,
-                        asio::streambuf& read_buf, 
-                        ITPS::Publisher<VF_Data>& vf_data_pub, 
-                        ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
-                        B_Log& logger,  
-                        const system::error_code& error) {
-    if(error) {
-        logger.log(Error, error.message());
-    } 
-
-    // set the next read event
-    asio::async_read_until(socket, read_buf, "\n",
-                            boost::bind(&on_data_received, 
-                                        boost::ref(socket),
-                                        boost::ref(write_buf), 
-                                        boost::ref(read_buf), 
-                                        boost::ref(vf_data_pub), 
-                                        boost::ref(vf_cmd_sub), 
-                                        boost::ref(logger), 
-                                        asio::placeholders::error)); 
 }
