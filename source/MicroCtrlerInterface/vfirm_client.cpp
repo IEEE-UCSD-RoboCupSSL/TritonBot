@@ -116,6 +116,7 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
                                 const system::error_code& error) {
     if(error) {
         logger.log(Error, error.message());
+        return;
     }
     logger(Info) << "\033[0;32m socket connected \033[0m";
 
@@ -148,6 +149,7 @@ static void on_data_received(asio::ip::tcp::socket& socket,
                              const system::error_code& error) {
     if(error) {
         logger.log(Error, error.message());
+        return;
     }
     VF_Data data;                             
     std::istream input_stream(&read_buf); // check me
@@ -179,10 +181,10 @@ static void on_data_received(asio::ip::tcp::socket& socket,
     write_buf.clear(); // clear the string (as a std buffer)
     cmd.set_init(false);
     cmd.SerializeToString(&write_buf);
-    write_buf += '\n'; // Don't forget the newline, the server side use it as delim !!!!!
+    write_buf += "\n"; // Don't forget the newline, the server side use it as delim !!!!!
 
     // set the write event
-    socket.async_write_some(asio::buffer(write_buf), 
+    boost::asio::async_write(socket, asio::buffer(write_buf), 
                              boost::bind(&on_cmd_sent, 
                                         boost::ref(socket),
                                         boost::ref(write_buf), 
@@ -208,6 +210,7 @@ static void on_cmd_sent(asio::ip::tcp::socket& socket,
                         const system::error_code& error) {
     if(error) {
         logger.log(Error, error.message());
+        return;
     } 
 
     // set the next read event
