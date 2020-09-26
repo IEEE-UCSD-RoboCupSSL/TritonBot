@@ -3,7 +3,7 @@
 #include <armadillo>
 
 // Pseudo EKF
-class VirtualMotionEFK : Module {
+class VirtualMotionEFK : public Module {
     public: 
         void task() {}
         void task(ThreadPool& thread_pool);

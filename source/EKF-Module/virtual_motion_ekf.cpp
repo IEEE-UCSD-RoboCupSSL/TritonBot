@@ -21,15 +21,17 @@ void VirtualMotionEFK::task(ThreadPool& thread_pool) {
 
     while(1) {
         vf_data = vf_data_sub.pop_msg();
-        m_data.trans_disp(0) = vf_data.translational_displacement().x();
-        m_data.trans_disp(1) = vf_data.translational_displacement().y();
+        
+        m_data.trans_disp = {vf_data.translational_displacement().x(), 
+                             vf_data.translational_displacement().y()};
 
-        m_data.trans_vel(0) = vf_data.translational_displacement().x();
-        m_data.trans_vel(1) = vf_data.translational_displacement().y();
+        m_data.trans_vel = {vf_data.translational_displacement().x(), 
+                            vf_data.translational_displacement().y()};
             
         m_data.rotat_disp = vf_data.rotational_displacement();
         m_data.rotat_vel = vf_data.rotational_velocity();
 
         motion_data_pub.publish(m_data);
+        
     }
 }

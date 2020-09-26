@@ -60,6 +60,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
 
     B_Log logger;
     logger.add_tag("VFirmClient Module");
+    logger(Info) << "\033[0;32m Thread Started \033[0m";
 
     asio::io_service io_service;
     asio::ip::tcp::endpoint ep(asio::ip::address::from_string(VFIRM_IP_ADDR), VFIRM_IP_PORT);
