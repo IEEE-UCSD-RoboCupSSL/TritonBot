@@ -1,17 +1,12 @@
 #pragma once
 #include "PubSubModule/module.hpp"
+#include "EKF-Module/motion_ekf.hpp"
 #include <armadillo>
 
 // Pseudo EKF
-class VirtualMotionEFK : public Module {
+class VirtualMotionEFK : public MotionEFK {
     public: 
         void task() {}
         void task(ThreadPool& thread_pool);
 
-        struct MotionData {
-            arma::vec trans_disp;
-            arma::vec trans_vel;
-            float rotat_disp;
-            float rotat_vel;
-        };
 };

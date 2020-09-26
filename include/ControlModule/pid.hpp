@@ -3,10 +3,6 @@
 
 #include <iostream>
 
-/* C++ templated class can't not separate .hpp & .cpp file, 
-   all function definition is cramped inside .hpp file due 
-   to this limitation */
-
 template <class T> // This PID code can handle (math)vector value
 class PID_Controller {
 

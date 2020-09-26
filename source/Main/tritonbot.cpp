@@ -65,9 +65,9 @@ int main(int arc, char *argv[]) {
     boost::thread([]() {
         B_Log logger;
         logger.add_tag("SUBSCRIBER 1");
-        ITPS::Subscriber<VirtualMotionEFK::MotionData> motion_data_sub("virtual-motion ekf", "motion prediction", 100);
+        ITPS::Subscriber<MotionEFK::MotionData> motion_data_sub("virtual-motion ekf", "motion prediction", 100);
         while(!motion_data_sub.subscribe());
-        VirtualMotionEFK::MotionData motion_data;
+        MotionEFK::MotionData motion_data;
         
         while(1) {
             std::ostringstream debug_out_stream;
@@ -85,9 +85,9 @@ int main(int arc, char *argv[]) {
     boost::thread([]() {
         B_Log logger;
         logger.add_tag("SUBSCRIBER 2");
-        ITPS::Subscriber<VirtualMotionEFK::MotionData> motion_data_sub("virtual-motion ekf", "motion prediction", 100);
+        ITPS::Subscriber<MotionEFK::MotionData> motion_data_sub("virtual-motion ekf", "motion prediction", 100);
         while(!motion_data_sub.subscribe());
-        VirtualMotionEFK::MotionData motion_data;
+        MotionEFK::MotionData motion_data;
         
         while(1) {
             std::ostringstream debug_out_stream;
