@@ -112,21 +112,34 @@ namespace ITPS {
             void add_slot(boost::function<void(Msg)> callback_function) {
                 callback_funcs.push_back(callback_function);
             }
-
+            
+            // for all 3 Modes 
             void set_msg(Msg msg) {
                 ITPS_writer_lock(msg_mutex);
-                this->message = msg;
+                this->message = msg; // Trivial Mode
                 
+
+                // MQ Mode
                 /* enqueue MQ */
                 for(auto& queue: msg_queues) {
                     queue->produce(msg);
                 }
 
+                // Observer
                 /* invoke observer's callback functions */
                 for(auto& func: callback_funcs) {
                     func(msg);
                 }
 
+            }
+
+            // MQ Mode Only
+            void set_msg(Msg msg, unsigned int timeout_ms) {
+                ITPS_writer_lock(msg_mutex);
+                /* timed enqueue MQ */
+                for(auto& queue: msg_queues) {
+                    queue->produce(msg, timeout_ms); // if timed out, it won't block
+                }
             }
 
             Msg get_msg() { 
@@ -161,12 +174,16 @@ namespace ITPS {
 
             Publisher(std::string msg_name) : Publisher(Default_Topic, msg_name) {}
 
+
             ~Publisher() {}
 
             void publish(Msg message) {
                 channel->set_msg(message);
             }
 
+            void publish(Msg message, unsigned int timeout_ms) {
+                channel->set_msg(message, timeout_ms);
+            }
 
         protected:
             boost::shared_ptr<ITPS::MsgChannel<Msg>> channel;

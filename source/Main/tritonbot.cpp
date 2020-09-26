@@ -5,6 +5,7 @@
 #include "ProtoGenerated/vFirmware_API.pb.h"
 #include "Utility/systime.hpp"
 #include "Utility/common.hpp"
+#include "Config/config.hpp"
 
 int main(int arc, char *argv[]) {
 
@@ -13,8 +14,11 @@ int main(int arc, char *argv[]) {
     B_Log::sink->set_filter(severity >= Debug && tag_attr == "VFirmClient Module");
     B_Log logger;
 
+
+
+
 /* thread pool version */
-    ThreadPool thread_pool(20); // pre-allocate 10 threads in a pool
+    ThreadPool thread_pool(THREAD_POOL_SIZE); // pre-allocate 10 threads in a pool
     ITPS::Publisher<bool> init_sensor_pub("vfirm-client", "re/init sensors");
     ITPS::Publisher<VF_Commands> dummy_for_testing_only("vfirm-client", "commands");
 

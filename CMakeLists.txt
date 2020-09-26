@@ -73,6 +73,7 @@ aux_source_directory(./source/ControlModule Control_srcs)
 aux_source_directory(./source/Utility Utility_srcs)
 aux_source_directory(./source/MicroCtrlerInterface MCInterface_srcs)
 aux_source_directory(./source/EKF-Module EKF_srcs)
+aux_source_directory(./source/Config Config_srcs)
 
 
 
@@ -111,7 +112,7 @@ ${MCInterface_srcs} ${EKF_srcs})
 
 #add target to be built
 add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${ControlModule_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
-               ${MCInterface_srcs} ${EKF_srcs})
+               ${MCInterface_srcs} ${EKF_srcs} ${Config_srcs})
 
 # need to generate proto sources before compiling everything else
 add_dependencies(${Target} PROTO_GEN) 

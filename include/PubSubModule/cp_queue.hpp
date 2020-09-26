@@ -32,6 +32,40 @@ class ConsumerProducerQueue {
             cond_not_empty.notify_all(); 
         }
 
+        bool produce(data_t data, unsigned int timeout_ms) {
+            boost::system_time const timeout = boost::get_system_time()+ boost::posix_time::milliseconds(timeout_ms);
+            bool fulfilled = true;
+            mu.lock();
+            while(is_full()) {
+                 // freeze this thread until queue is not full
+                if(cond_not_full.timed_wait(mu, timeout)) {
+                    // if wait returns due to condition being fulfilled
+                    fulfilled = true;
+                } 
+                else {
+                    // if wait returns due to time out
+                    fulfilled = false;
+                    break;
+                }
+
+            }
+
+            if(fulfilled) {
+                cp_queue.push(data);
+            
+                // unlock & notify order problem: https://stackoverflow.com/questions/17101922/do-i-have-to-acquire-lock-before-calling-condition-variable-notify-one/17102100#17102100
+                 mu.unlock();
+            
+                // when a datum is enqueued, the queue must be non-empty, notify the consumer to unlock wait
+                cond_not_empty.notify_all();
+                return true;
+            } 
+            else {
+                mu.unlock();
+                return false;
+            }
+        }
+
         data_t consume() {
             mu.lock();
             while(is_empty()) {

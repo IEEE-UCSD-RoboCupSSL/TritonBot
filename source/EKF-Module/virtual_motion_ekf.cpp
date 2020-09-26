@@ -13,7 +13,7 @@ void VirtualMotionEFK::task(ThreadPool& thread_pool) {
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
     ITPS::Publisher<VirtualMotionEFK::MotionData> motion_data_pub("virtual-motion ekf", "motion prediction");
-    ITPS::Subscriber<VF_Data> vf_data_sub("vfirm-client", "data", vf_data_mq_size); //construct with a message queue as buffer    
+    ITPS::Subscriber<VF_Data> vf_data_sub("vfirm-client", "data", VF_DATA_MQ_SIZE); //construct with a message queue as buffer    
     while(!vf_data_sub.subscribe());
 
     VF_Data vf_data;

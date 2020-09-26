@@ -62,7 +62,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     logger.add_tag("VFirmClient Module");
 
     asio::io_service io_service;
-    asio::ip::tcp::endpoint ep(asio::ip::address::from_string(vfirm_ip), vfirm_port);
+    asio::ip::tcp::endpoint ep(asio::ip::address::from_string(VFIRM_IP_ADDR), VFIRM_IP_PORT);
     asio::ip::tcp::socket socket(io_service);
     asio::streambuf read_buf;
     std::string write_buf;
@@ -71,7 +71,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     ITPS::Publisher<VF_Data> vf_data_pub("vfirm-client", "data");
 
     // subscriber to listen to commands to be sent to vfirm:  [control module] => [vf_cmd_sub] => vfirm socket
-    ITPS::Subscriber<VF_Commands> vf_cmd_sub("vfirm-client", "commands", vf_cmd_mq_size); //construct with a message queue as buffer
+    ITPS::Subscriber<VF_Commands> vf_cmd_sub("vfirm-client", "commands", VF_CMD_MQ_SIZE); //construct with a message queue as buffer
 
     // subscriber to listen to a signal to trigger sensor re/initilization sequence 
     ITPS::Subscriber<bool> init_sensors_sub("vfirm-client", "re/init sensors");
@@ -176,7 +176,7 @@ static void on_data_received(asio::ip::tcp::socket& socket,
 
     VF_Commands cmd;
     // conditionally blocking (this method blocks when the message queue is empty)
-    cmd = vf_cmd_sub.pop_msg(cmd_sub_timeout, default_cmd);
+    cmd = vf_cmd_sub.pop_msg(VF_CMD_SUB_TIMEOUT, default_cmd);
 
     write_buf.clear(); // clear the string (as a std buffer)
     cmd.set_init(false);

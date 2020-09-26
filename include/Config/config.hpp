@@ -1,12 +1,14 @@
 #pragma once
 #include <string>
 
+extern unsigned int THREAD_POOL_SIZE;
 
-std::string vfirm_ip = "127.0.0.1";
-unsigned int vfirm_port = 8888;
+extern std::string VFIRM_IP_ADDR;
+extern unsigned int VFIRM_IP_PORT;
 
 
-unsigned int vf_cmd_mq_size = 10;
-unsigned int vf_data_mq_size = 10;
+extern unsigned int VF_CMD_MQ_SIZE;
+extern unsigned int VF_DATA_MQ_SIZE;
 
-unsigned int cmd_sub_timeout = 100; // 100 ms
+extern unsigned int VF_CMD_SUB_TIMEOUT;
+
