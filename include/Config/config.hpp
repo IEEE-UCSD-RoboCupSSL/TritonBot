@@ -13,3 +13,5 @@ extern unsigned int VF_DATA_MQ_SIZE;
 extern unsigned int VF_CMD_SUB_TIMEOUT;
 
 extern unsigned int SAFETY_EN_TIMEOUT;
+
+extern unsigned int CTRL_FREQUENCY;

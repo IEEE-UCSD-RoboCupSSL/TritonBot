@@ -14,3 +14,7 @@ unsigned int VF_CMD_SUB_TIMEOUT = 100; // 100 ms
 
 
 unsigned int SAFETY_EN_TIMEOUT = 500; // 500 ms
+
+
+
+extern unsigned int CTRL_FREQUENCY = 50; // Hz 
