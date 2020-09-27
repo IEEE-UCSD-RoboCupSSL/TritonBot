@@ -7,7 +7,8 @@
 #include "Config/config.hpp"
 
 ////////////////////////MODULES///////////////////////////
-#include "MicroCtrlerInterface/vfirm_client.hpp"
+#include "MicroCtrlerClient/vfirm_client.hpp"
+#include "EKF-Module/motion_ekf_module.hpp"
 #include "EKF-Module/virtual_motion_ekf.hpp"
 //////////////////////////////////////////////////////////
 
@@ -59,15 +60,15 @@ int main(int arc, char *argv[]) {
 
     /* pseudo EKF module unit test */
     // -----------------------------------------    
-    VirtualMotionEFK pseudo_EKF_module;
+    VirtualMotionEKF pseudo_EKF_module;
     pseudo_EKF_module.run(thread_pool);
 
     boost::thread([]() {
         B_Log logger;
         logger.add_tag("SUBSCRIBER 1");
-        ITPS::Subscriber<MotionEFK::MotionData> motion_data_sub("virtual-motion ekf", "motion prediction", 100);
+        ITPS::Subscriber<MotionEKF::MotionData> motion_data_sub("virtual-motion ekf", "motion prediction", 100);
         while(!motion_data_sub.subscribe());
-        MotionEFK::MotionData motion_data;
+        MotionEKF::MotionData motion_data;
         
         while(1) {
             std::ostringstream debug_out_stream;
@@ -85,9 +86,9 @@ int main(int arc, char *argv[]) {
     boost::thread([]() {
         B_Log logger;
         logger.add_tag("SUBSCRIBER 2");
-        ITPS::Subscriber<MotionEFK::MotionData> motion_data_sub("virtual-motion ekf", "motion prediction", 100);
+        ITPS::Subscriber<MotionEKF::MotionData> motion_data_sub("virtual-motion ekf", "motion prediction", 100);
         while(!motion_data_sub.subscribe());
-        MotionEFK::MotionData motion_data;
+        MotionEKF::MotionData motion_data;
         
         while(1) {
             std::ostringstream debug_out_stream;

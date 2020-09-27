@@ -2,7 +2,9 @@
 #include "PubSubModule/module.hpp"
 #include <armadillo>
 
-class MotionEFK : public Module {
+
+
+class MotionEKF_Module : public Module {
     public: 
         virtual void task() {}
         virtual void task(ThreadPool& thread_pool) {}
@@ -14,3 +16,6 @@ class MotionEFK : public Module {
             float rotat_vel;
         };
 };
+
+// alias
+using MotionEKF = MotionEKF_Module;

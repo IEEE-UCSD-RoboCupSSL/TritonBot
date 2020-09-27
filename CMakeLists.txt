@@ -71,7 +71,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/proto/)
 aux_source_directory(./source/Main Main_srcs)
 aux_source_directory(./source/ControlModule Control_srcs)
 aux_source_directory(./source/Utility Utility_srcs)
-aux_source_directory(./source/MicroCtrlerInterface MCInterface_srcs)
+aux_source_directory(./source/MicroCtrlerClient MCInterface_srcs)
 aux_source_directory(./source/EKF-Module EKF_srcs)
 aux_source_directory(./source/Config Config_srcs)
 
