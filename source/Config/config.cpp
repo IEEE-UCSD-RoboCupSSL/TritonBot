@@ -11,3 +11,6 @@ unsigned int VF_CMD_MQ_SIZE = 10;
 unsigned int VF_DATA_MQ_SIZE = 10;
 
 unsigned int VF_CMD_SUB_TIMEOUT = 100; // 100 ms
+
+
+unsigned int SAFETY_EN_TIMEOUT = 500; // 500 ms

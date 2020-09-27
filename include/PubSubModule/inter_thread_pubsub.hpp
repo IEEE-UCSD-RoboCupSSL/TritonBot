@@ -142,6 +142,12 @@ namespace ITPS {
                 }
             }
 
+            // Trivial Mode Only
+            void reset_msg(Msg msg) {
+                ITPS_writer_lock(msg_mutex);
+                this->message = msg; // Trivial Mode
+            }
+
             Msg get_msg() { 
                 ITPS_reader_lock(msg_mutex);
                 return this->message;
@@ -240,7 +246,7 @@ namespace ITPS {
 
             // For Trivial Mode only
             void reset_latest_msg_sink(Msg msg) {
-                channel->set_msg(msg);
+                channel->reset_msg(msg);
             }
 
             // For Message Queue Mode only

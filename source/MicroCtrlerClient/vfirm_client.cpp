@@ -254,7 +254,7 @@ static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger) {
 
     default_cmd = cmd; // make a copy
 
-    cmd.release_translational_output();  // for every set_allocated_xxx, release is needed to free the memory properly. Happy C++ coding :(  see, java is so awesome :)
+    cmd.release_translational_output();  // memory headache, Happy C++ coding :(  see, java is so awesome :)
     cmd.release_kicker();
     logger(Info) << "\033[0;32m request to initialize sensors is sent to vfirm \033[0m";
 }
