@@ -40,7 +40,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 #set build type: Possible values are empty, Debug, Release, RelWithDebInfo and MinSizeRel
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_FLAGS "-Wall") #enable all warnings, which can be annoying sometimes, mute it by comment out this line
+#set(CMAKE_CXX_FLAGS "-Wall") #enable all warnings, which can be annoying sometimes, mute it by comment out this line
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3") #optimization level: O1(lowest), O2, or O3(highest)
 

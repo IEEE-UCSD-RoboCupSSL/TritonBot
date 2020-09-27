@@ -6,8 +6,8 @@
 
 class MotionEKF_Module : public Module {
     public: 
-        virtual void task() {}
-        virtual void task(ThreadPool& thread_pool) {}
+        virtual void task() = 0;
+        virtual void task(ThreadPool& thread_pool) = 0;
 
         struct MotionData {
             arma::vec trans_disp;
@@ -15,6 +15,7 @@ class MotionEKF_Module : public Module {
             float rotat_disp;
             float rotat_vel;
         };
+
 };
 
 // alias
