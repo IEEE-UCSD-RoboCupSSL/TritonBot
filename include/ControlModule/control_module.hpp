@@ -18,8 +18,11 @@ class ControlModule : public Module {
 
         virtual void task() = 0;
         virtual void task(ThreadPool& thread_pool) = 0;
+
+        void init_subscribers(void);
+
         ControlModule(void);
-        virtual ~ControlModule();
+        virtual ~ControlModule() {}
 
         bool get_enable_signal(void);
         

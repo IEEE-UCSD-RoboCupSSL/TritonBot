@@ -8,15 +8,38 @@ ControlModule::ControlModule(void) : enable_signal_sub("safety", "enable", 1), /
                                      trans_setpoint_sub("CTRL", "trans"), // Trivial Mode
                                      rotat_setpoint_sub("CTRL", "rotat"), // Trivial Mode
                                      output_pub("vfirm-client", "commands")
-{
+{}
+
+void ControlModule::init_subscribers(void) {
     while(!enable_signal_sub.subscribe());
     while(!dribbler_signal_sub.subscribe());
     while(!kicker_setpoint_sub.subscribe());
     while(!trans_setpoint_sub.subscribe());
     while(!rotat_setpoint_sub.subscribe());
     while(!sensor_sub.subscribe());
-}
 
+    // set default latest values when nothing is received
+    dribbler_signal_sub.set_default_latest_msg(false);
+    kicker_setpoint_sub.set_default_latest_msg({0.00, 0.00});
+    
+    CTRL::SetPoint<arma::vec> df_trans_sp; 
+    df_trans_sp.type = velocity;
+    df_trans_sp.value = {0.00, 0.00};
+    trans_setpoint_sub.set_default_latest_msg(df_trans_sp);
+
+    CTRL::SetPoint<float> df_rotat_sp;
+    df_rotat_sp.type = velocity;
+    df_rotat_sp.value = 0.00;
+    rotat_setpoint_sub.set_default_latest_msg(df_rotat_sp);
+
+    MotionEKF::MotionData dfmd;
+    dfmd.rotat_disp = 0.00;
+    dfmd.rotat_vel = 0.00;
+    dfmd.trans_disp = {0.00, 0.00};
+    dfmd.trans_vel = {0.00, 0.00};
+    sensor_sub.set_default_latest_msg(dfmd);
+
+}
 
 bool ControlModule::get_enable_signal(void) {
     return enable_signal_sub.pop_msg(SAFETY_EN_TIMEOUT, false); // returns false if timeout

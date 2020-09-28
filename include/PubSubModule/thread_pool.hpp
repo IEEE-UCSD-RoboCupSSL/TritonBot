@@ -39,7 +39,7 @@ public:
            function, the new coming thread has to wait until one of 
            the running thread is finished. */
 
-        /* No counter provided to track the number of free threads
+        /* No counter provided to track the number of free threads             
            due to implementation overheads with wrapping func with 
            a counter addition when function finishes, and at the same
            time supporting boost::bind externally for passing func. 

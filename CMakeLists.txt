@@ -107,11 +107,11 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 ###------------------------------------------------------------------------###
 
 
-add_library(test_srcs STATIC ${Main_srcs} ${Proto_srcs} ${ControlModule_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
+add_library(test_srcs STATIC ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
 ${MCInterface_srcs} ${EKF_srcs})
 
 #add target to be built
-add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${ControlModule_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
+add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
                ${MCInterface_srcs} ${EKF_srcs} ${Config_srcs})
 
 # need to generate proto sources before compiling everything else

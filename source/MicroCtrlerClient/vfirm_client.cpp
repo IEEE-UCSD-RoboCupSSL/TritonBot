@@ -1,3 +1,14 @@
+/**
+ *  Inter-Chip-Interface:
+ *  Module overview:
+ *      1. Establish an async TCP connection with the Embedded MCU layer.
+ *      2. On successful connection, read data from the server(which is from the Embedded MCU layer)
+ *      3. On successful data read, publish data to EKF module and listen to Control Algorithm module
+ * to get commands to be sent to the server.
+ *      4. On successful command send, make recursive call to "async_read_until" with "on_data_received" 
+ * as callback
+ **/
+
 #include "MicroCtrlerClient/vfirm_client.hpp"
 
 
@@ -160,7 +171,7 @@ static void on_data_received(asio::ip::tcp::socket& socket,
     received = std::string(std::istreambuf_iterator<char>(input_stream), {});            
     data.ParseFromString(received);
 
-    vf_data_pub.publish(data);
+    vf_data_pub.publish(data); // EKF module is subscribing to this module.
 
     logger.log( Debug, "Trans_Dis: " + repr(data.translational_displacement().x()) + ' ' + repr(data.translational_displacement().y()));
     logger.log( Debug, "Trans_Vel:" + repr(data.translational_velocity().x()) + ' ' + repr(data.translational_velocity().y()));
@@ -171,7 +182,7 @@ static void on_data_received(asio::ip::tcp::socket& socket,
     bool re_init = init_sensors_sub.latest_msg(); // non blocking
     if(re_init) {
         init_sensors(socket, logger);
-        init_sensors_sub.reset_latest_msg_sink(false);
+        init_sensors_sub.set_default_latest_msg(false);
     }
 
 

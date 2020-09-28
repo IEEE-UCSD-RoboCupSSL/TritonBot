@@ -1,3 +1,5 @@
+/* Author: Hongtao Zhang */
+
 #ifndef __PID_H_
 #define __PID_H_
 
@@ -73,9 +75,9 @@ class PID_Controller {
      *  The scaling is generally arbitrary because it's linear formular and the constant is determined
      *  by hand based on experimenting results.
      * 
-     *  When ppl say "tuning the pid", it means to decide the pid constants Kp, Ki, Kd by experiments.
+     *  When we say "tuning the pid", it means to determine the pid constants Kp, Ki, Kd by experiments.
      *  A general rule-of-thumb procedure for tuning pid constants:
-     *   1. first, try out Kp with values of variouse scale, and nailed it at a specific
+     *   1. first, try different Kp values of variouse scale, and nailed it at a specific
      *      range that provides enough system response to correct the error and even produces
      *      some overshoot oscillations deliberately
      *   2. then, play around the Kd value to try to dampen the overshoot oscillation to make the
@@ -93,28 +95,19 @@ private:
     
     bool is_first_time;
     bool is_fixed_time_interval;
-    bool use_output_range = false;
     T integral;
     T prev_error;
     double period_ms; //unit: millisec 
     double prev_time_ms; // unit: millisec
-    T out_upper_bound;
-    T out_lower_bound;
     double (*millis_func)(void);
     
     T first_time_handle(T curr_error) {
         this->integral = curr_error - curr_error; // a workaround to get zero/zero_vector of a generic type
         this->prev_error = curr_error;
         this->is_first_time = false;
-        return bounded_output(Kp * curr_error);
+        return Kp * curr_error;
     }
 
-    T bounded_output(T output) {
-        if(!use_output_range) return output;
-        if(output > out_upper_bound) output = out_upper_bound;
-        if(output < out_lower_bound) output = out_lower_bound;
-        return output;
-    }
 
     double get_period() {
         if(this->is_fixed_time_interval) {
@@ -153,16 +146,9 @@ public:
         this->is_fixed_time_interval = false;
     }
 
-    // optionally config the output range    
-    void set_output_range(T lower_bound, T upper_bound) {
-        this->use_output_range = true;
-        out_lower_bound = lower_bound;
-        out_upper_bound = upper_bound;
-    }
-
 
     /** calculate the PID output **/
-    /* used when there is only one source of data measuring the error  */
+    /* used when there is only one data source for measuring the error  */
     T calculate(T curr_error) {
         if(is_first_time) return first_time_handle(curr_error);
         double period = get_period();
@@ -170,7 +156,7 @@ public:
         this->integral += curr_error * period / 1000.000;
         T output = (Kp * curr_error) - (Kd * derivative) + (Ki * integral);
         prev_error = curr_error;
-        return bounded_output(output);
+        return output;
     }
     
     /* methods below are normally used when there exists 
@@ -185,7 +171,7 @@ public:
         double period = get_period(); 
         this->integral += curr_error * period / 1000.000;
         T output = (Kp * curr_error) - (Kd * error_rate) + (Ki * integral);
-        return bounded_output(output);
+        return output;
     }
     
     /* used when [error] and [error integral] both 
@@ -195,7 +181,7 @@ public:
         double period = get_period();
         T derivative = (curr_error - prev_error) / period; 
         T output = (Kp * curr_error) - (Kd * derivative) + (Ki * error_sum);
-        return bounded_output(output);
+        return output;
     }
 
     /* used when [error], [error derivative] and [error integral] 

@@ -245,7 +245,7 @@ namespace ITPS {
             }   
 
             // For Trivial Mode only
-            void reset_latest_msg_sink(Msg msg) {
+            void set_default_latest_msg(Msg msg) {
                 channel->reset_msg(msg);
             }
 
