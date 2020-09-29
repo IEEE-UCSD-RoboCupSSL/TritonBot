@@ -132,6 +132,12 @@ public:
         this->Kd = Kd;
     }
 
+    void update_pid_consts(double Kp, double Ki, double Kd) {
+        this->Kp = Kp;
+        this->Ki = Ki;
+        this->Kd = Kd;
+    }
+
     // Fixed time interval mode, often coupled with a timer callback 
     void init(double frequency_Hz) {
         this->period_ms = (1.00 / frequency_Hz) * 1000.00;
@@ -154,7 +160,7 @@ public:
         double period = get_period();
         T derivative = (curr_error - prev_error) / period; 
         this->integral += curr_error * period / 1000.000;
-        T output = (Kp * curr_error) - (Kd * derivative) + (Ki * integral);
+        T output = (Kp * curr_error) + (Kd * derivative) + (Ki * integral);
         prev_error = curr_error;
         return output;
     }
@@ -170,24 +176,24 @@ public:
         if(is_first_time) return first_time_handle(curr_error);
         double period = get_period(); 
         this->integral += curr_error * period / 1000.000;
-        T output = (Kp * curr_error) - (Kd * error_rate) + (Ki * integral);
+        T output = (Kp * curr_error) + (Kd * error_rate) + (Ki * integral);
         return output;
     }
     
     /* used when [error] and [error integral] both 
        have their respective way of measuring directly */
-    T calculate_(T curr_error, T error_sum) {
+    T calculate_s(T curr_error, T error_sum) {
         if(is_first_time) return first_time_handle(curr_error);
         double period = get_period();
         T derivative = (curr_error - prev_error) / period; 
-        T output = (Kp * curr_error) - (Kd * derivative) + (Ki * error_sum);
+        T output = (Kp * curr_error) + (Kd * derivative) + (Ki * error_sum);
         return output;
     }
 
     /* used when [error], [error derivative] and [error integral] 
        all have their respective way of measuring directly */
     T calculate(T curr_error, T error_rate, T error_sum) {
-        return (Kp * curr_error) - (Kd * error_rate) + (Ki * error_sum);
+        return (Kp * curr_error) + (Kd * error_rate) + (Ki * error_sum);
     }
     
 

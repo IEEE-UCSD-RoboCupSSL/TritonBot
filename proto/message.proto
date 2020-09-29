@@ -1,8 +1,0 @@
-syntax = "proto2";
-
-package example;
-
-message Message 
-{
-    required string mesg = 1;
-}

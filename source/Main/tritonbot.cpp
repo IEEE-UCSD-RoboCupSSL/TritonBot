@@ -14,6 +14,7 @@
 #include "EKF-Module/virtual_motion_ekf.hpp"
 #include "ControlModule/control_module.hpp"
 #include "ControlModule/pid_system.hpp"
+#include "ControlModule/virtual_pid_system.hpp"
 //////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
@@ -119,7 +120,7 @@ int main(int arc, char *argv[]) {
     boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
     ekf_module->run(thread_pool);
 
-    boost::shared_ptr<ControlModule> ctrl_module(new PID_System());
+    boost::shared_ptr<ControlModule> ctrl_module(new Virtual_PID_System());
     ctrl_module->run(thread_pool);
 
     ITPS::Publisher<bool> dribbler_pub("CTRL", "dribbler");
@@ -127,6 +128,10 @@ int main(int arc, char *argv[]) {
     ITPS::Publisher<arma::vec> kicker_pub("CTRL", "kicker");
     arma::vec zero_vec = {0, 0};
     kicker_pub.publish(zero_vec);
+
+
+    delay(500); //wait 500ms for vfirm_client_module to be ready
+    init_sensor_pub.publish(true); // signal the vfirm client to send init packet
 
     boost::thread([]{
         ITPS::Publisher<bool> enable_signal_pub("safety", "enable"); // MQ Mode
@@ -138,23 +143,57 @@ int main(int arc, char *argv[]) {
     boost::thread([]{
         ITPS::Publisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub("CTRL", "trans"); // Trivial Mode
         ITPS::Publisher<CTRL::SetPoint<float>> rotat_setpoint_pub("CTRL", "rotat"); // Trivial Mode
-
+        delay(800); // wait for other threads are ready
         
         CTRL::SetPoint<float> rotat_sp;
-        rotat_sp.type = CTRL::displacement;
-
         CTRL::SetPoint<arma::vec> trans_sp;
-        trans_sp.type = CTRL::velocity;
 
-        arma::vec zero_vec = {0, 0};
+        bool DorV;
+        double x, y;
+
+        ITPS::Publisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants");
+
+        PID_System::PID_Constants pid_consts;
+        pid_consts.RD_Kd = PID_RD_KD;
+        pid_consts.RD_Ki = PID_RD_KI;
+        pid_consts.RD_Kp = PID_RD_KP; 
+        pid_consts.RV_Ki = PID_RV_KI;
+        pid_consts.RV_Kp = PID_RV_KP;
+        pid_consts.RV_Kd = PID_RV_KD;
+        pid_consts.TD_Kd = PID_TD_KD;
+        pid_consts.TD_Ki = PID_TD_KI;
+        pid_consts.TD_Kp = PID_TD_KP;
+        pid_consts.TV_Kd = PID_TV_KD;
+        pid_consts.TV_Ki = PID_TV_KI;
+        pid_consts.TV_Kp = PID_TV_KP;
+        
+
+
 
         while(1) {
-            rotat_sp.value = 30;
-            rotat_setpoint_pub.publish(rotat_sp);
+            // std::cout << ">>> TD: Kp, Ki, Kd" << std::endl;
+            // std::cin >> pid_consts.TD_Kp >> pid_consts.TD_Ki >> pid_consts.TD_Kd;
+            // pid_const_pub.publish(pid_consts);
 
-            trans_sp.value = zero_vec;
+            std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
+            std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
+            std::cin >> DorV >> x;
+            rotat_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
+            rotat_sp.value = (float)x;
+
+            std::cout << "Translation Disp [1] ? or Vel [0] | SetPoint [x, y]" << std::endl;
+            std::cin >> DorV >> x >> y;
+            trans_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
+            trans_sp.value = {x, y};
+            std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << std::endl;
+
+
+
+            rotat_setpoint_pub.publish(rotat_sp);
             trans_setpoint_pub.publish(trans_sp);
+            delay(1000);
         }
+        
     });
 
 

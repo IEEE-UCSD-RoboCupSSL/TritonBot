@@ -8,7 +8,7 @@
 
 class ControlModule : public Module {
     public: 
-        enum SetPointType {velocity, displacement, disable};
+        enum SetPointType {velocity, displacement};
         template <typename ValueType>
         struct SetPoint {
             ValueType value;
@@ -19,14 +19,14 @@ class ControlModule : public Module {
         virtual void task() = 0;
         virtual void task(ThreadPool& thread_pool) = 0;
 
-        void init_subscribers(void);
+        virtual void init_subscribers(void);
 
         ControlModule(void);
         virtual ~ControlModule() {}
 
         bool get_enable_signal(void);
         
-        MotionEKF::MotionData get_sensor_feedbacks(void);
+        virtual MotionEKF::MotionData get_sensor_feedbacks(void);
 
         arma::vec get_kicker_setpoint(void);
         bool get_dribbler_signal(void);       
