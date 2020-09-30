@@ -10,7 +10,7 @@ class Virtual_PID_System : public PID_System {
 
         void init_subscribers(void);
         
-        MotionEKF::MotionData get_sensor_feedbacks(void);
+        MotionEKF::MotionData get_ekf_feedbacks(void);
 
         
 

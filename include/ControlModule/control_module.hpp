@@ -27,12 +27,13 @@ class ControlModule : public Module {
 
         bool get_enable_signal(void);
         
-        virtual MotionEKF::MotionData get_sensor_feedbacks(void);
+        virtual MotionEKF::MotionData get_ekf_feedbacks(void);
 
         arma::vec get_kicker_setpoint(void);
         bool get_dribbler_signal(void);       
         SetPoint<arma::vec> get_trans_setpoint(void);
         SetPoint<float> get_rotat_setpoint(void);
+        arma::vec get_disp_origin(void);
         
         void publish_output(VF_Commands& cmd);
 
@@ -44,8 +45,12 @@ class ControlModule : public Module {
         ITPS::Subscriber< arma::vec > kicker_setpoint_sub;
         ITPS::Subscriber< SetPoint<arma::vec> > trans_setpoint_sub;
         ITPS::Subscriber< SetPoint<float> > rotat_setpoint_sub;
-
+        ITPS::Subscriber< int > refresh_origin_cnt_sub; // upon this cnt being greater than previous cnt, 
+                                                        // it will update the origin of displacement
         ITPS::Publisher< VF_Commands > output_pub;     
+
+        arma::vec disp_origin;
+        int prev_origin_cnt;
 
 };
 

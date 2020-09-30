@@ -123,9 +123,9 @@ int main(int arc, char *argv[]) {
     boost::shared_ptr<ControlModule> ctrl_module(new Virtual_PID_System());
     ctrl_module->run(thread_pool);
 
-    ITPS::Publisher<bool> dribbler_pub("CTRL", "dribbler");
+    ITPS::Publisher<bool> dribbler_pub("AI CMD", "Dribbler");
     dribbler_pub.publish(false);
-    ITPS::Publisher<arma::vec> kicker_pub("CTRL", "kicker");
+    ITPS::Publisher<arma::vec> kicker_pub("AI CMD", "Kicker");
     arma::vec zero_vec = {0, 0};
     kicker_pub.publish(zero_vec);
 
@@ -134,15 +134,15 @@ int main(int arc, char *argv[]) {
     init_sensor_pub.publish(true); // signal the vfirm client to send init packet
 
     boost::thread([]{
-        ITPS::Publisher<bool> enable_signal_pub("safety", "enable"); // MQ Mode
+        ITPS::Publisher<bool> enable_signal_pub("Safety", "Enable"); // MQ Mode
         while(1) {
             enable_signal_pub.publish(true);
         }
     });
 
     boost::thread([]{
-        ITPS::Publisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub("CTRL", "trans"); // Trivial Mode
-        ITPS::Publisher<CTRL::SetPoint<float>> rotat_setpoint_pub("CTRL", "rotat"); // Trivial Mode
+        ITPS::Publisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub("AI CMD", "trans"); // Trivial Mode
+        ITPS::Publisher<CTRL::SetPoint<float>> rotat_setpoint_pub("AI CMD", "Rotat"); // Trivial Mode
         delay(800); // wait for other threads are ready
         
         CTRL::SetPoint<float> rotat_sp;

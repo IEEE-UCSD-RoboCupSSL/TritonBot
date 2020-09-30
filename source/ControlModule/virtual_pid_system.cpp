@@ -17,8 +17,8 @@ void Virtual_PID_System::init_subscribers(void) {
     PID_System::init_subscribers();
 }
 
-MotionEKF::MotionData Virtual_PID_System::get_sensor_feedbacks(void) {
-    MotionEKF::MotionData feedback_data = PID_System::get_sensor_feedbacks();
+MotionEKF::MotionData Virtual_PID_System::get_ekf_feedbacks(void) {
+    MotionEKF::MotionData feedback_data = PID_System::get_ekf_feedbacks();
     /* because the velocity data calc from the simulator is not stable
      * here we sneaky-mask the velocity data by making them zero(s),
      * so the pid controller will forward the setpoint value directly, 
