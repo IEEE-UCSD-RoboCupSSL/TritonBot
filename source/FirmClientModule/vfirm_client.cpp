@@ -9,7 +9,7 @@
  * as callback
  **/
 
-#include "MicroCtrlerClient/vfirm_client.hpp"
+#include "FirmClientModule/vfirm_client.hpp"
 
 
 #include <string>
@@ -18,7 +18,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
 #include "Utility/systime.hpp"
-#include "PubSubModule/thread_pool.hpp"
+#include "PubSubSystem/thread_pool.hpp"
 #include "ProtoGenerated/vFirmware_API.pb.h"
 #include "Utility/boost_logger.hpp"
 #include "Config/config.hpp"

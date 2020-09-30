@@ -14,7 +14,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/signals2.hpp>
 
-#include "PubSubModule/cp_queue.hpp"
+#include "PubSubSystem/cp_queue.hpp"
 
 
 /* Synchronization for Reader/Writer problems */

@@ -2,9 +2,9 @@
 #pragma once
  
 #include <iostream>
-#include "PubSubModule/inter_thread_pubsub.hpp"
-#include "PubSubModule/oop_observer.hpp"
-#include "PubSubModule/thread_pool.hpp"
+#include "PubSubSystem/inter_thread_pubsub.hpp"
+#include "PubSubSystem/oop_observer.hpp"
+#include "PubSubSystem/thread_pool.hpp"
 
 class Module {
     public:

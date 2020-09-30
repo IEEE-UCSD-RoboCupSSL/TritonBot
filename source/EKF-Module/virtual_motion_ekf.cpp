@@ -1,5 +1,5 @@
 #include "EKF-Module/virtual_motion_ekf.hpp"
-#include "PubSubModule/thread_pool.hpp"
+#include "PubSubSystem/thread_pool.hpp"
 #include "ProtoGenerated/vFirmware_API.pb.h"
 #include "Utility/boost_logger.hpp"
 #include "Config/config.hpp"

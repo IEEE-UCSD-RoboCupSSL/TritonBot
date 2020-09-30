@@ -1,6 +1,6 @@
 #include <iostream>
 #include <armadillo>
-#include "PubSubModule/thread_pool.hpp"
+#include "PubSubSystem/thread_pool.hpp"
 #include "Utility/boost_logger.hpp"
 #include "ProtoGenerated/vFirmware_API.pb.h"
 #include "Utility/systime.hpp"
@@ -8,8 +8,8 @@
 #include "Config/config.hpp"
 
 ////////////////////////MODULES///////////////////////////
-#include "MicroCtrlerClient/microctrler_client_module.hpp"
-#include "MicroCtrlerClient/vfirm_client.hpp"
+#include "FirmClientModule/firmware_client_module.hpp"
+#include "FirmClientModule/vfirm_client.hpp"
 #include "EKF-Module/motion_ekf_module.hpp"
 #include "EKF-Module/virtual_motion_ekf.hpp"
 #include "ControlModule/control_module.hpp"
@@ -36,7 +36,7 @@ int main(int arc, char *argv[]) {
 
 
 
-    boost::shared_ptr<MicroCtrlerClientModule> uc_client_module(new VFirmClient());
+    boost::shared_ptr<FirmClientModule> uc_client_module(new VFirmClient());
     uc_client_module->run(thread_pool); // runs in a separate thread
 
     

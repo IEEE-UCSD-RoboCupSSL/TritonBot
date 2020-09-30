@@ -1,6 +1,6 @@
 #include "ControlModule/virtual_pid_system.hpp"
 #include "ControlModule/pid_system.hpp"
-#include "PubSubModule/thread_pool.hpp"
+#include "PubSubSystem/thread_pool.hpp"
 #include "ProtoGenerated/vFirmware_API.pb.h"
 #include "Utility/systime.hpp"
 #include "Utility/boost_logger.hpp"
