@@ -4,7 +4,6 @@
 #include <armadillo>
 #include "ProtoGenerated/vFirmware_API.pb.h"
 #include "ControlModule/control_module.hpp"
-#include "RulesKeeper/field.hpp"
 
 class MotionModule : public Module {
     public:
@@ -18,7 +17,7 @@ class MotionModule : public Module {
         enum CTRL_Mode {TDRD, TDRV, TVRD, TVRV};
         enum ReferenceFrame {GlobalFrame, BodyFrame};
 
-        MotionModule(Field& field);
+        MotionModule();
 
         virtual void task() = 0;
         virtual void task(ThreadPool& thread_pool);
@@ -26,7 +25,7 @@ class MotionModule : public Module {
 
 
     private:
-        Field *field;
+
 
 
 };
