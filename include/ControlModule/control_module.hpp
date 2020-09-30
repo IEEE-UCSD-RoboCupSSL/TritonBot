@@ -15,14 +15,15 @@ class ControlModule : public Module {
             SetPointType type;
         };
 
+        ControlModule(void);
+        virtual ~ControlModule() {}
 
         virtual void task() = 0;
         virtual void task(ThreadPool& thread_pool) = 0;
 
-        virtual void init_subscribers(void);
 
-        ControlModule(void);
-        virtual ~ControlModule() {}
+    protected:
+        virtual void init_subscribers(void);
 
         bool get_enable_signal(void);
         

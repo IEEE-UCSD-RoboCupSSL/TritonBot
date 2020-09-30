@@ -32,7 +32,7 @@ int main(int arc, char *argv[]) {
 
     ThreadPool thread_pool(THREAD_POOL_SIZE); // pre-allocate 10 threads in a pool
     ITPS::Publisher<bool> init_sensor_pub("vfirm-client", "re/init sensors");
-    // ITPS::Publisher<VF_Commands> dummy_for_testing_only("vfirm-client", "commands");
+    // ITPS::Publisher<VF_Commands> dummy_for_testing_only("FirmClient", "Commands");
 
 
 
@@ -45,7 +45,7 @@ int main(int arc, char *argv[]) {
     // delay(500); //wait 500ms for vfirm_client_module to be ready
     // init_sensor_pub.publish(true); // signal the vfirm client to send init packet
     //
-    // ITPS::Subscriber<VF_Data> vfirm_client_data_sub("vfirm-client", "data", 100);
+    // ITPS::Subscriber<VF_Data> vfirm_client_data_sub("FirmClient", "InternalSensorData", 100);
     // while(!vfirm_client_data_sub.subscribe());
     // VF_Data curr_data;
     
@@ -72,7 +72,7 @@ int main(int arc, char *argv[]) {
     // boost::thread sub1_thrd([]() {
     //     B_Log logger;
     //     logger.add_tag("SUBSCRIBER 1");
-    //     ITPS::Subscriber<MotionEKF::MotionData> motion_data_sub("virtual-motion ekf", "motion prediction", 100);
+    //     ITPS::Subscriber<MotionEKF::MotionData> motion_data_sub("MotionEKF", "MotionData", 100);
     //     while(!motion_data_sub.subscribe());
     //     MotionEKF::MotionData motion_data;
         
@@ -92,7 +92,7 @@ int main(int arc, char *argv[]) {
     // boost::thread sub2_thrd([]() {
     //     B_Log logger;
     //     logger.add_tag("SUBSCRIBER 2");
-    //     ITPS::Subscriber<MotionEKF::MotionData> motion_data_sub("virtual-motion ekf", "motion prediction", 100);
+    //     ITPS::Subscriber<MotionEKF::MotionData> motion_data_sub("MotionEKF", "MotionData", 100);
     //     while(!motion_data_sub.subscribe());
     //     MotionEKF::MotionData motion_data;
         

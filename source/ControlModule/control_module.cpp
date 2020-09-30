@@ -2,12 +2,12 @@
 #include "Config/config.hpp"
 
 ControlModule::ControlModule(void) : enable_signal_sub("safety", "enable", 1), // MQ Mode
-                                     sensor_sub("virtual-motion ekf", "motion prediction"), // Trivial Mode
+                                     sensor_sub("MotionEKF", "MotionData"), // Trivial Mode
                                      dribbler_signal_sub("CTRL", "dribbler"), // Trivial Mode
                                      kicker_setpoint_sub("CTRL", "kicker"), // Trivial Mode
                                      trans_setpoint_sub("CTRL", "trans"), // Trivial Mode
                                      rotat_setpoint_sub("CTRL", "rotat"), // Trivial Mode
-                                     output_pub("vfirm-client", "commands")
+                                     output_pub("FirmClient", "Commands")
 {}
 
 void ControlModule::init_subscribers(void) {
@@ -66,6 +66,9 @@ MotionEKF::MotionData ControlModule::get_sensor_feedbacks(void) {
 }
 
 void ControlModule::publish_output(VF_Commands& cmd) {
-    output_pub.publish(cmd);
+    /* .publish(...) is pass by copy, so it's safe to 
+     * pass cmd's reference to this function and 
+     * updating cmd in the caller stack */
+    output_pub.publish(cmd); 
 }
 

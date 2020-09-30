@@ -15,5 +15,5 @@ class Virtual_PID_System : public PID_System {
         
 
     private: 
-        ITPS::Subscriber<VF_Commands> cmd_eavesdrop_sub;
+        
 };

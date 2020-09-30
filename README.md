@@ -16,6 +16,7 @@ make
 Upon modifications were made in CMakeLists.txt, rerun cmake by:
 ```
 make clean
+cmake ..
 make
 ```
 

@@ -1,15 +1,12 @@
 #pragma once
 #include "PubSubSystem/module.hpp"
 #include <armadillo>
+#include "ProtoGenerated/vFirmware_API.pb.h"
 
 
 
 class MotionEKF_Module : public Module {
-    public: 
-        virtual void task() = 0;
-        virtual void task(ThreadPool& thread_pool) = 0;
-
-        virtual ~MotionEKF_Module() {}
+    public:
 
         struct MotionData {
             arma::vec trans_disp;
@@ -17,6 +14,28 @@ class MotionEKF_Module : public Module {
             float rotat_disp;
             float rotat_vel;
         };
+
+        MotionEKF_Module();
+        virtual ~MotionEKF_Module();
+
+        virtual void task() = 0;
+        virtual void task(ThreadPool& thread_pool) = 0;
+
+
+    protected:
+        virtual void init_subscribers();
+
+        // To-do SSL_VisionData get_.....
+        VF_Data get_firmware_data();
+        void publish_motion_data(MotionData data);
+
+    private:
+        ITPS::Publisher<MotionEKF_Module::MotionData> motion_data_pub;
+        ITPS::Subscriber<VF_Data> firm_data_sub; /* internal sensor data, which should be
+                                                  * sampled faster than the ssl vision data
+                                                  */ 
+        // ITPS::Subscriber<SSL_VisionData>  (trivial mode) .... To-do  
+
 
 };
 

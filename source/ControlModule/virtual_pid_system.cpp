@@ -9,31 +9,12 @@
 #include "EKF-Module/motion_ekf_module.hpp"
 #include <armadillo>
 
-Virtual_PID_System::Virtual_PID_System() : PID_System(),
-                                           cmd_eavesdrop_sub("vfirm-client", "commands")
+Virtual_PID_System::Virtual_PID_System() : PID_System()
 {}
 
 
 void Virtual_PID_System::init_subscribers(void) {
     PID_System::init_subscribers();
-    while(!cmd_eavesdrop_sub.subscribe());
-    VF_Commands cmd;
-    Vec_2D zero_vec;
-    std::string write;
-    
-    zero_vec.set_x(0.00);
-    zero_vec.set_y(0.00);
-
-    cmd.set_init(true);
-    cmd.set_allocated_translational_output(&zero_vec);
-    cmd.set_rotational_output(0.00);
-    cmd.set_allocated_kicker(&zero_vec);
-    cmd.set_dribbler(false);
-
-    cmd_eavesdrop_sub.set_default_latest_msg(cmd);
-
-    cmd.release_kicker();
-    cmd.release_translational_output();
 }
 
 MotionEKF::MotionData Virtual_PID_System::get_sensor_feedbacks(void) {

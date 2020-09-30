@@ -36,8 +36,8 @@ static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger);
 static void on_socket_connected(asio::ip::tcp::socket& socket, 
                                 std::string& write_buf,
                                 asio::streambuf& read_buf, 
-                                ITPS::Publisher<VF_Data>& vf_data_pub, 
-                                ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                                ITPS::Publisher<VF_Data>& firm_data_pub, 
+                                ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
                                 ITPS::Subscriber<bool>& init_sensors_sub,
                                 B_Log& logger,  
                                 const system::error_code& error);
@@ -45,8 +45,8 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
 static void on_data_received(asio::ip::tcp::socket& socket, 
                              std::string& write_buf,
                              asio::streambuf& read_buf, 
-                             ITPS::Publisher<VF_Data>& vf_data_pub, 
-                             ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                             ITPS::Publisher<VF_Data>& firm_data_pub, 
+                             ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
                              ITPS::Subscriber<bool>& init_sensors_sub,
                              B_Log& logger,  
                              const system::error_code& error);
@@ -54,8 +54,8 @@ static void on_data_received(asio::ip::tcp::socket& socket,
 static void on_cmd_sent(asio::ip::tcp::socket& socket, 
                         std::string& write_buf,
                         asio::streambuf& read_buf, 
-                        ITPS::Publisher<VF_Data>& vf_data_pub, 
-                        ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                        ITPS::Publisher<VF_Data>& firm_data_pub, 
+                        ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
                         ITPS::Subscriber<bool>& init_sensors_sub,
                         B_Log& logger,  
                         const system::error_code& error);
@@ -79,16 +79,16 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     asio::streambuf read_buf;
     std::string write_buf;
 
-    // publisher to publish data sent from vfirm: [vfirm socket] => [vf_data_pub] => [EKF module]
-    ITPS::Publisher<VF_Data> vf_data_pub("vfirm-client", "data");
+    // publisher to publish data sent from vfirm: [vfirm socket] => [firm_data_pub] => [EKF module]
+    ITPS::Publisher<VF_Data> firm_data_pub("FirmClient", "InternalSensorData");
 
-    // subscriber to listen to commands to be sent to vfirm:  [control module] => [vf_cmd_sub] => vfirm socket
-    ITPS::Subscriber<VF_Commands> vf_cmd_sub("vfirm-client", "commands", VF_CMD_MQ_SIZE); //construct with a message queue as buffer
+    // subscriber to listen to commands to be sent to vfirm:  [control module] => [firm_cmd_sub] => vfirm socket
+    ITPS::Subscriber<VF_Commands> firm_cmd_sub("FirmClient", "Commands", FIRM_CMD_MQ_SIZE); //construct with a message queue as buffer
 
     // subscriber to listen to a signal to trigger sensor re/initilization sequence 
     ITPS::Subscriber<bool> init_sensors_sub("vfirm-client", "re/init sensors");
 
-    while(!vf_cmd_sub.subscribe());
+    while(!firm_cmd_sub.subscribe());
     while(!init_sensors_sub.subscribe());
 
     try {
@@ -98,8 +98,8 @@ void VFirmClient::task(ThreadPool& thread_pool) {
                                                 boost::ref(socket),
                                                 boost::ref(write_buf), 
                                                 boost::ref(read_buf), 
-                                                boost::ref(vf_data_pub), 
-                                                boost::ref(vf_cmd_sub), 
+                                                boost::ref(firm_data_pub), 
+                                                boost::ref(firm_cmd_sub), 
                                                 boost::ref(init_sensors_sub),
                                                 boost::ref(logger), 
                                                 asio::placeholders::error));
@@ -121,8 +121,8 @@ void VFirmClient::task(ThreadPool& thread_pool) {
 static void on_socket_connected(asio::ip::tcp::socket& socket, 
                                 std::string& write_buf,
                                 asio::streambuf& read_buf, 
-                                ITPS::Publisher<VF_Data>& vf_data_pub, 
-                                ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                                ITPS::Publisher<VF_Data>& firm_data_pub, 
+                                ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
                                 ITPS::Subscriber<bool>& init_sensors_sub,
                                 B_Log& logger,  
                                 const system::error_code& error) {
@@ -141,8 +141,8 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
                                             boost::ref(socket),
                                             boost::ref(write_buf), 
                                             boost::ref(read_buf), 
-                                            boost::ref(vf_data_pub), 
-                                            boost::ref(vf_cmd_sub), 
+                                            boost::ref(firm_data_pub), 
+                                            boost::ref(firm_cmd_sub), 
                                             boost::ref(init_sensors_sub),
                                             boost::ref(logger), 
                                             asio::placeholders::error)); 
@@ -154,8 +154,8 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
 static void on_data_received(asio::ip::tcp::socket& socket, 
                              std::string& write_buf,
                              asio::streambuf& read_buf, 
-                             ITPS::Publisher<VF_Data>& vf_data_pub, 
-                             ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                             ITPS::Publisher<VF_Data>& firm_data_pub, 
+                             ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
                              ITPS::Subscriber<bool>& init_sensors_sub,
                              B_Log& logger,  
                              const system::error_code& error) {
@@ -171,7 +171,7 @@ static void on_data_received(asio::ip::tcp::socket& socket,
     received = std::string(std::istreambuf_iterator<char>(input_stream), {});            
     data.ParseFromString(received);
 
-    vf_data_pub.publish(data); // EKF module is subscribing to this module.
+    firm_data_pub.publish(data); // EKF module is subscribing to this module.
 
     logger.log( Debug, "Trans_Dis: " + repr(data.translational_displacement().x()) + ' ' + repr(data.translational_displacement().y()));
     logger.log( Debug, "Trans_Vel:" + repr(data.translational_velocity().x()) + ' ' + repr(data.translational_velocity().y()));
@@ -188,7 +188,7 @@ static void on_data_received(asio::ip::tcp::socket& socket,
 
     VF_Commands cmd;
     // conditionally blocking (this method blocks when the message queue is empty)
-    cmd = vf_cmd_sub.pop_msg(VF_CMD_SUB_TIMEOUT, default_cmd);
+    cmd = firm_cmd_sub.pop_msg(FIRM_CMD_SUB_TIMEOUT, default_cmd);
 
     write_buf.clear(); // clear the string (as a std buffer)
     cmd.set_init(false);
@@ -201,8 +201,8 @@ static void on_data_received(asio::ip::tcp::socket& socket,
                                         boost::ref(socket),
                                         boost::ref(write_buf), 
                                         boost::ref(read_buf), 
-                                        boost::ref(vf_data_pub), 
-                                        boost::ref(vf_cmd_sub),
+                                        boost::ref(firm_data_pub), 
+                                        boost::ref(firm_cmd_sub),
                                         boost::ref(init_sensors_sub),
                                         boost::ref(logger), 
                                         asio::placeholders::error));
@@ -215,8 +215,8 @@ static void on_data_received(asio::ip::tcp::socket& socket,
 static void on_cmd_sent(asio::ip::tcp::socket& socket, 
                         std::string& write_buf,
                         asio::streambuf& read_buf, 
-                        ITPS::Publisher<VF_Data>& vf_data_pub, 
-                        ITPS::Subscriber<VF_Commands>& vf_cmd_sub,
+                        ITPS::Publisher<VF_Data>& firm_data_pub, 
+                        ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
                         ITPS::Subscriber<bool>& init_sensors_sub,
                         B_Log& logger,  
                         const system::error_code& error) {
@@ -231,8 +231,8 @@ static void on_cmd_sent(asio::ip::tcp::socket& socket,
                                         boost::ref(socket),
                                         boost::ref(write_buf), 
                                         boost::ref(read_buf), 
-                                        boost::ref(vf_data_pub), 
-                                        boost::ref(vf_cmd_sub), 
+                                        boost::ref(firm_data_pub), 
+                                        boost::ref(firm_cmd_sub), 
                                         boost::ref(init_sensors_sub),
                                         boost::ref(logger), 
                                         asio::placeholders::error)); 

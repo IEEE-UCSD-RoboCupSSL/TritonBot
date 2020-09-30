@@ -5,6 +5,9 @@
 // Pseudo EKF
 class VirtualMotionEKF : public MotionEKF_Module {
     public: 
+        VirtualMotionEKF(); 
+        ~VirtualMotionEKF();
+
         void task() {}
         void task(ThreadPool& thread_pool);
 
