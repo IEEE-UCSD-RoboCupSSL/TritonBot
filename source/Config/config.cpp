@@ -21,7 +21,7 @@ unsigned int CTRL_FREQUENCY = 50; // Hz
 
 
 
-float PID_TD_KP = 0.25;
+float PID_TD_KP = 0.18;
 float PID_TD_KI = 0.00;
 float PID_TD_KD = 0.00;
 

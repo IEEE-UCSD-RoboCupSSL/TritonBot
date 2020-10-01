@@ -96,9 +96,6 @@ void PID_System::task(ThreadPool& thread_pool) {
             kicker_setpoint = get_kicker_setpoint();
             dribbler_set_on = get_dribbler_signal();
             trans_setpoint = get_trans_setpoint();
-            if(trans_setpoint.type == displacement) {
-                trans_setpoint.value -= get_disp_origin(); // trans disp's origin point <0, 0> can be updated(reset) dynamically
-            }
             rotat_setpoint = get_rotat_setpoint();
 
             kicker_out.set_x(kicker_setpoint(0));

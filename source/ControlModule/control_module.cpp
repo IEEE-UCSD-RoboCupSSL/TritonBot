@@ -1,13 +1,12 @@
 #include "ControlModule/control_module.hpp"
 #include "Config/config.hpp"
 
-ControlModule::ControlModule(void) : enable_signal_sub("Safety", "Enable", 1), // MQ Mode
+ControlModule::ControlModule(void) : enable_signal_sub("AI CMD", "SafetyEnable", 1), // MQ Mode
                                      sensor_sub("MotionEKF", "MotionData"), // Trivial Mode
                                      dribbler_signal_sub("AI CMD", "Dribbler"), // Trivial Mode
                                      kicker_setpoint_sub("AI CMD", "Kicker"), // Trivial Mode
                                      trans_setpoint_sub("AI CMD", "Trans"), // Trivial Mode
                                      rotat_setpoint_sub("AI CMD", "Rotat"), // Trivial Mode
-                                     refresh_origin_cnt_sub("AI CMD", "RefreshDispOrigin"),
                                      output_pub("FirmClient", "Commands")
 {}
 
@@ -17,7 +16,6 @@ void ControlModule::init_subscribers(void) {
     while(!kicker_setpoint_sub.subscribe());
     while(!trans_setpoint_sub.subscribe());
     while(!rotat_setpoint_sub.subscribe());
-    while(!refresh_origin_cnt_sub.subscribe());
     while(!sensor_sub.subscribe());
 
     // set default latest values when nothing is received
@@ -33,9 +31,6 @@ void ControlModule::init_subscribers(void) {
     df_rotat_sp.type = velocity;
     df_rotat_sp.value = 0.00;
     rotat_setpoint_sub.set_default_latest_msg(df_rotat_sp);
-
-    refresh_origin_cnt_sub.set_default_latest_msg(0);
-    disp_origin = {0, 0};
 
     MotionEKF::MotionData dfmd;
     dfmd.rotat_disp = 0.00;
@@ -70,14 +65,6 @@ MotionEKF::MotionData ControlModule::get_ekf_feedbacks(void) {
     return sensor_sub.latest_msg();
 }
 
-arma::vec ControlModule::get_disp_origin(void) {
-    int cnt = refresh_origin_cnt_sub.latest_msg();
-    if(cnt > prev_origin_cnt) { // AI Java code should make the cnt circular so that it won't exceed MAX INT
-        MotionEKF::MotionData data = get_ekf_feedbacks();
-        disp_origin = data.trans_disp; // update disp origin with the current trans disp
-    }
-    return disp_origin;
-}
 
 void ControlModule::publish_output(VF_Commands& cmd) {
     /* .publish(...) is pass by copy, so it's safe to 

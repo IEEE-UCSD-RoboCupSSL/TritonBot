@@ -134,19 +134,22 @@ int main(int arc, char *argv[]) {
     init_sensor_pub.publish(true); // signal the vfirm client to send init packet
 
     boost::thread([]{
-        ITPS::Publisher<bool> enable_signal_pub("Safety", "Enable"); // MQ Mode
+        ITPS::Publisher<bool> enable_signal_pub("AI CMD", "SafetyEnable"); // MQ Mode
         while(1) {
             enable_signal_pub.publish(true);
         }
     });
 
     boost::thread([]{
-        ITPS::Publisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub("AI CMD", "trans"); // Trivial Mode
+        ITPS::Publisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub("AI CMD", "Trans"); // Trivial Mode
         ITPS::Publisher<CTRL::SetPoint<float>> rotat_setpoint_pub("AI CMD", "Rotat"); // Trivial Mode
         delay(800); // wait for other threads are ready
         
         CTRL::SetPoint<float> rotat_sp;
         CTRL::SetPoint<arma::vec> trans_sp;
+
+        int refresh_origin_cnt = 0;
+        bool refresh;
 
         bool DorV;
         double x, y;
@@ -167,13 +170,12 @@ int main(int arc, char *argv[]) {
         pid_consts.TV_Ki = PID_TV_KI;
         pid_consts.TV_Kp = PID_TV_KP;
         
-
+        // std::cout << ">>> TD: Kp, Ki, Kd" << std::endl;
+        // std::cin >> pid_consts.TD_Kp >> pid_consts.TD_Ki >> pid_consts.TD_Kd;
+        // pid_const_pub.publish(pid_consts);
 
 
         while(1) {
-            // std::cout << ">>> TD: Kp, Ki, Kd" << std::endl;
-            // std::cin >> pid_consts.TD_Kp >> pid_consts.TD_Ki >> pid_consts.TD_Kd;
-            // pid_const_pub.publish(pid_consts);
 
             std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
             std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
@@ -188,10 +190,10 @@ int main(int arc, char *argv[]) {
             std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << std::endl;
 
 
-
             rotat_setpoint_pub.publish(rotat_sp);
             trans_setpoint_pub.publish(trans_sp);
             delay(1000);
+
         }
         
     });
