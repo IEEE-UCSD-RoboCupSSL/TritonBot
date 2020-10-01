@@ -10,8 +10,8 @@
 #include "Config/config.hpp"
 
 ////////////////////////MODULES///////////////////////////
-#include "MicroCtrlerClient/microctrler_client_module.hpp"
-#include "MicroCtrlerClient/vfirm_client.hpp"
+#include "EKF-Module/motion_ekf_module.hpp"
+#include "EKF-Module/virtual_motion_ekf.hpp"
 //////////////////////////////////////////////////////////
 
 // We are testing modules here.
@@ -25,19 +25,11 @@
 
 class vFirmClientTest: public ::testing::Test { 
 public: 
-   ThreadPool thread_pool; // pre-allocate 10 threads in a pool
-   ITPS::Publisher<bool> init_sensor_pub;
+   ThreadPool thread_pool(THREAD_POOL_SIZE); // pre-allocate 10 threads in a pool
+   ITPS::Publisher<bool> init_sensor_pub("vfirm-client", "re/init sensors");
 
-   boost::shared_ptr<MicroCtrlerClientModule> uc_client_module;
-
-
-
-   vFirmClientTest() :  thread_pool(THREAD_POOL_SIZE), // pre-allocate 10 threads in a pool
-                        init_sensor_pub("vfirm-client", "re/init sensors"),
-                        uc_client_module(new VFirmClient())
-   {
-      uc_client_module->run(thread_pool); // runs in a separate thread
-   }
+   boost::shared_ptr<MicroCtrlerClientModule> uc_client_module(new VFirmClient());
+   uc_client_module->run(thread_pool); // runs in a separate thread
 
    void SetUp( ) { 
       // code here will execute just before the test ensues 
@@ -49,12 +41,12 @@ public:
    }
 };
 
-TEST_F( vFirmClientTest, asdflkasjd ) {
-   ASSERT_EQ(1, 1);
+TEST_F( vFirmClientTest, October1 ) {
+   ASSERT_EQ(2, 1);
 }
 
-TEST_F( vFirmClientTest, asdflkasjd123 ) {
-   ASSERT_EQ(2, 1);
+TEST_F( vFirmClientTest, October2 ) {
+   ASSERT_EQ(1, 1);
 }
 
 // TEST(vfirm_client, basic_test) {

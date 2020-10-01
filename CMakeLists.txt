@@ -71,7 +71,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/proto/)
 aux_source_directory(./source/Main Main_srcs)
 aux_source_directory(./source/ControlModule Control_srcs)
 aux_source_directory(./source/Utility Utility_srcs)
-aux_source_directory(./source/FirmClientModule MCInterface_srcs)
+aux_source_directory(./source/MicroCtrlerClient MCInterface_srcs)
 aux_source_directory(./source/EKF-Module EKF_srcs)
 aux_source_directory(./source/Config Config_srcs)
 
@@ -107,12 +107,13 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 ###------------------------------------------------------------------------###
 
 
-add_library(test_srcs STATIC ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
-${MCInterface_srcs} ${EKF_srcs})
+set( SRCS ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
+${MCInterface_srcs} ${EKF_srcs} ${Config_srcs})
+
+add_library(test_srcs STATIC ${SRCS})
 
 #add target to be built
-add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
-               ${MCInterface_srcs} ${EKF_srcs} ${Config_srcs})
+add_executable(${Target} ${Main_srcs} ${SRCS} )
 
 # need to generate proto sources before compiling everything else
 add_dependencies(${Target} PROTO_GEN) 
@@ -143,5 +144,37 @@ add_custom_target(clean-proto-generated
 
 #Tests
 
-#add_subdirectory(googletest)
-#add_subdirectory(test)
+add_subdirectory(googletest)
+
+
+#========================================#
+add_executable(Test test/Test.cpp )
+target_link_libraries(Test PUBLIC
+    gtest_main test_srcs
+    ${Boost_Libraries}  Boost::date_time 
+                        Boost::chrono 
+                        Boost::system 
+                        Boost::thread 
+                        Boost::log
+                        ${Armadillo_Libraries}
+                        ${PROTOBUF_LIBRARIES}
+)
+add_test(NAME Test COMMAND Test)
+#========================================#
+
+
+
+#========================================#
+add_executable(Test1 test/Test1.cpp )
+target_link_libraries(Test1 PUBLIC
+    gtest_main test_srcs
+    ${Boost_Libraries}  Boost::date_time 
+                        Boost::chrono 
+                        Boost::system 
+                        Boost::thread 
+                        Boost::log
+                        ${Armadillo_Libraries}
+                        ${PROTOBUF_LIBRARIES}
+)
+add_test(NAME Test1 COMMAND Test1)
+#========================================#
