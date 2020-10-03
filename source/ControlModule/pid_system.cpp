@@ -73,7 +73,8 @@ void PID_System::task(ThreadPool& thread_pool) {
 
     float rotat_disp_out, rotat_vel_out;
     arma::vec trans_disp_out, trans_vel_out;
-    Vec_2D trans_disp_proto_out, trans_vel_proto_out;
+    arma::vec output_3d;
+    Vec_2D trans_proto_out;
     PID_Constants pid_consts;
 
     delay(INIT_DELAY); // controller shall not start before the 
@@ -139,27 +140,32 @@ void PID_System::task(ThreadPool& thread_pool) {
            
             // translational velocity controller
             if(trans_setpoint.type == velocity) {
-                trans_vel_proto_out.set_x((float)trans_vel_out(0));
-                trans_vel_proto_out.set_y((float)trans_vel_out(1));
-                output_cmd.set_allocated_translational_output(&trans_vel_proto_out);
-            }
-
-            // translational displacement controller
-            if(trans_setpoint.type == displacement) {
-                trans_disp_proto_out.set_x((float)trans_disp_out(0));
-                trans_disp_proto_out.set_y((float)trans_disp_out(1));
-                output_cmd.set_allocated_translational_output(&trans_disp_proto_out);
+                output_3d = {trans_vel_out(0), trans_vel_out(1), 0}; // 0 is just a space holder, rotation is set few lines down below
+            } 
+            else if(trans_setpoint.type == displacement) { // translational displacement controller
+                output_3d = {trans_disp_out(0), trans_disp_out(1), 0};
             }
 
             // rotational velocity controller
             if(rotat_setpoint.type == velocity) {
-                output_cmd.set_rotational_output(rotat_vel_out);
+                output_3d(2) = rotat_vel_out;
             } 
-
-            // rotational displacement controller
-            if(rotat_setpoint.type == displacement) {
-                output_cmd.set_rotational_output(rotat_disp_out);
+            else if(rotat_setpoint.type == displacement) { // rotational displacement controller
+                output_3d(2) = rotat_disp_out;
             }
+
+            
+            if(arma::norm(output_3d) > 100.00) {
+                // Normalize the output vector to limit the maximum output vector norm to 100.00
+                output_3d = arma::normalise(output_3d);
+                output_3d *= 100.00;
+            }
+
+            // convert to protobuffer-defined cmd type
+            trans_proto_out.set_x(output_3d(0));
+            trans_proto_out.set_y(output_3d(1));
+            output_cmd.set_allocated_translational_output(&trans_proto_out);
+            output_cmd.set_rotational_output(output_3d(2));
 
             publish_output(output_cmd);
             delay(1.00/CTRL_FREQUENCY * 1000.00);
