@@ -244,10 +244,17 @@ int main(int arc, char *argv[]) {
         robot_origin_w_pub.publish(origin);
         init_sensor_pub.publish(true); 
         Motion::MotionCMD cmd;
-
+        Motion::ReferenceFrame frame;
+        bool is_world_frame;
+        int mode_idx;
+        std::cout << "Reference Frame: World[1] or RobotBody[0]" << std::endl;
+        std::cin >> is_world_frame;
+        frame = is_world_frame ? Motion::ReferenceFrame::WorldFrame : Motion::ReferenceFrame::BodyFrame;
         while(1) {
-            cmd.mode = Motion::CTRL_Mode::TDRD;
-            cmd.ref_frame = Motion::ReferenceFrame::WorldFrame;
+            std::cout << "Ctrl Mode: TDRD[0] TDRV[1] TVRD[2] TVRV[3]" << std::endl;
+            std::cin >> mode_idx;
+            cmd.mode = static_cast<Motion::CTRL_Mode>(mode_idx);
+            cmd.ref_frame = frame;
             cmd.setpoint_3d = {0, 0, 0};
             std::cout << "cmd3D: <x, y, theta>" << std::endl;
             std::cin >> cmd.setpoint_3d(0) >> cmd.setpoint_3d(1) >> cmd.setpoint_3d(2); 

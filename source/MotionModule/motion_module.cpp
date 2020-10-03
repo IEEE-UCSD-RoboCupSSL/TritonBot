@@ -7,7 +7,9 @@ MotionModule::MotionModule() : trans_setpoint_pub("AI CMD", "Trans"),
                                rotat_setpoint_pub("AI CMD", "Rotat"),
                                sensor_sub("MotionEKF", "MotionData"), // Trivial Mode
                                robot_origin_w_sub("ConnectionInit", "RobotOrigin(WorldFrame)"), // Trivial Mode
-                               command_sub("CMD Server", "MotionCMD", 1) // MQ Mode
+                               command_sub("CMD Server", "MotionCMD") // Trivial Mode because this module needs to keep the loop running 
+                                                                      // non-blocking to calculate transformation matrix that changes along
+                                                                      // the orientation of a moving robot
 {}
 
 MotionModule::~MotionModule() {}
@@ -26,7 +28,11 @@ void MotionModule::init_subscribers(void) {
     arma::vec zero_vec = {0, 0};
     robot_origin_w_sub.set_default_latest_msg(zero_vec);
 
-    // command_sub: MQ Mode don't need to set default msg
+    Motion::MotionCMD dft_cmd;
+    dft_cmd.mode = Motion::CTRL_Mode::TVRV; // velocity all zeros means not to move
+    dft_cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
+    dft_cmd.setpoint_3d = {0, 0, 0};
+    command_sub.set_default_latest_msg(dft_cmd);
 }
 
 
@@ -41,7 +47,7 @@ void MotionModule::task(ThreadPool& thread_pool) {
     logger(Info) << "\033[0;32m Loop Started \033[0m";
     
     while(1) {
-        auto cmd = command_sub.pop_msg();
+        auto cmd = command_sub.latest_msg();
         move(cmd.setpoint_3d, cmd.mode, cmd.ref_frame);        
     }
 }
@@ -85,7 +91,7 @@ void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame se
         trans_setpoint.value = {setpoint_b(0)/setpoint_b(2), setpoint_b(1)/setpoint_b(2)}; // the division is to divide the scaling factor, according to rules of homogeneous coord systems
 
 
-        /* for rotational, we simply unify their zero orientation to avoid needing transformations */
+        /* for rotational, we simply unify their zero orientations to avoid needing transformations */
     }
 
     trans_setpoint_pub.publish(trans_setpoint);
