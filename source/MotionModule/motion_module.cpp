@@ -10,6 +10,8 @@ MotionModule::MotionModule() : trans_setpoint_pub("AI CMD", "Trans"),
                                command_sub("CMD Server", "MotionCMD", 1) // MQ Mode
 {}
 
+MotionModule::~MotionModule() {}
+
 void MotionModule::init_subscribers(void) {
     while(!sensor_sub.subscribe());
     while(!robot_origin_w_sub.subscribe());
@@ -31,7 +33,7 @@ void MotionModule::init_subscribers(void) {
 void MotionModule::task(ThreadPool& thread_pool) {
     UNUSED(thread_pool);
     B_Log logger;
-    logger.add_tag("PID_System Module");
+    logger.add_tag("Motion Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
     init_subscribers();
     logger(Info) << "\033[0;32m Initialized \033[0m";
@@ -47,7 +49,7 @@ void MotionModule::task(ThreadPool& thread_pool) {
 
 
 
-void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame setpoint_ref_frame = WorldFrame) { // default: setpoint frame is world frame
+void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame setpoint_ref_frame) { // default: setpoint frame is world frame
     switch(mode) {
         case TDRD: trans_setpoint.type = CTRL::displacement;
                    rotat_setpoint.type = CTRL::displacement;
@@ -61,33 +63,33 @@ void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame se
         case TVRV: trans_setpoint.type = CTRL::velocity;
                    rotat_setpoint.type = CTRL::velocity;
                    break;
-
-        trans_setpoint.value = {setpoint_3d(0), setpoint_3d(1)};
-        rotat_setpoint.value = setpoint_3d(2);
-
-        if(setpoint_ref_frame == WorldFrame) {
-            arma::vec bot_origin = robot_origin_w_sub.latest_msg();
-            double bot_orien = sensor_sub.latest_msg().rotat_disp;
-
-            /* a not-so-obvious simplification was done by 
-             * using bot_origin as the bot curr location */
-            arma::mat A = wtb_homo_transform(bot_origin, bot_orien); // world to body homogeneous transformation
-
-            // setpoint with respect to world reference frame
-            arma::vec setpoint_w = {trans_setpoint.value(0), trans_setpoint.value(1), 1}; // homogeneous point end with a 1 (vector end with a 0)
-
-            arma::vec setpoint_b = A * setpoint_w; // apply transformation to get the same point represented in the body frame
-
-            // update setpoint to the setpoint in robot's perspective
-            trans_setpoint.value = {setpoint_b(0), setpoint_b(1)};
-
-
-            /* for rotational, we simply unify their zero orientation to avoid needing transformations */
-        }
-
-        trans_setpoint_pub.publish(trans_setpoint);
-        rotat_setpoint_pub.publish(rotat_setpoint);
-
     }
+
+    trans_setpoint.value = {setpoint_3d(0), setpoint_3d(1)};
+    rotat_setpoint.value = setpoint_3d(2);
+
+    if(setpoint_ref_frame == WorldFrame) {
+        arma::vec bot_origin = robot_origin_w_sub.latest_msg();
+        double bot_orien = sensor_sub.latest_msg().rotat_disp;
+
+        /* a not-so-obvious simplification was done by 
+            * using bot_origin as the bot curr location */
+        arma::mat A = wtb_homo_transform(bot_origin, bot_orien); // world to body homogeneous transformation
+
+        // setpoint with respect to world reference frame
+        arma::vec setpoint_w = {trans_setpoint.value(0), trans_setpoint.value(1), 1}; // homogeneous point end with a 1 (vector end with a 0)
+
+        arma::vec setpoint_b = A * setpoint_w; // apply transformation to get the same point represented in the body frame
+
+        // update setpoint to the setpoint in robot's perspective
+        trans_setpoint.value = {setpoint_b(0)/setpoint_b(2), setpoint_b(1)/setpoint_b(2)}; // the division is to divide the scaling factor, according to rules of homogeneous coord systems
+
+
+        /* for rotational, we simply unify their zero orientation to avoid needing transformations */
+    }
+
+    trans_setpoint_pub.publish(trans_setpoint);
+    rotat_setpoint_pub.publish(rotat_setpoint);
+    
 }
 

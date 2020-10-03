@@ -213,6 +213,9 @@ int main(int arc, char *argv[]) {
     boost::shared_ptr<ControlModule> ctrl_module(new Virtual_PID_System());
     ctrl_module->run(thread_pool);
 
+    boost::shared_ptr<MotionModule> motion_module(new MotionModule());
+    motion_module->run(thread_pool);
+
     ITPS::Publisher<bool> dribbler_pub("AI CMD", "Dribbler");
     dribbler_pub.publish(false);
     ITPS::Publisher<arma::vec> kicker_pub("AI CMD", "Kicker");
@@ -234,8 +237,8 @@ int main(int arc, char *argv[]) {
     boost::thread([&]{
         ITPS::Publisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)"); 
         ITPS::Publisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD");
-        delay(800); // wait for everything is started
-        arma::vec origin;
+        delay(1200); // wait for everything is started
+        arma::vec origin = {0, 0};
         std::cout << "Enter robot origin <x, y>" << std::endl;
         std::cin >> origin(0) >> origin(1);
         robot_origin_w_pub.publish(origin);
@@ -244,9 +247,11 @@ int main(int arc, char *argv[]) {
 
         while(1) {
             cmd.mode = Motion::CTRL_Mode::TDRD;
-            cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
+            cmd.ref_frame = Motion::ReferenceFrame::WorldFrame;
+            cmd.setpoint_3d = {0, 0, 0};
             std::cout << "cmd3D: <x, y, theta>" << std::endl;
             std::cin >> cmd.setpoint_3d(0) >> cmd.setpoint_3d(1) >> cmd.setpoint_3d(2); 
+            command_pub.publish(cmd);
         }
     });
     // -----------------------------------------
