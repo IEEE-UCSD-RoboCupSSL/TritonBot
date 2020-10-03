@@ -15,6 +15,7 @@
 #include "ControlModule/control_module.hpp"
 #include "ControlModule/pid_system.hpp"
 #include "ControlModule/virtual_pid_system.hpp"
+#include "MotionModule/motion_module.hpp"
 //////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
@@ -39,6 +40,8 @@ int main(int arc, char *argv[]) {
     boost::shared_ptr<FirmClientModule> uc_client_module(new VFirmClient());
     uc_client_module->run(thread_pool); // runs in a separate thread
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     // /* vfirm client module unit test */
     // // -----------------------------------------
@@ -61,6 +64,7 @@ int main(int arc, char *argv[]) {
     // // -----------------------------------------
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
     // /* pseudo EKF module unit test */
@@ -115,8 +119,94 @@ int main(int arc, char *argv[]) {
     // // -----------------------------------------
 
 
-    /* PID system unit test*/
-    // -----------------------------------------
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // /* PID system unit test*/
+    // // -----------------------------------------
+    // boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
+    // ekf_module->run(thread_pool);
+
+    // boost::shared_ptr<ControlModule> ctrl_module(new Virtual_PID_System());
+    // ctrl_module->run(thread_pool);
+
+    // ITPS::Publisher<bool> dribbler_pub("AI CMD", "Dribbler");
+    // dribbler_pub.publish(false);
+    // ITPS::Publisher<arma::vec> kicker_pub("AI CMD", "Kicker");
+    // arma::vec zero_vec = {0, 0};
+    // kicker_pub.publish(zero_vec);
+
+
+    // delay(500); //wait 500ms for vfirm_client_module to be ready
+    // init_sensor_pub.publish(true); // signal the vfirm client to send init packet
+
+    // boost::thread([]{
+    //     ITPS::Publisher<bool> enable_signal_pub("AI CMD", "SafetyEnable"); // MQ Mode
+    //     while(1) {
+    //         enable_signal_pub.publish(true);
+    //     }
+    // });
+
+    // boost::thread([]{
+    //     ITPS::Publisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub("AI CMD", "Trans"); // Trivial Mode
+    //     ITPS::Publisher<CTRL::SetPoint<float>> rotat_setpoint_pub("AI CMD", "Rotat"); // Trivial Mode
+    //     delay(800); // wait for other threads are ready
+        
+    //     CTRL::SetPoint<float> rotat_sp;
+    //     CTRL::SetPoint<arma::vec> trans_sp;
+
+    //     int refresh_origin_cnt = 0;
+    //     bool refresh;
+
+    //     bool DorV;
+    //     double x, y;
+
+    //     ITPS::Publisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants");
+
+    //     PID_System::PID_Constants pid_consts;
+    //     pid_consts.RD_Kd = PID_RD_KD;
+    //     pid_consts.RD_Ki = PID_RD_KI;
+    //     pid_consts.RD_Kp = PID_RD_KP; 
+    //     pid_consts.RV_Ki = PID_RV_KI;
+    //     pid_consts.RV_Kp = PID_RV_KP;
+    //     pid_consts.RV_Kd = PID_RV_KD;
+    //     pid_consts.TD_Kd = PID_TD_KD;
+    //     pid_consts.TD_Ki = PID_TD_KI;
+    //     pid_consts.TD_Kp = PID_TD_KP;
+    //     pid_consts.TV_Kd = PID_TV_KD;
+    //     pid_consts.TV_Ki = PID_TV_KI;
+    //     pid_consts.TV_Kp = PID_TV_KP;
+        
+    //     // std::cout << ">>> TD: Kp, Ki, Kd" << std::endl;
+    //     // std::cin >> pid_consts.TD_Kp >> pid_consts.TD_Ki >> pid_consts.TD_Kd;
+    //     // pid_const_pub.publish(pid_consts);
+
+
+    //     while(1) {
+
+    //         std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
+    //         std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
+    //         std::cin >> DorV >> x;
+    //         rotat_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
+    //         rotat_sp.value = (float)x;
+
+    //         std::cout << "Translation Disp [1] ? or Vel [0] | SetPoint [x, y]" << std::endl;
+    //         std::cin >> DorV >> x >> y;
+    //         trans_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
+    //         trans_sp.value = {x, y};
+    //         std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << std::endl;
+
+
+    //         rotat_setpoint_pub.publish(rotat_sp);
+    //         trans_setpoint_pub.publish(trans_sp);
+    //         delay(1000);
+
+    //     }
+        
+    // });
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /* Motion Module unit test */ // motion is a wrapper of control module with math to transform coordinate systems
     boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
     ekf_module->run(thread_pool);
 
@@ -129,6 +219,7 @@ int main(int arc, char *argv[]) {
     arma::vec zero_vec = {0, 0};
     kicker_pub.publish(zero_vec);
 
+    ITPS::Publisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants");
 
     delay(500); //wait 500ms for vfirm_client_module to be ready
     init_sensor_pub.publish(true); // signal the vfirm client to send init packet
@@ -140,66 +231,24 @@ int main(int arc, char *argv[]) {
         }
     });
 
-    boost::thread([]{
-        ITPS::Publisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub("AI CMD", "Trans"); // Trivial Mode
-        ITPS::Publisher<CTRL::SetPoint<float>> rotat_setpoint_pub("AI CMD", "Rotat"); // Trivial Mode
-        delay(800); // wait for other threads are ready
-        
-        CTRL::SetPoint<float> rotat_sp;
-        CTRL::SetPoint<arma::vec> trans_sp;
-
-        int refresh_origin_cnt = 0;
-        bool refresh;
-
-        bool DorV;
-        double x, y;
-
-        ITPS::Publisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants");
-
-        PID_System::PID_Constants pid_consts;
-        pid_consts.RD_Kd = PID_RD_KD;
-        pid_consts.RD_Ki = PID_RD_KI;
-        pid_consts.RD_Kp = PID_RD_KP; 
-        pid_consts.RV_Ki = PID_RV_KI;
-        pid_consts.RV_Kp = PID_RV_KP;
-        pid_consts.RV_Kd = PID_RV_KD;
-        pid_consts.TD_Kd = PID_TD_KD;
-        pid_consts.TD_Ki = PID_TD_KI;
-        pid_consts.TD_Kp = PID_TD_KP;
-        pid_consts.TV_Kd = PID_TV_KD;
-        pid_consts.TV_Ki = PID_TV_KI;
-        pid_consts.TV_Kp = PID_TV_KP;
-        
-        // std::cout << ">>> TD: Kp, Ki, Kd" << std::endl;
-        // std::cin >> pid_consts.TD_Kp >> pid_consts.TD_Ki >> pid_consts.TD_Kd;
-        // pid_const_pub.publish(pid_consts);
-
+    boost::thread([&]{
+        ITPS::Publisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)"); 
+        ITPS::Publisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD");
+        delay(800); // wait for everything is started
+        arma::vec origin;
+        std::cout << "Enter robot origin <x, y>" << std::endl;
+        std::cin >> origin(0) >> origin(1);
+        robot_origin_w_pub.publish(origin);
+        init_sensor_pub.publish(true); 
+        Motion::MotionCMD cmd;
 
         while(1) {
-
-            std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
-            std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
-            std::cin >> DorV >> x;
-            rotat_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
-            rotat_sp.value = (float)x;
-
-            std::cout << "Translation Disp [1] ? or Vel [0] | SetPoint [x, y]" << std::endl;
-            std::cin >> DorV >> x >> y;
-            trans_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
-            trans_sp.value = {x, y};
-            std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << std::endl;
-
-
-            rotat_setpoint_pub.publish(rotat_sp);
-            trans_setpoint_pub.publish(trans_sp);
-            delay(1000);
-
+            cmd.mode = Motion::CTRL_Mode::TDRD;
+            cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
+            std::cout << "cmd3D: <x, y, theta>" << std::endl;
+            std::cin >> cmd.setpoint_3d(0) >> cmd.setpoint_3d(1) >> cmd.setpoint_3d(2); 
         }
-        
     });
-
-
-
     // -----------------------------------------
 
     while(1);

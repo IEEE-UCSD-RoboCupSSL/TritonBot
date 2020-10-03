@@ -18,6 +18,7 @@ void VirtualMotionEKF::task(ThreadPool& thread_pool) {
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
     init_subscribers();
+    logger(Info) << "\033[0;32m Initialized \033[0m";
 
     VF_Data vf_data;
     MotionEKF::MotionData m_data;

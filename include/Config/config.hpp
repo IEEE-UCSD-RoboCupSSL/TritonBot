@@ -3,6 +3,8 @@
 
 extern unsigned int THREAD_POOL_SIZE;
 
+extern unsigned int INIT_DELAY;
+
 extern std::string VFIRM_IP_ADDR;
 extern unsigned int VFIRM_IP_PORT;
 

@@ -1,0 +1,1 @@
+#include "RemoteServers/RemoteCMDServer/CMDAdapters/ball_capture_adapter.hpp"

@@ -27,24 +27,6 @@
 #include "Utility/boost_logger.hpp"
 
 
-using byte = unsigned char;
-static constexpr const char* LOCAL_HOST = "127.0.0.1";
-
-const float Pi = 3.1415926;
-
-inline double to_radian(double deg) { return deg * Pi / 180.000;}
-inline double to_degree(double rad) { return rad * (180.000 / Pi);}
-
-extern arma::vec unit_vec_x;  // definition in common.cpp
-extern arma::vec unit_vec_y;  // definition in common.cpp
-
-using range_t = std::pair<double, double>; 
-
-double map(double value, range_t from, range_t to);
-arma::vec map(arma::vec value, range_t from, range_t to);
-void map2(arma::vec& value, range_t from, range_t to);
-
-
 /* Synchronization for Reader/Writer problems */
 typedef boost::shared_mutex reader_writer_mutex; 
 // get exclusive access
@@ -58,3 +40,30 @@ typedef boost::shared_mutex reader_writer_mutex;
 #define repr std::to_string
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
+
+
+
+
+using byte = unsigned char;
+static constexpr const char* LOCAL_HOST = "127.0.0.1";
+
+const float Pi = 3.1415926;
+
+inline double to_radian(double deg) { return deg * Pi / 180.000;}
+inline double to_degree(double rad) { return rad * (180.000 / Pi);}
+
+
+using range_t = std::pair<double, double>; 
+
+double map(double value, range_t from, range_t to);
+arma::vec map(arma::vec value, range_t from, range_t to);
+void map2(arma::vec& value, range_t from, range_t to);
+
+
+
+
+
+
+arma::mat rotation_matrix_2D(double angle_degree);
+arma::mat change_basis_matrix_2D(arma::vec vx, arma::vec vy) ;
+arma::mat wtb_homo_transform(arma::vec robot_position_w, double robot_orient_w);

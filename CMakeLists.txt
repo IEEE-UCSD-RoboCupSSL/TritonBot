@@ -85,6 +85,7 @@ add_definitions(-DBOOST_LOG_DYN_LINK) #macro needed by boost logger
 
 
 
+
 ###--------------------------------Protobuf--------------------------------###
 #run protoc to auto generate protobuf source code
 file(GLOB PROTO_DEFS "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
@@ -107,8 +108,8 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 ###------------------------------------------------------------------------###
 
 
-add_library(test_srcs STATIC ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
-${MCInterface_srcs} ${EKF_srcs})
+#add_library(test_srcs STATIC ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
+#${MCInterface_srcs} ${EKF_srcs})
 
 #add target to be built
 add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
@@ -123,8 +124,10 @@ target_link_libraries(${Target} PUBLIC  ${Boost_Libraries} Boost::date_time
                                                            Boost::system 
                                                            Boost::thread 
                                                            Boost::log
-                                        ${Armadillo_Libraries}
+                                        #${Armadillo_Libraries} # this won't compile matrix part of the library, strangely 
+                                        -larmadillo # use this old-school way to link the lib
                                         ${PROTOBUF_LIBRARIES}
+                                        
                       )
 
 

@@ -41,6 +41,7 @@ void PID_System::task(ThreadPool& thread_pool) {
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
     init_subscribers();
+    logger(Info) << "\033[0;32m Initialized \033[0m";
     
     VF_Commands halt_cmd;
     Vec_2D zero_vec;
@@ -75,8 +76,10 @@ void PID_System::task(ThreadPool& thread_pool) {
     Vec_2D trans_disp_proto_out, trans_vel_proto_out;
     PID_Constants pid_consts;
 
-    delay(500); // wait a bit for other concurrent systems to get ready
-
+    delay(INIT_DELAY); // controller shall not start before the 
+                       // garbage data are refreshed by other modules 
+                       // after running for a bit 
+    logger(Info) << "\033[0;32m Control Loop Started \033[0m";
     while(1) {
 
         rotat_disp_pid.init(CTRL_FREQUENCY);

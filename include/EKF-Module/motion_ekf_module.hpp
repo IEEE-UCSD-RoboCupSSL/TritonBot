@@ -12,7 +12,7 @@ class MotionEKF_Module : public Module {
             arma::vec trans_disp;
             arma::vec trans_vel;
             float rotat_disp;
-            float rotat_vel;
+            float rotat_vel; 
         };
 
         MotionEKF_Module();

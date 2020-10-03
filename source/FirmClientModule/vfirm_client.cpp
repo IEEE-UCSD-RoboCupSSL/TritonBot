@@ -90,6 +90,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
 
     while(!firm_cmd_sub.subscribe());
     while(!init_sensors_sub.subscribe());
+    logger(Info) << "\033[0;32m Initialized \033[0m";
 
     try {
         // Establish TCP connection with vfirm.exe
