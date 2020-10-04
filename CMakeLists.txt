@@ -75,7 +75,7 @@ aux_source_directory(./source/FirmClientModule MCInterface_srcs)
 aux_source_directory(./source/EKF-Module EKF_srcs)
 aux_source_directory(./source/Config Config_srcs)
 aux_source_directory(./source/MotionModule Motion_srcs)
-
+aux_source_directory(./source/CommandListener Listen_srcs)
 
 
 
@@ -114,7 +114,7 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 
 #add target to be built
 add_executable(${Target} ${Main_srcs} ${Proto_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
-               ${MCInterface_srcs} ${EKF_srcs} ${Config_srcs} ${Motion_srcs})
+               ${MCInterface_srcs} ${EKF_srcs} ${Config_srcs} ${Motion_srcs} ${Listen_srcs})
 
 # need to generate proto sources before compiling everything else
 add_dependencies(${Target} PROTO_GEN) 

@@ -16,13 +16,15 @@
 #include "ControlModule/pid_system.hpp"
 #include "ControlModule/virtual_pid_system.hpp"
 #include "MotionModule/motion_module.hpp"
+#include "ConnectionServerModule/connection_server.hpp"
+#include "ConnectionServerModule/connection_server_module.hpp"
 //////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
 
 int main(int arc, char *argv[]) {
 
-    
+    GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     B_Log::static_init();
     B_Log::set_shorter_format();
@@ -40,6 +42,8 @@ int main(int arc, char *argv[]) {
     boost::shared_ptr<FirmClientModule> uc_client_module(new VFirmClient());
     uc_client_module->run(thread_pool); // runs in a separate thread
 
+    boost::shared_ptr<ConnectionServerModule> cmd_connection_server_module(new ConnectionServer());
+    cmd_connection_server_module->run(thread_pool);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
