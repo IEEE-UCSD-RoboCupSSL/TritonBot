@@ -1,2 +1,4 @@
 build/
 .vscode/
+proto/ProtoGenerated/
+proto/proto_generated.cmake_msg/
