@@ -34,9 +34,10 @@ message Commands {
 
     bool is_world_frame = 3; // True WorldFrame | False BodyFrame for motion setpoint
 
-    Vec3D motion_set_point = 4;
+    Vec3D motion_set_point = 4; // <x, y, theta> 
+                                // theta is between -180 ~ 180 degree
 
-    Vec3D kicker_set_point = 5;
+    Vec3D kicker_set_point = 5; // <x, y>
 
     // Note: dribbler will be managed by the robot automatically
 }
@@ -46,7 +47,10 @@ message Commands {
 
 message RobotInternalData { /* Body Frame */
     Vec2D trans_vel = 1;
+
+    // this is essentially the orientation angle, if we let both the robot and the camera to reference the same axis
     Vec2D trans_disp = 2; // Displacement relative to Robot's body reference frame
+    
     double rotat_vel = 3;
     double rotat_disp = 4; // Rotational displacement would be the same as the bot angle in Vision_Data below
                            // if we initialize the robot's 0 orientation to be the same orientation of 

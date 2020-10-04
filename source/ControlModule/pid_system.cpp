@@ -110,7 +110,21 @@ void PID_System::task(ThreadPool& thread_pool) {
 
             // PID calculations : Error = SetPoint - CurrPoint = ExpectedValue - ActualValue
             if(rotat_setpoint.type == displacement) {
-                rotat_disp_out = rotat_disp_pid.calculate(rotat_setpoint.value - feedback.rotat_disp);
+                if(std::signbit(rotat_setpoint.value) == std::signbit(feedback.rotat_disp)) { // if they have the same sign, both in 0 ~ 180 or both in 0 ~ -180 
+                    rotat_disp_out = rotat_disp_pid.calculate(rotat_setpoint.value - feedback.rotat_disp);
+                }
+                else { // having opposite sign means one is in the 0 ~ 180 region and the other is in 0 ~ -180
+                    
+                    float error = rotat_setpoint.value - feedback.rotat_disp; // Expected Value - Actual Value
+                    float alt_error = error > 0 ? (error - 360) : (360 + error);
+                    // find the direction with the shortest error value
+                    if(std::fabs(error) < std::fabs(alt_error)) {
+                        rotat_disp_out = rotat_disp_pid.calculate(error);
+                    } 
+                    else {
+                        rotat_disp_out = rotat_disp_pid.calculate(alt_error);
+                    }
+                }
                 rotat_vel_pid.init(CTRL_FREQUENCY); // re-init the conjugate type, 
                                                     // init method reset the integral sum and derivative delta to 0, 
                                                     //  if these values are from long ago, best to refresh them for a new start
