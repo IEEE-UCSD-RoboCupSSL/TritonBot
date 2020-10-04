@@ -6,4 +6,5 @@ class ConnectionServer : public ConnectionServerModule {
     public:
         void task() {}
         void task(ThreadPool& thread_pool);
+
 };
