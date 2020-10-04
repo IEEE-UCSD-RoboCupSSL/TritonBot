@@ -29,6 +29,9 @@ void PID_System::init_subscribers(void) {
     dfconst.TV_Kd = PID_TV_KD;
     dfconst.TV_Ki = PID_TV_KI;
     dfconst.TV_Kp = PID_TV_KP;
+    dfconst.DIR_Kp = PID_DIR_KP;
+    dfconst.DIR_Ki = PID_DIR_KI;
+    dfconst.DIR_kd = PID_DIR_KD;
 
     pid_consts_sub.set_default_latest_msg(dfconst);
 }
@@ -70,12 +73,15 @@ void PID_System::task(ThreadPool& thread_pool) {
     PID_Controller<float> rotat_vel_pid(PID_RV_KP, PID_RV_KI, PID_RV_KD);
     PID_Controller<arma::vec> trans_disp_pid(PID_TD_KP, PID_TD_KI, PID_TD_KD);
     PID_Controller<arma::vec> trans_vel_pid(PID_TV_KP, PID_TV_KI, PID_TV_KD);
+    PID_Controller<arma::vec> direction_pid(PID_DIR_KP, PID_DIR_KI, PID_DIR_KD);
 
     float rotat_disp_out, rotat_vel_out;
     arma::vec trans_disp_out, trans_vel_out;
     arma::vec output_3d;
     Vec_2D trans_proto_out;
     PID_Constants pid_consts;
+    double direction_correction;
+    arma::vec curr_dir, exp_dir;
 
     delay(INIT_DELAY); // controller shall not start before the 
                        // garbage data are refreshed by other modules 
@@ -87,6 +93,7 @@ void PID_System::task(ThreadPool& thread_pool) {
         rotat_vel_pid.init(CTRL_FREQUENCY);
         trans_disp_pid.init(CTRL_FREQUENCY);
         trans_vel_pid.init(CTRL_FREQUENCY);
+        direction_pid.init(CTRL_FREQUENCY);
 
         while(get_enable_signal()) {
             pid_consts = pid_consts_sub.latest_msg();
@@ -94,6 +101,7 @@ void PID_System::task(ThreadPool& thread_pool) {
             rotat_vel_pid.update_pid_consts(pid_consts.RV_Kp, pid_consts.RV_Ki, pid_consts.RV_Kd);
             trans_disp_pid.update_pid_consts(pid_consts.TD_Kp, pid_consts.TD_Ki, pid_consts.RV_Kd);
             trans_vel_pid.update_pid_consts(pid_consts.TV_Kp, pid_consts.TV_Ki, pid_consts.TV_Kd);
+            direction_pid.update_pid_consts(pid_consts.DIR_Kp, pid_consts.DIR_Ki, pid_consts.DIR_kd);
 
             feedback = get_ekf_feedbacks();
 
@@ -156,17 +164,27 @@ void PID_System::task(ThreadPool& thread_pool) {
             if(trans_setpoint.type == velocity) {
                 output_3d = {trans_vel_out(0), trans_vel_out(1), 0}; // 0 is just a space holder, rotation is set few lines down below
             } 
-            else if(trans_setpoint.type == displacement) { // translational displacement controller
+            // translational displacement controller
+            else if(trans_setpoint.type == displacement) { 
                 output_3d = {trans_disp_out(0), trans_disp_out(1), 0};
             }
-
             // rotational velocity controller
             if(rotat_setpoint.type == velocity) {
                 output_3d(2) = rotat_vel_out;
             } 
-            else if(rotat_setpoint.type == displacement) { // rotational displacement controller
+            // rotational displacement controller
+            else if(rotat_setpoint.type == displacement) { 
                 output_3d(2) = rotat_disp_out;
             }
+
+            /*
+            // direction controller
+            curr_dir = arma::normalise(feedback.trans_vel);
+            exp_dir = {output_3d(0), output_3d(1)};
+            exp_dir = arma::normalise(exp_dir);
+
+            direction_pid.calculate();
+            */
 
             
             if(arma::norm(output_3d) > 100.00) {

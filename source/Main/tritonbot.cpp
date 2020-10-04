@@ -175,6 +175,7 @@ int main(int arc, char *argv[]) {
     //     pid_consts.TV_Kd = PID_TV_KD;
     //     pid_consts.TV_Ki = PID_TV_KI;
     //     pid_consts.TV_Kp = PID_TV_KP;
+    //     add dir const
         
     //     // std::cout << ">>> TD: Kp, Ki, Kd" << std::endl;
     //     // std::cin >> pid_consts.TD_Kp >> pid_consts.TD_Ki >> pid_consts.TD_Kd;

@@ -38,3 +38,9 @@ float PID_RD_KD = 0.00;
 float PID_RV_KP = 1.00;
 float PID_RV_KI = 0.00;
 float PID_RV_KD = 0.00;
+
+
+
+float PID_DIR_KP = 1.00;
+float PID_DIR_KI = 0.00; 
+float PID_DIR_KD = 0.00;

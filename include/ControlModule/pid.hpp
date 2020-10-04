@@ -142,7 +142,7 @@ public:
     void init(double frequency_Hz) {
         this->period_ms = (1.00 / frequency_Hz) * 1000.00;
         this->is_first_time = true;
-        this->is_fixed_time_interval = true;
+        this->is_fixed_time_interval = true;3
     }
 
     // Dynamic time interval mode, need to pass in a function handle to measure the curr time in millisec 

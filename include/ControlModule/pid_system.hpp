@@ -16,6 +16,7 @@ class PID_System : public ControlModule {
             double RV_Kp, RV_Ki, RV_Kd;
             double TD_Kp, TD_Ki, TD_Kd;
             double TV_Kp, TV_Ki, TV_Kd;
+            double DIR_Kp, DIR_Ki, DIR_kd;
         };
 
     private: 
