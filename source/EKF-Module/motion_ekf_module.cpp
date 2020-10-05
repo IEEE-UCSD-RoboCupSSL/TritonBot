@@ -2,9 +2,19 @@
 #include "Config/config.hpp"
 
 
-MotionEKF_Module::MotionEKF_Module() : motion_data_pub("MotionEKF", "MotionData"),
-                        firm_data_sub("FirmClient", "InternalSensorData", FIRM_DATA_MQ_SIZE) //construct with MQ Mode
-                        // ssl_data_sub("CMDListener", "GlobalSSLVisionData") // construct with trivial mode
+static MotionEKF::MotionData default_md() {
+    MotionEKF::MotionData rtn;
+    arma::vec zero_vec = {0, 0};
+    rtn.trans_disp = zero_vec;
+    rtn.trans_vel = zero_vec;
+    rtn.rotat_disp = 0.00;
+    rtn.rotat_vel = 0.00;
+    return rtn;
+} 
+
+MotionEKF_Module::MotionEKF_Module() : motion_data_pub("MotionEKF", "MotionData", default_md()),
+                        firm_data_sub("FirmClient", "InternalSensorData", FIRM_DATA_MQ_SIZE) //construct with blocking mode
+                        // ssl_data_sub("CMDListener", "GlobalSSLVisionData") // construct with nonblocking mode
 {}
 
 MotionEKF_Module::~MotionEKF_Module() {} 

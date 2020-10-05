@@ -36,27 +36,27 @@ static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger);
 static void on_socket_connected(asio::ip::tcp::socket& socket, 
                                 std::string& write_buf,
                                 asio::streambuf& read_buf, 
-                                ITPS::Publisher<VF_Data>& firm_data_pub, 
-                                ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
-                                ITPS::Subscriber<bool>& init_sensors_sub,
+                                ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
+                                ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
+                                ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
                                 B_Log& logger,  
                                 const system::error_code& error);
 
 static void on_data_received(asio::ip::tcp::socket& socket, 
                              std::string& write_buf,
                              asio::streambuf& read_buf, 
-                             ITPS::Publisher<VF_Data>& firm_data_pub, 
-                             ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
-                             ITPS::Subscriber<bool>& init_sensors_sub,
+                             ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
+                             ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
+                             ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
                              B_Log& logger,  
                              const system::error_code& error);
 
 static void on_cmd_sent(asio::ip::tcp::socket& socket, 
                         std::string& write_buf,
                         asio::streambuf& read_buf, 
-                        ITPS::Publisher<VF_Data>& firm_data_pub, 
-                        ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
-                        ITPS::Subscriber<bool>& init_sensors_sub,
+                        ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
+                        ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
+                        ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
                         B_Log& logger,  
                         const system::error_code& error);
 //====================================================================================//
@@ -80,13 +80,13 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     std::string write_buf;
 
     // publisher to publish data sent from vfirm: [vfirm socket] => [firm_data_pub] => [EKF module]
-    ITPS::Publisher<VF_Data> firm_data_pub("FirmClient", "InternalSensorData");
+    ITPS::BlockingPublisher<VF_Data> firm_data_pub("FirmClient", "InternalSensorData");
 
     // subscriber to listen to commands to be sent to vfirm:  [control module] => [firm_cmd_sub] => vfirm socket
-    ITPS::Subscriber<VF_Commands> firm_cmd_sub("FirmClient", "Commands", FIRM_CMD_MQ_SIZE); //construct with a message queue as buffer
+    ITPS::BlockingSubscriber<VF_Commands> firm_cmd_sub("FirmClient", "Commands", FIRM_CMD_MQ_SIZE); //construct with a message queue as buffer
 
     // subscriber to listen to a signal to trigger sensor re/initilization sequence 
-    ITPS::Subscriber<bool> init_sensors_sub("vfirm-client", "re/init sensors");
+    ITPS::NonBlockingSubscriber<bool> init_sensors_sub("vfirm-client", "re/init sensors");
 
     while(!firm_cmd_sub.subscribe());
     while(!init_sensors_sub.subscribe());
@@ -122,9 +122,9 @@ void VFirmClient::task(ThreadPool& thread_pool) {
 static void on_socket_connected(asio::ip::tcp::socket& socket, 
                                 std::string& write_buf,
                                 asio::streambuf& read_buf, 
-                                ITPS::Publisher<VF_Data>& firm_data_pub, 
-                                ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
-                                ITPS::Subscriber<bool>& init_sensors_sub,
+                                ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
+                                ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
+                                ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
                                 B_Log& logger,  
                                 const system::error_code& error) {
     if(error) {
@@ -155,9 +155,9 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
 static void on_data_received(asio::ip::tcp::socket& socket, 
                              std::string& write_buf,
                              asio::streambuf& read_buf, 
-                             ITPS::Publisher<VF_Data>& firm_data_pub, 
-                             ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
-                             ITPS::Subscriber<bool>& init_sensors_sub,
+                             ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
+                             ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
+                             ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
                              B_Log& logger,  
                              const system::error_code& error) {
     if(error) {
@@ -183,7 +183,7 @@ static void on_data_received(asio::ip::tcp::socket& socket,
     bool re_init = init_sensors_sub.latest_msg(); // non blocking
     if(re_init) {
         init_sensors(socket, logger);
-        init_sensors_sub.set_default_latest_msg(false);
+        init_sensors_sub.force_set_latest_msg(false);
     }
 
 
@@ -216,9 +216,9 @@ static void on_data_received(asio::ip::tcp::socket& socket,
 static void on_cmd_sent(asio::ip::tcp::socket& socket, 
                         std::string& write_buf,
                         asio::streambuf& read_buf, 
-                        ITPS::Publisher<VF_Data>& firm_data_pub, 
-                        ITPS::Subscriber<VF_Commands>& firm_cmd_sub,
-                        ITPS::Subscriber<bool>& init_sensors_sub,
+                        ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
+                        ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
+                        ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
                         B_Log& logger,  
                         const system::error_code& error) {
     if(error) {

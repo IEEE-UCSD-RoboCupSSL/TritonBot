@@ -1,6 +1,6 @@
 #pragma once
 #include <armadillo>
-#include "PubSubSystem/inter_thread_pubsub.hpp"
+#include "PubSubSystem/publisher_subscriber.hpp"
 
 
 /* coordinates variable name ending with a _w refer to world frame coordinates */

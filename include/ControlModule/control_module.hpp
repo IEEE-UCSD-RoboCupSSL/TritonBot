@@ -37,13 +37,13 @@ class ControlModule : public Module {
         void publish_output(VF_Commands& cmd);
 
     private:
-        ITPS::Subscriber<bool> enable_signal_sub;
-        ITPS::Subscriber< MotionEKF::MotionData > sensor_sub;
-        ITPS::Subscriber<bool> dribbler_signal_sub;
-        ITPS::Subscriber< arma::vec > kicker_setpoint_sub;
-        ITPS::Subscriber< SetPoint<arma::vec> > trans_setpoint_sub;
-        ITPS::Subscriber< SetPoint<float> > rotat_setpoint_sub;
-        ITPS::Publisher< VF_Commands > output_pub;     
+        ITPS::BlockingSubscriber<bool> enable_signal_sub;
+        ITPS::NonBlockingSubscriber< MotionEKF::MotionData > sensor_sub;
+        ITPS::NonBlockingSubscriber<bool> dribbler_signal_sub;
+        ITPS::NonBlockingSubscriber< arma::vec > kicker_setpoint_sub;
+        ITPS::NonBlockingSubscriber< SetPoint<arma::vec> > trans_setpoint_sub;
+        ITPS::NonBlockingSubscriber< SetPoint<float> > rotat_setpoint_sub;
+        ITPS::BlockingPublisher< VF_Commands > output_pub;     
 
 };
 

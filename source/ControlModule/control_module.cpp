@@ -1,12 +1,12 @@
 #include "ControlModule/control_module.hpp"
 #include "Config/config.hpp"
 
-ControlModule::ControlModule(void) : enable_signal_sub("AI CMD", "SafetyEnable", 1), // MQ Mode
-                                     sensor_sub("MotionEKF", "MotionData"), // Trivial Mode
-                                     dribbler_signal_sub("AI CMD", "Dribbler"), // Trivial Mode
-                                     kicker_setpoint_sub("AI CMD", "Kicker"), // Trivial Mode
-                                     trans_setpoint_sub("AI CMD", "Trans"), // Trivial Mode
-                                     rotat_setpoint_sub("AI CMD", "Rotat"), // Trivial Mode
+ControlModule::ControlModule(void) : enable_signal_sub("AI CMD", "SafetyEnable"), 
+                                     sensor_sub("MotionEKF", "MotionData"), 
+                                     dribbler_signal_sub("AI CMD", "Dribbler"), 
+                                     kicker_setpoint_sub("AI CMD", "Kicker"), 
+                                     trans_setpoint_sub("AI CMD", "Trans"), 
+                                     rotat_setpoint_sub("AI CMD", "Rotat"), 
                                      output_pub("FirmClient", "Commands")
 {}
 
@@ -17,28 +17,6 @@ void ControlModule::init_subscribers(void) {
     while(!trans_setpoint_sub.subscribe());
     while(!rotat_setpoint_sub.subscribe());
     while(!sensor_sub.subscribe());
-
-    // set default latest values when nothing is received
-    dribbler_signal_sub.set_default_latest_msg(false);
-    kicker_setpoint_sub.set_default_latest_msg({0.00, 0.00});
-    
-    CTRL::SetPoint<arma::vec> df_trans_sp; 
-    df_trans_sp.type = velocity;
-    df_trans_sp.value = {0.00, 0.00};
-    trans_setpoint_sub.set_default_latest_msg(df_trans_sp);
-
-    CTRL::SetPoint<float> df_rotat_sp;
-    df_rotat_sp.type = velocity;
-    df_rotat_sp.value = 0.00;
-    rotat_setpoint_sub.set_default_latest_msg(df_rotat_sp);
-
-    MotionEKF::MotionData dfmd;
-    dfmd.rotat_disp = 0.00;
-    dfmd.rotat_vel = 0.00;
-    dfmd.trans_disp = {0.00, 0.00};
-    dfmd.trans_vel = {0.00, 0.00};
-    sensor_sub.set_default_latest_msg(dfmd);
-
 }
 
 bool ControlModule::get_enable_signal(void) {

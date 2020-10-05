@@ -16,24 +16,6 @@ PID_System::PID_System() : ControlModule(),
 void PID_System::init_subscribers(void) {
     ControlModule::init_subscribers();
     while(!pid_consts_sub.subscribe());
-    PID_Constants dfconst;
-    dfconst.RD_Kd = PID_RD_KD;
-    dfconst.RD_Ki = PID_RD_KI;
-    dfconst.RD_Kp = PID_RD_KP; 
-    dfconst.RV_Ki = PID_RV_KI;
-    dfconst.RV_Kp = PID_RV_KP;
-    dfconst.RV_Kd = PID_RV_KD;
-    dfconst.TD_Kd = PID_TD_KD;
-    dfconst.TD_Ki = PID_TD_KI;
-    dfconst.TD_Kp = PID_TD_KP;
-    dfconst.TV_Kd = PID_TV_KD;
-    dfconst.TV_Ki = PID_TV_KI;
-    dfconst.TV_Kp = PID_TV_KP;
-    dfconst.DIR_Kp = PID_DIR_KP;
-    dfconst.DIR_Ki = PID_DIR_KI;
-    dfconst.DIR_kd = PID_DIR_KD;
-
-    pid_consts_sub.set_default_latest_msg(dfconst);
 }
 
 
@@ -101,7 +83,7 @@ void PID_System::task(ThreadPool& thread_pool) {
             rotat_vel_pid.update_pid_consts(pid_consts.RV_Kp, pid_consts.RV_Ki, pid_consts.RV_Kd);
             trans_disp_pid.update_pid_consts(pid_consts.TD_Kp, pid_consts.TD_Ki, pid_consts.RV_Kd);
             trans_vel_pid.update_pid_consts(pid_consts.TV_Kp, pid_consts.TV_Ki, pid_consts.TV_Kd);
-            direction_pid.update_pid_consts(pid_consts.DIR_Kp, pid_consts.DIR_Ki, pid_consts.DIR_kd);
+            direction_pid.update_pid_consts(pid_consts.DIR_Kp, pid_consts.DIR_Ki, pid_consts.DIR_Kd);
 
             feedback = get_ekf_feedbacks();
 

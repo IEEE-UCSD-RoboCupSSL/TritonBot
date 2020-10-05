@@ -15,7 +15,7 @@
 
 /* This implementation is not multithreaded-safe, 
  * for multithreaded-safe one, use the function pointer 
- * version of observer pattern in inter_thread_pubsub.hpp  
+ * version of observer pattern in publisher_subscriber.hpp  
  * */
 
 

@@ -32,7 +32,7 @@
 
 
 
-
+// Inter-Thread Publisher-Subscriber System
 namespace ITPS {
 
 
@@ -45,18 +45,7 @@ namespace ITPS {
      *      Each subscriber gets its own MQ. When MQ is full, the publisher thread is suspended until
      *      the queue is consumed(pop) by a subscriber to give room for new msgs. Check cp_queue.hpp 
      *      for implementation details of the consumer-producer queue.
-     *  * Observer Mode: 
-     *      Everytime a publisher sends a new message to its subscribers, the publisher invokes the callback
-     *      functions of the subcribers. Note that this way both the publisher & its subscribers run on the same
-     *      thread, unlike the other 2 modes. (of course there will be multiple threads when having multiple publishers)
-     *      (usually observer pattern in java is implemented through class inheritance, but complication arises when
-     *       dealing with multithreading, so here we use function pointer & callback to implement the features of a observer pattern)
      *      
-     * 
-     *      The publisher-subcriber pattern and the observer pattern are not the same, but highly related. Here we treat the 
-     *      observer pattern as a special case of the general pub-sub pattern. One big distinction between the 2 pattern is 
-     *      that pub-sub is anonymous, i.e. pub doesn't know which subs subcribed it, and vice versa, where in observer pattern
-     *      everything is transparent. Here small tricks are used to make observer pattern implementation "anonymous".
      */
 
     /*
@@ -66,15 +55,16 @@ namespace ITPS {
      * 
      *  * One important distinction between Trivial Mode and MQ Mode:
      *      * Trivial mode's subcriber's getter function "Msg latest_msg(void)" 
-     *        is non-blocking, and might get garbage value when publisher hasn't published anything
+     *        is non-blocking, and might get garbage value when publisher hasn'Msg published anything
      *      * MQ mode's getter function "Msg pop_msg(void)" is conditionally blocking, when
      *        the queue is empty, getter's thread gets blocked until something is published into the queue.
      *        Similarly, when the queue is full, the publisher is blocked instead. 
      */
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /* This class serves as a bridge between the Publisher class and the Subcribe class*/ 
-    template<class Msg>
+    template<typename Msg>
     class MsgChannel {
         protected:
 
@@ -87,7 +77,7 @@ namespace ITPS {
                 this->key = topic_name + "." + msg_name;
                 // std::cout << key << std::endl;
                 
-                // if key doesn't exist
+                // if key doesn'Msg exist
                 if(msg_table.find(key) == msg_table.end()) {
                     msg_table[key] = this;
                 }
@@ -97,7 +87,7 @@ namespace ITPS {
                 ITPS_reader_lock(table_mutex);
                 std::string key = topic_name + "." + msg_name;
                 
-                // if key doesn't exist
+                // if key doesn'Msg exist
                 if(msg_table.find(key) == msg_table.end()) {
                     return nullptr;
                 }
@@ -109,49 +99,43 @@ namespace ITPS {
                 msg_queues.push_back(queue);
             }
 
+
+            /* deprecated, no longer integrate observer pattern into this implementation
             void add_slot(boost::function<void(Msg)> callback_function) {
                 callback_funcs.push_back(callback_function);
-            }
-            
-            // for all 3 Modes 
+            }*/
+
+            // Non-blocking Mode
             void set_msg(Msg msg) {
                 ITPS_writer_lock(msg_mutex);
-                this->message = msg; // Trivial Mode
-                
-
-                // MQ Mode
-                /* enqueue MQ */
-                for(auto& queue: msg_queues) {
-                    queue->produce(msg);
-                }
-
-                // Observer
-                /* invoke observer's callback functions */
-                for(auto& func: callback_funcs) {
-                    func(msg);
-                }
-
+                message = msg;
             }
 
-            // MQ Mode Only
-            void set_msg(Msg msg, unsigned int timeout_ms) {
-                ITPS_writer_lock(msg_mutex);
-                /* timed enqueue MQ */
-                for(auto& queue: msg_queues) {
-                    queue->produce(msg, timeout_ms); // if timed out, it won't block
-                }
-            }
-
-            // Trivial Mode Only
-            void reset_msg(Msg msg) {
-                ITPS_writer_lock(msg_mutex);
-                this->message = msg; // Trivial Mode
-            }
-
+            // Non-blocking Mode
             Msg get_msg() { 
                 ITPS_reader_lock(msg_mutex);
                 return this->message;
             }
+            
+            // Blocking Mode
+            void enqueue_msg(Msg msg) {
+                ITPS_writer_lock(msg_mutex);
+                
+                /* enqueue MQ */
+                for(auto& queue: msg_queues) {
+                    queue->produce(msg); // it will block the publisher's thread if the queue is full
+                }
+            }
+
+            // Blocking Mode
+            void enqueue_msg(Msg msg, unsigned int timeout_ms) {
+                ITPS_writer_lock(msg_mutex);
+                /* timed enqueue MQ */
+                for(auto& queue: msg_queues) {
+                    queue->produce(msg, timeout_ms); // if timed out, it won'Msg block
+                }
+            }
+
 
         protected:
             Msg message;
@@ -165,38 +149,67 @@ namespace ITPS {
             std::vector< boost::shared_ptr<ConsumerProducerQueue<Msg>> > msg_queues;
             std::vector< boost::function<void(Msg)> > callback_funcs;
     };
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
 
 
-    template <class Msg>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    template <typename Msg>
     class Publisher {
         public:
-
             Publisher(std::string topic_name, std::string msg_name) {
                 channel = boost::shared_ptr<ITPS::MsgChannel<Msg>>(new ITPS::MsgChannel<Msg>(topic_name, msg_name));
             }
-
             Publisher(std::string msg_name) : Publisher(Default_Topic, msg_name) {}
-
-
             ~Publisher() {}
 
-            void publish(Msg message) {
-                channel->set_msg(message);
-            }
-
-            void publish(Msg message, unsigned int timeout_ms) {
-                channel->set_msg(message, timeout_ms);
-            }
+            virtual void publish(Msg message) = 0;
 
         protected:
             boost::shared_ptr<ITPS::MsgChannel<Msg>> channel;
-            
     };
 
-    template <class Msg>
+    template <typename Msg>
+    class NonBlockingPublisher : public Publisher<Msg> {
+        public:
+
+            NonBlockingPublisher(std::string topic_name, std::string msg_name, Msg default_msg) 
+                : Publisher<Msg>(topic_name, msg_name) {
+                this->channel->set_msg(default_msg); // this avoids dealing with nullpointer exception 
+                                               // if the msg type is not primitive when subscriber 
+                                               // pull latest msg before publisher ever published anything
+            }
+            void publish(Msg message) {
+                this->channel->set_msg(message);
+            }    
+
+    };
+
+
+    template <typename Msg>
+    class BlockingPublisher : public Publisher<Msg> {
+        public:
+            BlockingPublisher(std::string topic_name, std::string msg_name) 
+                : Publisher<Msg>(topic_name, msg_name) {}
+
+            void publish(Msg message) {
+                this->channel->enqueue_msg(message);
+            }
+
+            void publish(Msg message, unsigned int timeout_ms) {
+                this->channel->enqueue_msg(message, timeout_ms);
+            }    
+    };
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    template <typename Msg>
     class Subscriber {
         public:
 
@@ -205,21 +218,22 @@ namespace ITPS {
                 this->msg_name = msg_name;
             }
             Subscriber(std::string msg_name) : Subscriber(Default_Topic, msg_name){}
-
-            //with message queue
-            Subscriber(std::string topic_name, std::string msg_name, unsigned int queue_size) 
-                : Subscriber(topic_name, msg_name) {
-                msg_queue = boost::shared_ptr<ConsumerProducerQueue<Msg>>(
-                    new ConsumerProducerQueue<Msg>(queue_size) 
-                );
-                use_msg_queue = true;
-            } 
-            Subscriber(std::string msg_name, unsigned int queue_size) : Subscriber(Default_Topic, msg_name, queue_size){}
-            
             ~Subscriber() {}
 
+            virtual bool subscribe() = 0;
+
+        protected:
+            MsgChannel<Msg> *channel = nullptr;
+            std::string topic_name, msg_name;
+    };
 
 
+
+    template <typename Msg>
+    class NonBlockingSubscriber : public Subscriber<Msg> {
+        public:
+            NonBlockingSubscriber(std::string topic_name, std::string msg_name) 
+                : Subscriber<Msg>(topic_name, msg_name) {}
 
             /* return true if finding a msg channel with matching key string.
              * key = "topic_name.msg_name".
@@ -228,25 +242,62 @@ namespace ITPS {
              * The MsgChannel object is stored in a internally global hash-map
              */
             bool subscribe() {
-                channel = MsgChannel<Msg>::get_channel(topic_name, msg_name);
-                if(channel == nullptr) {
+                this->channel = MsgChannel<Msg>::get_channel(this->topic_name, this->msg_name);
+                if(this->channel == nullptr) {
                     return false;
-                }
-                if(use_msg_queue) {
-                    channel->add_msg_queue(msg_queue);
                 }
                 return true;
             }
 
-            // For Trivial Mode only
+            // Non-blocking Mode getter method
             Msg latest_msg() {
                 // non-blocking
-                return channel->get_msg();
+                return this->channel->get_msg();
             }   
 
-            // For Trivial Mode only
-            void set_default_latest_msg(Msg msg) {
-                channel->reset_msg(msg);
+            // method reserved for special use case only
+            void force_set_latest_msg(Msg msg) {
+                this->channel->set_msg(msg);
+            }
+
+    };
+
+
+
+    template <typename Msg>
+    class BlockingSubscriber : public Subscriber<Msg> {
+        public:
+            //with message queue of size 1
+            BlockingSubscriber(std::string topic_name, std::string msg_name) 
+                : Subscriber<Msg>(topic_name, msg_name) {
+                msg_queue = boost::shared_ptr<ConsumerProducerQueue<Msg>>(
+                    new ConsumerProducerQueue<Msg>(1) 
+                );
+            } 
+            BlockingSubscriber(std::string msg_name) : BlockingSubscriber(Default_Topic, msg_name, 1){}
+
+            //with message queue of size queue_size
+            BlockingSubscriber(std::string topic_name, std::string msg_name, unsigned int queue_size) 
+                : Subscriber<Msg>(topic_name, msg_name) {
+                msg_queue = boost::shared_ptr<ConsumerProducerQueue<Msg>>(
+                    new ConsumerProducerQueue<Msg>(queue_size) 
+                );
+            } 
+            BlockingSubscriber(std::string msg_name, unsigned int queue_size) : BlockingSubscriber(Default_Topic, msg_name, queue_size){}
+
+            /* return true if finding a msg channel with matching key string.
+             * key = "topic_name.msg_name".
+             * the msg channel is created during the constructing phase
+             * of the corresponding publisher with the same key string.
+             * The MsgChannel object is stored in a internally global hash-map
+             */
+            bool subscribe() {
+                this->channel = MsgChannel<Msg>::get_channel(this->topic_name, this->msg_name);
+                if(this->channel == nullptr) {
+                    return false;
+                }
+                this->channel->add_msg_queue(msg_queue);
+                return true;
             }
 
             // For Message Queue Mode only
@@ -260,38 +311,18 @@ namespace ITPS {
                 return msg_queue->consume(timeout_ms, dft_rtn);
             }
 
-            /* For Observer Mode: function pointer version.
-             *
-             * Add callback function to be invoked whenever 
-             * a new Msg is published to the msg channel. The 
-             * callback function should be of the format 
-             *  void func_name(Msg msg);
-             * where the msg param is the published message to be 
-             * handled in the callback.
-             * 
-             * must call subcribe() and get a return of true, before calling this function
-             */
-            bool add_on_published_callback(boost::function<void(Msg)> callback_function) {
-                if(channel == nullptr) return false;
-                channel->add_slot(callback_function);    
-                return true;            
-            }    
-
-
         protected:
-            MsgChannel<Msg> *channel = nullptr;
             boost::shared_ptr<ConsumerProducerQueue<Msg>> msg_queue;
-            std::string topic_name, msg_name;
-            bool use_msg_queue = false;
     };
 
-
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 // hash table storing messages with topic_name+msg_name as key
-template <class Msg>
+template <typename Msg>
 std::unordered_map<std::string, ITPS::MsgChannel<Msg>*> ITPS::MsgChannel<Msg>::msg_table;
 
-template <class Msg>
+template <typename Msg>
 boost::shared_mutex ITPS::MsgChannel<Msg>::table_mutex;

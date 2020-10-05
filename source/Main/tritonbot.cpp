@@ -32,91 +32,14 @@ int main(int arc, char *argv[]) {
     B_Log logger;
 
     ThreadPool thread_pool(THREAD_POOL_SIZE); // pre-allocate 10 threads in a pool
-    ITPS::Publisher<bool> init_sensor_pub("vfirm-client", "re/init sensors");
-    // ITPS::Publisher<VF_Commands> dummy_for_testing_only("FirmClient", "Commands");
+    ITPS::NonBlockingPublisher<bool> init_sensor_pub("vfirm-client", "re/init sensors", false);
+   
 
 
 
     boost::shared_ptr<FirmClientModule> uc_client_module(new VFirmClient());
     uc_client_module->run(thread_pool); // runs in a separate thread
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    // /* vfirm client module unit test */
-    // // -----------------------------------------
-    // delay(500); //wait 500ms for vfirm_client_module to be ready
-    // init_sensor_pub.publish(true); // signal the vfirm client to send init packet
-    //
-    // ITPS::Subscriber<VF_Data> vfirm_client_data_sub("FirmClient", "InternalSensorData", 100);
-    // while(!vfirm_client_data_sub.subscribe());
-    // VF_Data curr_data;
-    
-    // while(1)
-    // {
-    //     curr_data = vfirm_client_data_sub.pop_msg();
-    
-    //     logger.log( Info, "Trans_Dis: " + repr(curr_data.translational_displacement().x()) + ' ' + repr(curr_data.translational_displacement().y()));
-    //     logger.log( Info, "Trans_Vel:" + repr(curr_data.translational_velocity().x()) + ' ' + repr(curr_data.translational_velocity().y()));
-    //     logger.log( Info, "Rot_Dis:" + repr(curr_data.rotational_displacement()));
-    //     logger.log( Info, "Rot_Vel:" + repr(curr_data.rotational_velocity()) + "\n :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) ");
-    // }
-    // // -----------------------------------------
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    // /* pseudo EKF module unit test */
-    // // -----------------------------------------    
-    // boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
-    // ekf_module->run(thread_pool);
-
-
-    // boost::thread sub1_thrd([]() {
-    //     B_Log logger;
-    //     logger.add_tag("SUBSCRIBER 1");
-    //     ITPS::Subscriber<MotionEKF::MotionData> motion_data_sub("MotionEKF", "MotionData", 100);
-    //     while(!motion_data_sub.subscribe());
-    //     MotionEKF::MotionData motion_data;
-        
-    //     while(1) {
-    //         std::ostringstream debug_out_stream;
-    //         motion_data = motion_data_sub.pop_msg();
-           
-    //         debug_out_stream << motion_data.trans_disp << " " 
-    //                          << motion_data.trans_vel << " "
-    //                          << motion_data.rotat_disp << " "
-    //                          << motion_data.rotat_vel;
-    //         logger.log(Info, debug_out_stream.str());
-
-    //     }
-    // });
-
-    // boost::thread sub2_thrd([]() {
-    //     B_Log logger;
-    //     logger.add_tag("SUBSCRIBER 2");
-    //     ITPS::Subscriber<MotionEKF::MotionData> motion_data_sub("MotionEKF", "MotionData", 100);
-    //     while(!motion_data_sub.subscribe());
-    //     MotionEKF::MotionData motion_data;
-        
-    //     while(1) {
-    //         std::ostringstream debug_out_stream;
-    //         motion_data = motion_data_sub.pop_msg();
-           
-    //         debug_out_stream << motion_data.trans_disp << " " 
-    //                          << motion_data.trans_vel << " "
-    //                          << motion_data.rotat_disp << " "
-    //                          << motion_data.rotat_vel;
-    //         logger.log(Info, debug_out_stream.str());
-
-    //     }
-    // });
-
-    // sub1_thrd.join();
-    // sub2_thrd.join();
-
-    // // -----------------------------------------
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -217,27 +140,43 @@ int main(int arc, char *argv[]) {
     boost::shared_ptr<MotionModule> motion_module(new MotionModule());
     motion_module->run(thread_pool);
 
-    ITPS::Publisher<bool> dribbler_pub("AI CMD", "Dribbler");
+    ITPS::NonBlockingPublisher<bool> dribbler_pub("AI CMD", "Dribbler", false);
     dribbler_pub.publish(false);
-    ITPS::Publisher<arma::vec> kicker_pub("AI CMD", "Kicker");
     arma::vec zero_vec = {0, 0};
+    ITPS::NonBlockingPublisher<arma::vec> kicker_pub("AI CMD", "Kicker", zero_vec);
     kicker_pub.publish(zero_vec);
 
-    ITPS::Publisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants");
+
+    PID_System::PID_Constants default_pid_consts;
+    default_pid_consts.DIR_Kp = PID_DIR_KP; default_pid_consts.DIR_Ki = PID_DIR_KI; default_pid_consts.DIR_Kd = PID_DIR_KD;
+    default_pid_consts.RD_Kp = PID_RD_KP;   default_pid_consts.RD_Ki = PID_RD_KI;   default_pid_consts.RD_Kd = PID_RD_KD;
+    default_pid_consts.RV_Kp = PID_RV_KP;   default_pid_consts.RV_Ki = PID_RV_KI;   default_pid_consts.RV_Kd = PID_RV_KD;
+    default_pid_consts.TD_Kp = PID_TD_KP;   default_pid_consts.TD_Ki = PID_TD_KI;   default_pid_consts.TD_Kd = PID_TD_KD;
+    default_pid_consts.TV_Kp = PID_TV_KP;   default_pid_consts.TV_Ki = PID_TV_KI;   default_pid_consts.TV_Kd = PID_TV_KD;
+    
+    ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", default_pid_consts);
 
     delay(500); //wait 500ms for vfirm_client_module to be ready
     init_sensor_pub.publish(true); // signal the vfirm client to send init packet
 
     boost::thread([]{
-        ITPS::Publisher<bool> enable_signal_pub("AI CMD", "SafetyEnable"); // MQ Mode
+        ITPS::BlockingPublisher<bool> enable_signal_pub("AI CMD", "SafetyEnable"); // MQ Mode
         while(1) {
             enable_signal_pub.publish(true);
         }
     });
 
     boost::thread([&]{
-        ITPS::Publisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)"); 
-        ITPS::Publisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD");
+        arma::vec zero_vec = {0, 0};
+        ITPS::NonBlockingPublisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)", zero_vec); 
+
+        Motion::MotionCMD default_cmd;
+        default_cmd.setpoint_3d = {0, 0, 0};
+        default_cmd.mode = Motion::CTRL_Mode::TVRV;
+        default_cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
+        ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD", default_cmd);
+        
+        
         delay(1200); // wait for everything is started
         arma::vec origin = {0, 0};
         std::cout << "Enter robot origin <x, y>" << std::endl;
@@ -284,3 +223,84 @@ std::ostream& operator<<(std::ostream& os, const arma::vec& v)
     os << ">";
     return os;
 }
+
+
+// Ignore this part, just a backup
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     // ITPS::Publisher<VF_Commands> dummy_for_testing_only("FirmClient", "Commands");
+    // /* vfirm client module unit test */
+    // // -----------------------------------------
+    // delay(500); //wait 500ms for vfirm_client_module to be ready
+    // init_sensor_pub.publish(true); // signal the vfirm client to send init packet
+    //
+    // ITPS::Subscriber<VF_Data> vfirm_client_data_sub("FirmClient", "InternalSensorData", 100);
+    // while(!vfirm_client_data_sub.subscribe());
+    // VF_Data curr_data;
+    
+    // while(1)
+    // {
+    //     curr_data = vfirm_client_data_sub.pop_msg();
+    
+    //     logger.log( Info, "Trans_Dis: " + repr(curr_data.translational_displacement().x()) + ' ' + repr(curr_data.translational_displacement().y()));
+    //     logger.log( Info, "Trans_Vel:" + repr(curr_data.translational_velocity().x()) + ' ' + repr(curr_data.translational_velocity().y()));
+    //     logger.log( Info, "Rot_Dis:" + repr(curr_data.rotational_displacement()));
+    //     logger.log( Info, "Rot_Vel:" + repr(curr_data.rotational_velocity()) + "\n :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) ");
+    // }
+    // // -----------------------------------------
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    // /* pseudo EKF module unit test */
+    // // -----------------------------------------    
+    // boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
+    // ekf_module->run(thread_pool);
+
+
+    // boost::thread sub1_thrd([]() {
+    //     B_Log logger;
+    //     logger.add_tag("SUBSCRIBER 1");
+    //     ITPS::Subscriber<MotionEKF::MotionData> motion_data_sub("MotionEKF", "MotionData", 100);
+    //     while(!motion_data_sub.subscribe());
+    //     MotionEKF::MotionData motion_data;
+        
+    //     while(1) {
+    //         std::ostringstream debug_out_stream;
+    //         motion_data = motion_data_sub.pop_msg();
+           
+    //         debug_out_stream << motion_data.trans_disp << " " 
+    //                          << motion_data.trans_vel << " "
+    //                          << motion_data.rotat_disp << " "
+    //                          << motion_data.rotat_vel;
+    //         logger.log(Info, debug_out_stream.str());
+
+    //     }
+    // });
+
+    // boost::thread sub2_thrd([]() {
+    //     B_Log logger;
+    //     logger.add_tag("SUBSCRIBER 2");
+    //     ITPS::Subscriber<MotionEKF::MotionData> motion_data_sub("MotionEKF", "MotionData", 100);
+    //     while(!motion_data_sub.subscribe());
+    //     MotionEKF::MotionData motion_data;
+        
+    //     while(1) {
+    //         std::ostringstream debug_out_stream;
+    //         motion_data = motion_data_sub.pop_msg();
+           
+    //         debug_out_stream << motion_data.trans_disp << " " 
+    //                          << motion_data.trans_vel << " "
+    //                          << motion_data.rotat_disp << " "
+    //                          << motion_data.rotat_vel;
+    //         logger.log(Info, debug_out_stream.str());
+
+    //     }
+    // });
+
+    // sub1_thrd.join();
+    // sub2_thrd.join();
+
+    // // -----------------------------------------
+
+//

@@ -3,11 +3,27 @@
 #include "Utility/common.hpp"
 #include "Utility/systime.hpp"
 
-MotionModule::MotionModule() : trans_setpoint_pub("AI CMD", "Trans"), 
-                               rotat_setpoint_pub("AI CMD", "Rotat"),
-                               sensor_sub("MotionEKF", "MotionData"), // Trivial Mode
-                               robot_origin_w_sub("ConnectionInit", "RobotOrigin(WorldFrame)"), // Trivial Mode
-                               command_sub("CMD Server", "MotionCMD") // Trivial Mode because this module needs to keep the loop running 
+
+static CTRL::SetPoint<arma::vec> default_trans_sp() {
+    CTRL::SetPoint<arma::vec> rtn;
+    arma::vec zero_vec = {0, 0};
+    rtn.value = zero_vec;
+    rtn.type = CTRL::SetPointType::velocity;
+    return rtn;
+}
+
+static CTRL::SetPoint<float> default_rot_sp() {
+    CTRL::SetPoint<float> rtn;
+    rtn.value = 0;
+    rtn.type = CTRL::SetPointType::velocity;
+    return rtn;
+}
+
+MotionModule::MotionModule() : trans_setpoint_pub("AI CMD", "Trans", default_trans_sp()), 
+                               rotat_setpoint_pub("AI CMD", "Rotat", default_rot_sp()),
+                               sensor_sub("MotionEKF", "MotionData"), // NonBlocking Mode
+                               robot_origin_w_sub("ConnectionInit", "RobotOrigin(WorldFrame)"), // NonBlocking Mode
+                               command_sub("CMD Server", "MotionCMD") // NonBlocking Mode because this module needs to keep the loop running 
                                                                       // non-blocking to calculate transformation matrix that changes along
                                                                       // the orientation of a moving robot
 {}
@@ -18,21 +34,6 @@ void MotionModule::init_subscribers(void) {
     while(!sensor_sub.subscribe());
     while(!robot_origin_w_sub.subscribe());
     while(!command_sub.subscribe());
-    MotionEKF::MotionData dfmd;
-    dfmd.rotat_disp = 0.00;
-    dfmd.rotat_vel = 0.00;
-    dfmd.trans_disp = {0.00, 0.00};
-    dfmd.trans_vel = {0.00, 0.00};
-    sensor_sub.set_default_latest_msg(dfmd);
-
-    arma::vec zero_vec = {0, 0};
-    robot_origin_w_sub.set_default_latest_msg(zero_vec);
-
-    Motion::MotionCMD dft_cmd;
-    dft_cmd.mode = Motion::CTRL_Mode::TVRV; // velocity all zeros means not to move
-    dft_cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
-    dft_cmd.setpoint_3d = {0, 0, 0};
-    command_sub.set_default_latest_msg(dft_cmd);
 }
 
 

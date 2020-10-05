@@ -2,7 +2,7 @@
 #pragma once
  
 #include <iostream>
-#include "PubSubSystem/inter_thread_pubsub.hpp"
+#include "PubSubSystem/publisher_subscriber.hpp"
 #include "PubSubSystem/oop_observer.hpp"
 #include "PubSubSystem/thread_pool.hpp"
 
