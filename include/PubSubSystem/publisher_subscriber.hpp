@@ -13,7 +13,7 @@
 #include <boost/bind.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/signals2.hpp>
-
+#include <exception>
 #include "PubSubSystem/cp_queue.hpp"
 
 
@@ -26,7 +26,6 @@
 // get shared access
 #define ITPS_reader_lock(mutex) boost::shared_lock<boost::shared_mutex>  __reader_lock(mutex); 
 
-#define Default_Topic "DefaultTopic"
 
 
 
@@ -37,18 +36,15 @@ namespace ITPS {
 
 
     /*
-     * 3 Modes
-     *  * Trivial Mode: msg channel only use 1 field to store the msg, every time a new msg
+     * 
+     *  * (NonBlocking Mode)Trivial Mode: msg channel only use 1 field to store the msg, every time a new msg
      *      is sent from the publisher, the field gets overwritten, hence only the latest msg
      *      is saved.
-     *  * Message Queue Mode: use a MQ to store a series of msgs, MQ is instantiated by subscriber
+     *  * (Blocking Mode)Message Queue Mode: use a MQ to store a series of msgs, MQ is instantiated by subscriber
      *      Each subscriber gets its own MQ. When MQ is full, the publisher thread is suspended until
      *      the queue is consumed(pop) by a subscriber to give room for new msgs. Check cp_queue.hpp 
      *      for implementation details of the consumer-producer queue.
      *      
-     */
-
-    /*
      *  * MsgChannel utilizes a HashTable to manage messgaes
      *  * publisher instantiates a MsgChannel
      *  * subscriber contains constructors to instantiate a message queue
@@ -72,9 +68,9 @@ namespace ITPS {
             typedef std::unordered_map<std::string, MsgChannel<Msg>*> msg_table_t;
         public:
 
-            MsgChannel(std::string topic_name, std::string msg_name) {
+            MsgChannel(std::string topic_name, std::string msg_name, std::string mode) {
                 ITPS_writer_lock(table_mutex);
-                this->key = topic_name + "." + msg_name;
+                this->key = topic_name + "." + msg_name + "." + mode;
                 // std::cout << key << std::endl;
                 
                 // if key doesn'Msg exist
@@ -83,9 +79,9 @@ namespace ITPS {
                 }
             }
 
-            static MsgChannel *get_channel(std::string topic_name, std::string msg_name) {
+            static MsgChannel *get_channel(std::string topic_name, std::string msg_name, std::string mode) {
                 ITPS_reader_lock(table_mutex);
-                std::string key = topic_name + "." + msg_name;
+                std::string key = topic_name + "." + msg_name + "." + mode;
                 
                 // if key doesn'Msg exist
                 if(msg_table.find(key) == msg_table.end()) {
@@ -159,10 +155,9 @@ namespace ITPS {
     template <typename Msg>
     class Publisher {
         public:
-            Publisher(std::string topic_name, std::string msg_name) {
-                channel = boost::shared_ptr<ITPS::MsgChannel<Msg>>(new ITPS::MsgChannel<Msg>(topic_name, msg_name));
+            Publisher(std::string topic_name, std::string msg_name, std::string mode) {
+                channel = boost::shared_ptr<ITPS::MsgChannel<Msg>>(new ITPS::MsgChannel<Msg>(topic_name, msg_name, mode));
             }
-            Publisher(std::string msg_name) : Publisher(Default_Topic, msg_name) {}
             ~Publisher() {}
 
             virtual void publish(Msg message) = 0;
@@ -176,7 +171,7 @@ namespace ITPS {
         public:
 
             NonBlockingPublisher(std::string topic_name, std::string msg_name, Msg default_msg) 
-                : Publisher<Msg>(topic_name, msg_name) {
+                : Publisher<Msg>(topic_name, msg_name, "NB") {
                 this->channel->set_msg(default_msg); // this avoids dealing with nullpointer exception 
                                                // if the msg type is not primitive when subscriber 
                                                // pull latest msg before publisher ever published anything
@@ -192,7 +187,7 @@ namespace ITPS {
     class BlockingPublisher : public Publisher<Msg> {
         public:
             BlockingPublisher(std::string topic_name, std::string msg_name) 
-                : Publisher<Msg>(topic_name, msg_name) {}
+                : Publisher<Msg>(topic_name, msg_name, "B") {}
 
             void publish(Msg message) {
                 this->channel->enqueue_msg(message);
@@ -213,18 +208,51 @@ namespace ITPS {
     class Subscriber {
         public:
 
-            Subscriber(std::string topic_name, std::string msg_name) {
+            Subscriber(std::string topic_name, std::string msg_name, std::string mode) {
                 this->topic_name = topic_name;
                 this->msg_name = msg_name;
+                this->mode = mode;
             }
-            Subscriber(std::string msg_name) : Subscriber(Default_Topic, msg_name){}
             ~Subscriber() {}
 
-            virtual bool subscribe() = 0;
+            /* wait until a matching publisher is found
+             * key = "topic_name.msg_name.mode".
+             * the msg channel is created during the constructing phase
+             * of the corresponding publisher with the same key string.
+             * The MsgChannel object is stored in a internally global hash-map
+             */
+            virtual void subscribe() {
+                do {
+                    this->channel = MsgChannel<Msg>::get_channel(this->topic_name, this->msg_name, this->mode);
+                } while(this->channel == nullptr);
+            }
+
+            /* return true if finding a msg channel with matching key string.
+             * return false if timeout
+             * key = "topic_name.msg_name.mode".
+             * the msg channel is created during the constructing phase
+             * of the corresponding publisher with the same key string.
+             * The MsgChannel object is stored in a internally global hash-map
+             */
+            virtual void subscribe(unsigned int timeout_ms) {
+                unsigned int t0 = millis();
+                do {
+                    if(millis() - t0 >= timeout_ms) {
+                        throw std::runtime_error("Subscribe() TimeOut Exception, Cannot find a matching Publisher");
+                    }
+                    this->channel = MsgChannel<Msg>::get_channel(this->topic_name, this->msg_name, this->mode);
+                } while(this->channel == nullptr);
+            }
 
         protected:
             MsgChannel<Msg> *channel = nullptr;
-            std::string topic_name, msg_name;
+            std::string topic_name, msg_name, mode;
+
+        private:
+            static unsigned int millis(void) {
+                auto t = boost::chrono::high_resolution_clock::now();
+                return (unsigned int)(double(t.time_since_epoch().count()) / 1000000.00f);
+            }
     };
 
 
@@ -233,20 +261,21 @@ namespace ITPS {
     class NonBlockingSubscriber : public Subscriber<Msg> {
         public:
             NonBlockingSubscriber(std::string topic_name, std::string msg_name) 
-                : Subscriber<Msg>(topic_name, msg_name) {}
+                : Subscriber<Msg>(topic_name, msg_name, "NB") {}
 
-            /* return true if finding a msg channel with matching key string.
-             * key = "topic_name.msg_name".
-             * the msg channel is created during the constructing phase
-             * of the corresponding publisher with the same key string.
-             * The MsgChannel object is stored in a internally global hash-map
-             */
-            bool subscribe() {
-                this->channel = MsgChannel<Msg>::get_channel(this->topic_name, this->msg_name);
-                if(this->channel == nullptr) {
-                    return false;
+
+            void subscribe() {
+                Subscriber<Msg>::subscribe();
+            }
+
+
+            void subscribe(unsigned int timeout_ms) {
+                try { 
+                    Subscriber<Msg>::subscribe(timeout_ms);
                 }
-                return true;
+                catch(std::exception& e) {
+                    throw std::runtime_error(e.what());
+                }
             }
 
             // Non-blocking Mode getter method
@@ -269,35 +298,33 @@ namespace ITPS {
         public:
             //with message queue of size 1
             BlockingSubscriber(std::string topic_name, std::string msg_name) 
-                : Subscriber<Msg>(topic_name, msg_name) {
+                : Subscriber<Msg>(topic_name, msg_name, "B") {
                 msg_queue = boost::shared_ptr<ConsumerProducerQueue<Msg>>(
                     new ConsumerProducerQueue<Msg>(1) 
                 );
             } 
-            BlockingSubscriber(std::string msg_name) : BlockingSubscriber(Default_Topic, msg_name, 1){}
-
+    
             //with message queue of size queue_size
             BlockingSubscriber(std::string topic_name, std::string msg_name, unsigned int queue_size) 
-                : Subscriber<Msg>(topic_name, msg_name) {
+                : Subscriber<Msg>(topic_name, msg_name, "B") {
                 msg_queue = boost::shared_ptr<ConsumerProducerQueue<Msg>>(
                     new ConsumerProducerQueue<Msg>(queue_size) 
                 );
             } 
-            BlockingSubscriber(std::string msg_name, unsigned int queue_size) : BlockingSubscriber(Default_Topic, msg_name, queue_size){}
 
-            /* return true if finding a msg channel with matching key string.
-             * key = "topic_name.msg_name".
-             * the msg channel is created during the constructing phase
-             * of the corresponding publisher with the same key string.
-             * The MsgChannel object is stored in a internally global hash-map
-             */
-            bool subscribe() {
-                this->channel = MsgChannel<Msg>::get_channel(this->topic_name, this->msg_name);
-                if(this->channel == nullptr) {
-                    return false;
-                }
+            void subscribe() {
+                Subscriber<Msg>::subscribe();
                 this->channel->add_msg_queue(msg_queue);
-                return true;
+            }    
+
+            void subscribe(unsigned int timeout_ms) {
+                try {
+                    Subscriber<Msg>::subscribe(timeout_ms);
+                }
+                catch(std::exception& e){
+                    throw std::runtime_error(e.what());   
+                } 
+                this->channel->add_msg_queue(msg_queue);
             }
 
             // For Message Queue Mode only

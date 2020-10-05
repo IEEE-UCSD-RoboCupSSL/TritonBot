@@ -1,6 +1,6 @@
 #include "EKF-Module/motion_ekf_module.hpp"
 #include "Config/config.hpp"
-
+#include "Utility/boost_logger.hpp"
 
 static MotionEKF::MotionData default_md() {
     MotionEKF::MotionData rtn;
@@ -21,9 +21,15 @@ MotionEKF_Module::~MotionEKF_Module() {}
 
 
 void MotionEKF_Module::init_subscribers() {
-    while(!firm_data_sub.subscribe());
-
-    // while(!sslvison....)
+    try {
+        firm_data_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        // sslvison....
+    }
+    catch(std::exception& e) {
+        B_Log logger;
+        logger.log(Error, e.what());
+        while(1);
+    }
 
 }
 

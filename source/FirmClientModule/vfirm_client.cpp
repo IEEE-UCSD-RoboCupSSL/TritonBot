@@ -88,8 +88,16 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     // subscriber to listen to a signal to trigger sensor re/initilization sequence 
     ITPS::NonBlockingSubscriber<bool> init_sensors_sub("vfirm-client", "re/init sensors");
 
-    while(!firm_cmd_sub.subscribe());
-    while(!init_sensors_sub.subscribe());
+    try {
+        firm_cmd_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        init_sensors_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+    }
+    catch(std::exception& e) {
+        B_Log logger;
+        logger.log(Error, e.what());
+        while(1);
+    }
+
     logger(Info) << "\033[0;32m Initialized \033[0m";
 
     try {

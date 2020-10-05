@@ -2,6 +2,7 @@
 #include "Config/config.hpp"
 #include "Utility/common.hpp"
 #include "Utility/systime.hpp"
+#include "Utility/boost_logger.hpp"
 
 
 static CTRL::SetPoint<arma::vec> default_trans_sp() {
@@ -31,9 +32,17 @@ MotionModule::MotionModule() : trans_setpoint_pub("AI CMD", "Trans", default_tra
 MotionModule::~MotionModule() {}
 
 void MotionModule::init_subscribers(void) {
-    while(!sensor_sub.subscribe());
-    while(!robot_origin_w_sub.subscribe());
-    while(!command_sub.subscribe());
+    try {
+        sensor_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        robot_origin_w_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        command_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+    }
+    catch(std::exception& e) {
+        B_Log logger;
+        logger.log(Error, e.what());
+        while(1);
+    }
+
 }
 
 

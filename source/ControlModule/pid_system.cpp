@@ -15,7 +15,14 @@ PID_System::PID_System() : ControlModule(),
 
 void PID_System::init_subscribers(void) {
     ControlModule::init_subscribers();
-    while(!pid_consts_sub.subscribe());
+    try { 
+        pid_consts_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+    }
+    catch(std::exception& e) {
+        B_Log logger;
+        logger.log(Error, e.what());
+        while(1);
+    }
 }
 
 

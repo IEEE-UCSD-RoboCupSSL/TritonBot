@@ -1,5 +1,6 @@
 #include "ControlModule/control_module.hpp"
 #include "Config/config.hpp"
+#include "Utility/boost_logger.hpp"
 
 ControlModule::ControlModule(void) : enable_signal_sub("AI CMD", "SafetyEnable"), 
                                      sensor_sub("MotionEKF", "MotionData"), 
@@ -11,12 +12,19 @@ ControlModule::ControlModule(void) : enable_signal_sub("AI CMD", "SafetyEnable")
 {}
 
 void ControlModule::init_subscribers(void) {
-    while(!enable_signal_sub.subscribe());
-    while(!dribbler_signal_sub.subscribe());
-    while(!kicker_setpoint_sub.subscribe());
-    while(!trans_setpoint_sub.subscribe());
-    while(!rotat_setpoint_sub.subscribe());
-    while(!sensor_sub.subscribe());
+    try {
+        enable_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        dribbler_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        kicker_setpoint_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        trans_setpoint_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        rotat_setpoint_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        sensor_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+    }
+    catch(std::exception& e) {
+        B_Log logger;
+        logger.log(Error, e.what());
+        while(1);
+    }
 }
 
 bool ControlModule::get_enable_signal(void) {

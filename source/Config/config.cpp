@@ -4,6 +4,7 @@
 unsigned int THREAD_POOL_SIZE = 20;
 
 unsigned int INIT_DELAY = 1000; // 1 sec
+unsigned int DEFAULT_SUBSCRIBER_TIMEOUT = 3000; // 3 sec
 
 std::string VFIRM_IP_ADDR = "127.0.0.1";
 unsigned int VFIRM_IP_PORT = 8888;
