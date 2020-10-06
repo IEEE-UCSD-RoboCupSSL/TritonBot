@@ -6,7 +6,9 @@
 #include "Config/config.hpp"
 #include "ControlModule/pid.hpp"
 #include "EKF-Module/motion_ekf_module.hpp"
+#include "Utility/common.hpp"
 #include <armadillo>
+
 
 
 PID_System::PID_System() : ControlModule(),
@@ -50,15 +52,15 @@ void PID_System::task(ThreadPool& thread_pool) {
     PID_Controller<float> rotat_vel_pid(PID_RV_KP, PID_RV_KI, PID_RV_KD);
     PID_Controller<arma::vec> trans_disp_pid(PID_TD_KP, PID_TD_KI, PID_TD_KD);
     PID_Controller<arma::vec> trans_vel_pid(PID_TV_KP, PID_TV_KI, PID_TV_KD);
-    PID_Controller<arma::vec> direction_pid(PID_DIR_KP, PID_DIR_KI, PID_DIR_KD);
+    PID_Controller<double> direction_pid(PID_DIR_KP, PID_DIR_KI, PID_DIR_KD);
 
     float rotat_disp_out, rotat_vel_out;
     arma::vec trans_disp_out, trans_vel_out;
     arma::vec output_3d;
     Vec_2D trans_proto_out;
     PID_Constants pid_consts;
-    double direction_correction;
-    arma::vec curr_dir, exp_dir;
+    arma::vec curr_dir, exp_dir, correction;
+    double deviation_angle, magnitude;
 
     delay(INIT_DELAY); // controller shall not start before the 
                        // garbage data are refreshed by other modules 
@@ -76,11 +78,7 @@ void PID_System::task(ThreadPool& thread_pool) {
             pid_consts = pid_consts_sub.latest_msg();
             rotat_disp_pid.update_pid_consts(pid_consts.RD_Kp, pid_consts.RD_Ki, pid_consts.RD_Kd);
             rotat_vel_pid.update_pid_consts(pid_consts.RV_Kp, pid_consts.RV_Ki, pid_consts.RV_Kd);
-            trans_disp_pid.update_pid_consts(pid_consts.TD_Kp, pid_consts.TD_Ki, pid_consts.RV_Kd);
-            trans_vel_pid.update_pid_consts(pid_consts.TV_Kp, pid_consts.TV_Ki, pid_consts.TV_Kd);
-            direction_pid.update_pid_consts(pid_consts.DIR_Kp, pid_consts.DIR_Ki, pid_consts.DIR_Kd);
-
-            feedback = get_ekf_feedbacks();
+            trans_disp_pid.update_pid_consts(pid_consts.DIR_Kp, pid_consts.DIR_Ki, pid_consts.DIR_Kd); 
 
             kicker_setpoint = get_kicker_setpoint();
             dribbler_set_on = get_dribbler_signal();
@@ -161,14 +159,18 @@ void PID_System::task(ThreadPool& thread_pool) {
                 output_3d(2) = rotat_disp_out;
             }
 
-            /*
+            
             // direction controller
-            curr_dir = arma::normalise(feedback.trans_vel);
-            exp_dir = {output_3d(0), output_3d(1)};
-            exp_dir = arma::normalise(exp_dir);
-
-            direction_pid.calculate();
-            */
+            // curr_dir = arma::normalise(feedback.trans_vel);
+            // exp_dir = {output_3d(0), output_3d(1)};
+            // magnitude = arma::norm(exp_dir); 
+            // exp_dir = arma::normalise(exp_dir);
+            // deviation_angle = to_degree( std::acos(arma::dot(exp_dir, curr_dir)) );
+            // correction = exp_dir - curr_dir;
+            // correction = direction_pid.calculate(deviation_angle) * magnitude * correction;
+            // output_3d(0) += correction(0);
+            // output_3d(1) += correction(1);
+            
 
             
             if(arma::norm(output_3d) > 100.00) {

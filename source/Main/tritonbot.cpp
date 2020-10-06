@@ -87,13 +87,13 @@ int main(int arc, char *argv[]) {
         bool DorV;
         double x, y;
 
-        PID_System::PID_Constants default_pid_consts;
-        default_pid_consts.DIR_Kp = PID_DIR_KP; default_pid_consts.DIR_Ki = PID_DIR_KI; default_pid_consts.DIR_Kd = PID_DIR_KD;
-        default_pid_consts.RD_Kp = PID_RD_KP;   default_pid_consts.RD_Ki = PID_RD_KI;   default_pid_consts.RD_Kd = PID_RD_KD;
-        default_pid_consts.RV_Kp = PID_RV_KP;   default_pid_consts.RV_Ki = PID_RV_KI;   default_pid_consts.RV_Kd = PID_RV_KD;
-        default_pid_consts.TD_Kp = PID_TD_KP;   default_pid_consts.TD_Ki = PID_TD_KI;   default_pid_consts.TD_Kd = PID_TD_KD;
-        default_pid_consts.TV_Kp = PID_TV_KP;   default_pid_consts.TV_Ki = PID_TV_KI;   default_pid_consts.TV_Kd = PID_TV_KD;
-        ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", default_pid_consts);
+        PID_System::PID_Constants pid_consts;
+        pid_consts.DIR_Kp = PID_DIR_KP; pid_consts.DIR_Ki = PID_DIR_KI; pid_consts.DIR_Kd = PID_DIR_KD;
+        pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
+        pid_consts.RV_Kp = PID_RV_KP;   pid_consts.RV_Ki = PID_RV_KI;   pid_consts.RV_Kd = PID_RV_KD;
+        pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
+        pid_consts.TV_Kp = PID_TV_KP;   pid_consts.TV_Ki = PID_TV_KI;   pid_consts.TV_Kd = PID_TV_KD;
+        ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", pid_consts);
 
         ITPS::NonBlockingPublisher<bool> is_headless_pub("Motion","IsHeadlessMode", true);
         
@@ -103,6 +103,11 @@ int main(int arc, char *argv[]) {
 
 
         while(1) {
+            
+                    
+            // std::cout << ">>> DIR: Kp, Ki, Kd" << std::endl;
+            // std::cin >> pid_consts.DIR_Kp >> pid_consts.DIR_Ki >> pid_consts.DIR_Kd;
+            // pid_const_pub.publish(pid_consts);
 
             std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
             std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
