@@ -1,19 +1,32 @@
 #include "ControlModule/control_module.hpp"
 #include "Config/config.hpp"
 #include "Utility/boost_logger.hpp"
+#include "Utility/common.hpp"
 
 ControlModule::ControlModule(void) : enable_signal_sub("AI CMD", "SafetyEnable"), 
+                                     is_headless_sub("Motion","IsHeadlessMode"),
                                      sensor_sub("MotionEKF", "MotionData"), 
                                      dribbler_signal_sub("AI CMD", "Dribbler"), 
                                      kicker_setpoint_sub("AI CMD", "Kicker"), 
                                      trans_setpoint_sub("AI CMD", "Trans"), 
                                      rotat_setpoint_sub("AI CMD", "Rotat"), 
                                      output_pub("FirmClient", "Commands")
-{}
+{
+    
+    Vec_2D zero_vec;
+    zero_vec.set_x(0.00);
+    zero_vec.set_y(0.00);
+    halt_cmd.set_init(true);
+    halt_cmd.set_allocated_translational_output(&zero_vec);
+    halt_cmd.set_rotational_output(0.00);
+    halt_cmd.set_allocated_kicker(&zero_vec);
+    halt_cmd.set_dribbler(false);
+}
 
 void ControlModule::init_subscribers(void) {
     try {
         enable_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        is_headless_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         dribbler_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         kicker_setpoint_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         trans_setpoint_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
@@ -29,6 +42,10 @@ void ControlModule::init_subscribers(void) {
 
 bool ControlModule::get_enable_signal(void) {
     return enable_signal_sub.pop_msg(SAFETY_EN_TIMEOUT, false); // returns false if timeout
+}
+
+bool ControlModule::is_headless_mode(void) {
+    return is_headless_sub.latest_msg();
 }
 
 arma::vec ControlModule::get_kicker_setpoint(void) {
@@ -49,6 +66,20 @@ CTRL::SetPoint<float> ControlModule::get_rotat_setpoint(void) {
 
 MotionEKF::MotionData ControlModule::get_ekf_feedbacks(void) {
     return sensor_sub.latest_msg();
+}
+
+// From WorldFrame(absolute zero degree direction) to BodyFrame(direction the kicker/dribbler points at) coordinates
+arma::mat ControlModule::headless_transform(double robot_orient) {
+    arma::mat rot = rotation_matrix_2D(robot_orient);
+    arma::vec unit_vec_x = {1, 0};
+    arma::vec unit_vec_y = {0, 1};
+    arma::vec Uxy = rot * unit_vec_x;
+    arma::vec Vxy = rot * unit_vec_y;
+
+    arma::mat A_inv =  {{Uxy(0), Vxy(0)},
+                        {Uxy(1), Vxy(1)}};
+
+    return inv(A_inv);
 }
 
 

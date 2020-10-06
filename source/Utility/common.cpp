@@ -97,3 +97,9 @@ arma::mat wtb_homo_transform(arma::vec robot_position_w, double robot_orien_w) {
 
     return inv(A_inv);
 }
+
+
+arma::vec zero_vec_2d(void) {
+    arma::vec zero_vec = {0, 0};
+    return zero_vec;
+}

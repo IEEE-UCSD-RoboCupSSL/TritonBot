@@ -35,18 +35,6 @@ void PID_System::task(ThreadPool& thread_pool) {
     init_subscribers();
     logger(Info) << "\033[0;32m Initialized \033[0m";
     
-    VF_Commands halt_cmd;
-    Vec_2D zero_vec;
-    std::string write;
-    zero_vec.set_x(0.00);
-    zero_vec.set_y(0.00);
-    halt_cmd.set_init(true);
-    halt_cmd.set_allocated_translational_output(&zero_vec);
-    halt_cmd.set_rotational_output(0.00);
-    halt_cmd.set_allocated_kicker(&zero_vec);
-    halt_cmd.set_dribbler(false);
-
-
     MotionEKF::MotionData feedback;
     arma::vec kicker_setpoint;
     bool dribbler_set_on;
@@ -56,7 +44,7 @@ void PID_System::task(ThreadPool& thread_pool) {
 
 
     VF_Commands output_cmd;
-    output_cmd = halt_cmd; // default to halt
+    output_cmd = this->halt_cmd; // default to halt
 
     PID_Controller<float> rotat_disp_pid(PID_RD_KP, PID_RD_KI, PID_RD_KD);
     PID_Controller<float> rotat_vel_pid(PID_RV_KP, PID_RV_KI, PID_RV_KD);
@@ -106,6 +94,7 @@ void PID_System::task(ThreadPool& thread_pool) {
             output_cmd.set_dribbler(dribbler_set_on);
 
             // PID calculations : Error = SetPoint - CurrPoint = ExpectedValue - ActualValue
+            // Rotation Controller
             if(rotat_setpoint.type == displacement) {
                 if(std::signbit(rotat_setpoint.value) == std::signbit(feedback.rotat_disp)) { // if they have the same sign, both in 0 ~ 180 or both in 0 ~ -180 
                     rotat_disp_out = rotat_disp_pid.calculate(rotat_setpoint.value - feedback.rotat_disp);
@@ -126,17 +115,23 @@ void PID_System::task(ThreadPool& thread_pool) {
                                                     // init method reset the integral sum and derivative delta to 0, 
                                                     //  if these values are from long ago, best to refresh them for a new start
             }
-            else {
+            else { // type == velocity
                 rotat_disp_pid.init(CTRL_FREQUENCY);
                 rotat_vel_out = rotat_vel_pid.calculate(rotat_setpoint.value - feedback.rotat_vel);
             }
 
+            // Translation Movement Controller
             if(trans_setpoint.type == displacement) {
                 trans_disp_out = trans_disp_pid.calculate(trans_setpoint.value - feedback.trans_disp);
                 trans_vel_pid.init(CTRL_FREQUENCY);
             }
             else {
+                // type == velocity
                 trans_disp_pid.init(CTRL_FREQUENCY);
+                if(is_headless_mode()) {
+                    // transform the worldframe setpoint to bodyframe coordinates/vectors
+                    trans_setpoint.value = headless_transform(feedback.rotat_disp) * trans_setpoint.value;
+                }
                 trans_vel_out = trans_vel_pid.calculate(trans_setpoint.value - feedback.trans_vel);
             }
 
@@ -149,19 +144,19 @@ void PID_System::task(ThreadPool& thread_pool) {
              * so they can have controller running at the same time
              */ 
            
-            // translational velocity controller
+            // translational velocity 
             if(trans_setpoint.type == velocity) {
                 output_3d = {trans_vel_out(0), trans_vel_out(1), 0}; // 0 is just a space holder, rotation is set few lines down below
             } 
-            // translational displacement controller
+            // translational displacement 
             else if(trans_setpoint.type == displacement) { 
                 output_3d = {trans_disp_out(0), trans_disp_out(1), 0};
             }
-            // rotational velocity controller
+            // rotational velocity 
             if(rotat_setpoint.type == velocity) {
                 output_3d(2) = rotat_vel_out;
             } 
-            // rotational displacement controller
+            // rotational displacement 
             else if(rotat_setpoint.type == displacement) { 
                 output_3d(2) = rotat_disp_out;
             }
