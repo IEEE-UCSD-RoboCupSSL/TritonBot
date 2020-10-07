@@ -13,9 +13,9 @@ class PID_System : public ControlModule {
         virtual void init_subscribers(void);
         struct PID_Constants {
             double RD_Kp, RD_Ki, RD_Kd;
-            double RV_Kp, RV_Ki, RV_Kd;
+            // double RV_Kp, RV_Ki, RV_Kd;
             double TD_Kp, TD_Ki, TD_Kd;
-            double TV_Kp, TV_Ki, TV_Kd;
+            // double TV_Kp, TV_Ki, TV_Kd;
             double DIR_Kp, DIR_Ki, DIR_Kd;
         };
 

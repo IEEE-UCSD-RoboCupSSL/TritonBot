@@ -14,7 +14,6 @@
 #include "EKF-Module/virtual_motion_ekf.hpp"
 #include "ControlModule/control_module.hpp"
 #include "ControlModule/pid_system.hpp"
-#include "ControlModule/virtual_pid_system.hpp"
 #include "MotionModule/motion_module.hpp"
 //////////////////////////////////////////////////////////
 
@@ -49,7 +48,7 @@ int main(int arc, char *argv[]) {
     boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
     ekf_module->run(thread_pool);
 
-    boost::shared_ptr<ControlModule> ctrl_module(new Virtual_PID_System());
+    boost::shared_ptr<ControlModule> ctrl_module(new PID_System());
     ctrl_module->run(thread_pool);
 
     ITPS::NonBlockingPublisher<bool> dribbler_pub("AI CMD", "Dribbler", false);
@@ -90,9 +89,7 @@ int main(int arc, char *argv[]) {
         PID_System::PID_Constants pid_consts;
         pid_consts.DIR_Kp = PID_DIR_KP; pid_consts.DIR_Ki = PID_DIR_KI; pid_consts.DIR_Kd = PID_DIR_KD;
         pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
-        pid_consts.RV_Kp = PID_RV_KP;   pid_consts.RV_Ki = PID_RV_KI;   pid_consts.RV_Kd = PID_RV_KD;
         pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
-        pid_consts.TV_Kp = PID_TV_KP;   pid_consts.TV_Ki = PID_TV_KI;   pid_consts.TV_Kd = PID_TV_KD;
         ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", pid_consts);
 
         ITPS::NonBlockingPublisher<bool> is_headless_pub("Motion","IsHeadlessMode", true);
@@ -105,26 +102,37 @@ int main(int arc, char *argv[]) {
         while(1) {
             
                     
-            // std::cout << ">>> DIR: Kp, Ki, Kd" << std::endl;
-            // std::cin >> pid_consts.DIR_Kp >> pid_consts.DIR_Ki >> pid_consts.DIR_Kd;
-            // pid_const_pub.publish(pid_consts);
+            std::cout << ">>> DIR: Kp, Ki, Kd" << std::endl;
+            std::cin >> pid_consts.DIR_Kp >> pid_consts.DIR_Ki >> pid_consts.DIR_Kd;
+            pid_const_pub.publish(pid_consts);
 
-            std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
-            std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
-            std::cin >> DorV >> x;
-            rotat_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
-            rotat_sp.value = (float)x;
+            // std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
+            // std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
+            // std::cin >> DorV >> x;
+            // rotat_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
+            // rotat_sp.value = (float)x;
 
-            std::cout << "Translation Disp [1] ? or Vel [0] | SetPoint [x, y]" << std::endl;
-            std::cin >> DorV >> x >> y;
-            trans_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
-            trans_sp.value = {x, y};
-            std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << std::endl;
+            // std::cout << "Translation Disp [1] ? or Vel [0] | SetPoint [x, y]" << std::endl;
+            // std::cin >> DorV >> x >> y;
+            // trans_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
+            // trans_sp.value = {x, y};
+            // std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << std::endl;
 
+            rotat_sp.type = CTRL::velocity;
+            rotat_sp.value = 10;
+            trans_sp.type = CTRL::velocity;
+            trans_sp.value = {0, 10};
 
             rotat_setpoint_pub.publish(rotat_sp);
             trans_setpoint_pub.publish(trans_sp);
-            // delay(1000);
+            delay(5000);
+
+            rotat_sp.type = CTRL::velocity;
+            rotat_sp.value = 0;
+            trans_sp.type = CTRL::velocity;
+            trans_sp.value = {0, 0};
+            rotat_setpoint_pub.publish(rotat_sp);
+            trans_setpoint_pub.publish(trans_sp);
 
         }
         

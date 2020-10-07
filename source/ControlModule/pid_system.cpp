@@ -49,9 +49,7 @@ void PID_System::task(ThreadPool& thread_pool) {
     output_cmd = this->halt_cmd; // default to halt
 
     PID_Controller<float> rotat_disp_pid(PID_RD_KP, PID_RD_KI, PID_RD_KD);
-    PID_Controller<float> rotat_vel_pid(PID_RV_KP, PID_RV_KI, PID_RV_KD);
     PID_Controller<arma::vec> trans_disp_pid(PID_TD_KP, PID_TD_KI, PID_TD_KD);
-    PID_Controller<arma::vec> trans_vel_pid(PID_TV_KP, PID_TV_KI, PID_TV_KD);
     PID_Controller<double> direction_pid(PID_DIR_KP, PID_DIR_KI, PID_DIR_KD);
 
     float rotat_disp_out, rotat_vel_out;
@@ -59,7 +57,8 @@ void PID_System::task(ThreadPool& thread_pool) {
     arma::vec output_3d;
     Vec_2D trans_proto_out;
     PID_Constants pid_consts;
-    arma::vec curr_dir, exp_dir, correction;
+    arma::vec curr_dir, exp_dir; 
+    double corr_angle;
     double deviation_angle, magnitude;
 
     delay(INIT_DELAY); // controller shall not start before the 
@@ -69,16 +68,17 @@ void PID_System::task(ThreadPool& thread_pool) {
     while(1) {
 
         rotat_disp_pid.init(CTRL_FREQUENCY);
-        rotat_vel_pid.init(CTRL_FREQUENCY);
         trans_disp_pid.init(CTRL_FREQUENCY);
-        trans_vel_pid.init(CTRL_FREQUENCY);
         direction_pid.init(CTRL_FREQUENCY);
 
         while(get_enable_signal()) {
             pid_consts = pid_consts_sub.latest_msg();
             rotat_disp_pid.update_pid_consts(pid_consts.RD_Kp, pid_consts.RD_Ki, pid_consts.RD_Kd);
-            rotat_vel_pid.update_pid_consts(pid_consts.RV_Kp, pid_consts.RV_Ki, pid_consts.RV_Kd);
-            trans_disp_pid.update_pid_consts(pid_consts.DIR_Kp, pid_consts.DIR_Ki, pid_consts.DIR_Kd); 
+            trans_disp_pid.update_pid_consts(pid_consts.TD_Kp, pid_consts.TD_Ki, pid_consts.TD_Kd);
+            direction_pid.update_pid_consts(pid_consts.DIR_Kp, pid_consts.DIR_Ki, pid_consts.DIR_Kd);
+
+            feedback = get_ekf_feedbacks();
+ 
 
             kicker_setpoint = get_kicker_setpoint();
             dribbler_set_on = get_dribbler_signal();
@@ -109,29 +109,42 @@ void PID_System::task(ThreadPool& thread_pool) {
                         rotat_disp_out = rotat_disp_pid.calculate(alt_error);
                     }
                 }
-                rotat_vel_pid.init(CTRL_FREQUENCY); // re-init the conjugate type, 
-                                                    // init method reset the integral sum and derivative delta to 0, 
-                                                    //  if these values are from long ago, best to refresh them for a new start
             }
             else { // type == velocity
                 rotat_disp_pid.init(CTRL_FREQUENCY);
-                rotat_vel_out = rotat_vel_pid.calculate(rotat_setpoint.value - feedback.rotat_vel);
+                rotat_vel_out = rotat_setpoint.value;
             }
 
             // Translation Movement Controller
             if(trans_setpoint.type == displacement) {
                 trans_disp_out = trans_disp_pid.calculate(trans_setpoint.value - feedback.trans_disp);
-                trans_vel_pid.init(CTRL_FREQUENCY);
             }
             else {
                 // type == velocity
                 trans_disp_pid.init(CTRL_FREQUENCY);
                 if(is_headless_mode()) {
                     // transform the worldframe setpoint to bodyframe coordinates/vectors
-                    trans_setpoint.value = headless_transform(feedback.rotat_disp) * trans_setpoint.value;
+                    arma::mat T = headless_transform(feedback.rotat_disp);
+                    trans_setpoint.value = T * trans_setpoint.value;
+                    feedback.trans_vel = T * feedback.trans_vel;
                 }
-                trans_vel_out = trans_vel_pid.calculate(trans_setpoint.value - feedback.trans_vel);
+                trans_vel_out = trans_setpoint.value;
+
+                //direction controller
+                curr_dir = arma::normalise(feedback.trans_vel);
+                exp_dir = trans_vel_out;
+                magnitude = arma::norm(exp_dir); 
+                exp_dir = arma::normalise(exp_dir);
+                deviation_angle = to_degree( std::acos(arma::dot(exp_dir, curr_dir)) );
+                if(std::atan(exp_dir(1)/exp_dir(0)) - std::atan(curr_dir(1)/curr_dir(0)) < 0) {
+                    deviation_angle *= -1;
+                }
+                corr_angle = direction_pid.calculate(deviation_angle);
+                trans_vel_out = rotation_matrix_2D(corr_angle) * trans_vel_out; // correct direction by rotation matrix
             }
+
+
+            
 
             /* PID output selections
              *
@@ -160,17 +173,7 @@ void PID_System::task(ThreadPool& thread_pool) {
             }
 
             
-            // direction controller
-            // curr_dir = arma::normalise(feedback.trans_vel);
-            // exp_dir = {output_3d(0), output_3d(1)};
-            // magnitude = arma::norm(exp_dir); 
-            // exp_dir = arma::normalise(exp_dir);
-            // deviation_angle = to_degree( std::acos(arma::dot(exp_dir, curr_dir)) );
-            // correction = exp_dir - curr_dir;
-            // correction = direction_pid.calculate(deviation_angle) * magnitude * correction;
-            // output_3d(0) += correction(0);
-            // output_3d(1) += correction(1);
-            
+
 
             
             if(arma::norm(output_3d) > 100.00) {
