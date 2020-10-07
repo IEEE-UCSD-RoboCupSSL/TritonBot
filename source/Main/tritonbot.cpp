@@ -87,7 +87,6 @@ int main(int arc, char *argv[]) {
         double x, y;
 
         PID_System::PID_Constants pid_consts;
-        pid_consts.DIR_Kp = PID_DIR_KP; pid_consts.DIR_Ki = PID_DIR_KI; pid_consts.DIR_Kd = PID_DIR_KD;
         pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
         pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
         ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", pid_consts);
@@ -98,34 +97,27 @@ int main(int arc, char *argv[]) {
         // std::cin >> pid_consts.TD_Kp >> pid_consts.TD_Ki >> pid_consts.TD_Kd;
         // pid_const_pub.publish(pid_consts);
 
-
         while(1) {
-            
-                    
-            std::cout << ">>> DIR: Kp, Ki, Kd" << std::endl;
-            std::cin >> pid_consts.DIR_Kp >> pid_consts.DIR_Ki >> pid_consts.DIR_Kd;
+
+            std::cout << ">>> RD: Kp, Ki, Kd" << std::endl;
+            std::cin >> pid_consts.RD_Kp >> pid_consts.RD_Ki >> pid_consts.RD_Kd;
             pid_const_pub.publish(pid_consts);
+        
+            std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
+            std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
+            std::cin >> DorV >> x;
+            rotat_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
+            rotat_sp.value = (float)x;
 
-            // std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
-            // std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
-            // std::cin >> DorV >> x;
-            // rotat_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
-            // rotat_sp.value = (float)x;
-
-            // std::cout << "Translation Disp [1] ? or Vel [0] | SetPoint [x, y]" << std::endl;
-            // std::cin >> DorV >> x >> y;
-            // trans_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
-            // trans_sp.value = {x, y};
-            // std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << std::endl;
-
-            rotat_sp.type = CTRL::velocity;
-            rotat_sp.value = 10;
+            std::cout << "Translation Vel SetPoint [x, y]" << std::endl;
+            std::cin >> x >> y;
             trans_sp.type = CTRL::velocity;
-            trans_sp.value = {0, 10};
+            trans_sp.value = {x, y};
+            std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << std::endl;
 
             rotat_setpoint_pub.publish(rotat_sp);
             trans_setpoint_pub.publish(trans_sp);
-            delay(5000);
+            delay(3000);
 
             rotat_sp.type = CTRL::velocity;
             rotat_sp.value = 0;

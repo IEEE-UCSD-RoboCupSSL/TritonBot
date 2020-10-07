@@ -50,16 +50,12 @@ void PID_System::task(ThreadPool& thread_pool) {
 
     PID_Controller<float> rotat_disp_pid(PID_RD_KP, PID_RD_KI, PID_RD_KD);
     PID_Controller<arma::vec> trans_disp_pid(PID_TD_KP, PID_TD_KI, PID_TD_KD);
-    PID_Controller<double> direction_pid(PID_DIR_KP, PID_DIR_KI, PID_DIR_KD);
 
     float rotat_disp_out, rotat_vel_out;
     arma::vec trans_disp_out, trans_vel_out;
     arma::vec output_3d;
     Vec_2D trans_proto_out;
     PID_Constants pid_consts;
-    arma::vec curr_dir, exp_dir; 
-    double corr_angle;
-    double deviation_angle, magnitude;
 
     delay(INIT_DELAY); // controller shall not start before the 
                        // garbage data are refreshed by other modules 
@@ -69,13 +65,11 @@ void PID_System::task(ThreadPool& thread_pool) {
 
         rotat_disp_pid.init(CTRL_FREQUENCY);
         trans_disp_pid.init(CTRL_FREQUENCY);
-        direction_pid.init(CTRL_FREQUENCY);
 
         while(get_enable_signal()) {
             pid_consts = pid_consts_sub.latest_msg();
             rotat_disp_pid.update_pid_consts(pid_consts.RD_Kp, pid_consts.RD_Ki, pid_consts.RD_Kd);
             trans_disp_pid.update_pid_consts(pid_consts.TD_Kp, pid_consts.TD_Ki, pid_consts.TD_Kd);
-            direction_pid.update_pid_consts(pid_consts.DIR_Kp, pid_consts.DIR_Ki, pid_consts.DIR_Kd);
 
             feedback = get_ekf_feedbacks();
  
@@ -117,7 +111,7 @@ void PID_System::task(ThreadPool& thread_pool) {
 
             // Translation Movement Controller
             if(trans_setpoint.type == displacement) {
-                trans_disp_out = trans_disp_pid.calculate(trans_setpoint.value - feedback.trans_disp);
+                trans_disp_out = trans_disp_pid.calculate(trans_setpoint.value);
             }
             else {
                 // type == velocity
@@ -129,18 +123,6 @@ void PID_System::task(ThreadPool& thread_pool) {
                     feedback.trans_vel = T * feedback.trans_vel;
                 }
                 trans_vel_out = trans_setpoint.value;
-
-                //direction controller
-                curr_dir = arma::normalise(feedback.trans_vel);
-                exp_dir = trans_vel_out;
-                magnitude = arma::norm(exp_dir); 
-                exp_dir = arma::normalise(exp_dir);
-                deviation_angle = to_degree( std::acos(arma::dot(exp_dir, curr_dir)) );
-                if(std::atan(exp_dir(1)/exp_dir(0)) - std::atan(curr_dir(1)/curr_dir(0)) < 0) {
-                    deviation_angle *= -1;
-                }
-                corr_angle = direction_pid.calculate(deviation_angle);
-                trans_vel_out = rotation_matrix_2D(corr_angle) * trans_vel_out; // correct direction by rotation matrix
             }
 
 

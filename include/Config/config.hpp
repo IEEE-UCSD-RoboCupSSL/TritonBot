@@ -35,6 +35,6 @@ extern float PID_RD_KD;
 // extern float PID_RV_KI;
 // extern float PID_RV_KD;
 
-extern float PID_DIR_KP;
-extern float PID_DIR_KI; 
-extern float PID_DIR_KD;
+// extern float PID_DIR_KP;
+// extern float PID_DIR_KI; 
+// extern float PID_DIR_KD;
