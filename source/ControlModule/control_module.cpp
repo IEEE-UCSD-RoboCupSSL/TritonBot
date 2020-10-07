@@ -4,7 +4,6 @@
 #include "Utility/common.hpp"
 
 ControlModule::ControlModule(void) : enable_signal_sub("AI CMD", "SafetyEnable"), 
-                                     is_headless_sub("Motion","IsHeadlessMode"),
                                      sensor_sub("MotionEKF", "MotionData"), 
                                      dribbler_signal_sub("AI CMD", "Dribbler"), 
                                      kicker_setpoint_sub("AI CMD", "Kicker"), 
@@ -26,7 +25,6 @@ ControlModule::ControlModule(void) : enable_signal_sub("AI CMD", "SafetyEnable")
 void ControlModule::init_subscribers(void) {
     try {
         enable_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        is_headless_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         dribbler_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         kicker_setpoint_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         trans_setpoint_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
@@ -42,10 +40,6 @@ void ControlModule::init_subscribers(void) {
 
 bool ControlModule::get_enable_signal(void) {
     return enable_signal_sub.pop_msg(SAFETY_EN_TIMEOUT, false); // returns false if timeout
-}
-
-bool ControlModule::is_headless_mode(void) {
-    return is_headless_sub.latest_msg();
 }
 
 arma::vec ControlModule::get_kicker_setpoint(void) {

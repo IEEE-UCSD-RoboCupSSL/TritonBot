@@ -26,7 +26,6 @@ class ControlModule : public Module {
         VF_Commands halt_cmd;
         virtual void init_subscribers(void);
         bool get_enable_signal(void);
-        bool is_headless_mode(void);
         virtual MotionEKF::MotionData get_ekf_feedbacks(void);
         arma::vec get_kicker_setpoint(void);
         bool get_dribbler_signal(void);       
@@ -37,7 +36,6 @@ class ControlModule : public Module {
 
     private:
         ITPS::BlockingSubscriber<bool> enable_signal_sub;
-        ITPS::NonBlockingSubscriber<bool> is_headless_sub;
         ITPS::NonBlockingSubscriber< MotionEKF::MotionData > sensor_sub;
         ITPS::NonBlockingSubscriber<bool> dribbler_signal_sub;
         ITPS::NonBlockingSubscriber< arma::vec > kicker_setpoint_sub;

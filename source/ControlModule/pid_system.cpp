@@ -111,17 +111,17 @@ void PID_System::task(ThreadPool& thread_pool) {
 
             // Translation Movement Controller
             if(trans_setpoint.type == displacement) {
-                trans_disp_out = trans_disp_pid.calculate(trans_setpoint.value);
+                trans_disp_out = trans_disp_pid.calculate(trans_setpoint.value - feedback.trans_disp);
             }
             else {
                 // type == velocity
                 trans_disp_pid.init(CTRL_FREQUENCY);
-                if(is_headless_mode()) {
-                    // transform the worldframe setpoint to bodyframe coordinates/vectors
-                    arma::mat T = headless_transform(feedback.rotat_disp);
-                    trans_setpoint.value = T * trans_setpoint.value;
-                    feedback.trans_vel = T * feedback.trans_vel;
-                }
+                // if(is_headless_mode()) {
+                //     // transform the worldframe setpoint to bodyframe coordinates/vectors
+                //     arma::mat T = headless_transform(feedback.rotat_disp);
+                //     trans_setpoint.value = T * trans_setpoint.value;
+                //     feedback.trans_vel = T * feedback.trans_vel;
+                // }
                 trans_vel_out = trans_setpoint.value;
             }
 

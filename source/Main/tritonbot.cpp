@@ -43,120 +43,20 @@ int main(int arc, char *argv[]) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /* PID system unit test*/
-    // -----------------------------------------
-    boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
-    ekf_module->run(thread_pool);
-
-    boost::shared_ptr<ControlModule> ctrl_module(new PID_System());
-    ctrl_module->run(thread_pool);
-
-    ITPS::NonBlockingPublisher<bool> dribbler_pub("AI CMD", "Dribbler", false);
-    dribbler_pub.publish(false);
-    ITPS::NonBlockingPublisher<arma::vec> kicker_pub("AI CMD", "Kicker", zero_vec_2d());
-    arma::vec zero_vec = {0, 0};
-    kicker_pub.publish(zero_vec);
-
-
-    delay(500); //wait 500ms for vfirm_client_module to be ready
-    init_sensor_pub.publish(true); // signal the vfirm client to send init packet
-
-    boost::thread([]{
-        ITPS::BlockingPublisher<bool> enable_signal_pub("AI CMD", "SafetyEnable"); // MQ Mode
-        while(1) {
-            enable_signal_pub.publish(true);
-        }
-    });
-
-    boost::thread([]{
-        CTRL::SetPoint<float> rotat_sp;
-        CTRL::SetPoint<arma::vec> trans_sp;
-        rotat_sp.type = CTRL::velocity;
-        rotat_sp.value = 0.00;
-        trans_sp.type = CTRL::velocity;
-        trans_sp.value = zero_vec_2d();
-        ITPS::NonBlockingPublisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub("AI CMD", "Trans", trans_sp); 
-        ITPS::NonBlockingPublisher<CTRL::SetPoint<float>> rotat_setpoint_pub("AI CMD", "Rotat", rotat_sp); 
-        delay(800); // wait for other threads are ready
-        
-
-        int refresh_origin_cnt = 0;
-        bool refresh;
-
-        bool DorV;
-        double x, y;
-
-        PID_System::PID_Constants pid_consts;
-        pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
-        pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
-        ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", pid_consts);
-
-        ITPS::NonBlockingPublisher<bool> is_headless_pub("Motion","IsHeadlessMode", true);
-        
-        // std::cout << ">>> TD: Kp, Ki, Kd" << std::endl;
-        // std::cin >> pid_consts.TD_Kp >> pid_consts.TD_Ki >> pid_consts.TD_Kd;
-        // pid_const_pub.publish(pid_consts);
-
-        while(1) {
-
-            std::cout << ">>> RD: Kp, Ki, Kd" << std::endl;
-            std::cin >> pid_consts.RD_Kp >> pid_consts.RD_Ki >> pid_consts.RD_Kd;
-            pid_const_pub.publish(pid_consts);
-        
-            std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
-            std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
-            std::cin >> DorV >> x;
-            rotat_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
-            rotat_sp.value = (float)x;
-
-            std::cout << "Translation Vel SetPoint [x, y]" << std::endl;
-            std::cin >> x >> y;
-            trans_sp.type = CTRL::velocity;
-            trans_sp.value = {x, y};
-            std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << std::endl;
-
-            rotat_setpoint_pub.publish(rotat_sp);
-            trans_setpoint_pub.publish(trans_sp);
-            delay(3000);
-
-            rotat_sp.type = CTRL::velocity;
-            rotat_sp.value = 0;
-            trans_sp.type = CTRL::velocity;
-            trans_sp.value = {0, 0};
-            rotat_setpoint_pub.publish(rotat_sp);
-            trans_setpoint_pub.publish(trans_sp);
-
-        }
-        
-    });
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // /* Motion Module unit test */ // motion is a wrapper of control module with math to transform coordinate systems
+    // /* PID system unit test*/
+    // // -----------------------------------------
     // boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
     // ekf_module->run(thread_pool);
 
-    // boost::shared_ptr<ControlModule> ctrl_module(new Virtual_PID_System());
+    // boost::shared_ptr<ControlModule> ctrl_module(new PID_System());
     // ctrl_module->run(thread_pool);
-
-    // boost::shared_ptr<MotionModule> motion_module(new MotionModule());
-    // motion_module->run(thread_pool);
 
     // ITPS::NonBlockingPublisher<bool> dribbler_pub("AI CMD", "Dribbler", false);
     // dribbler_pub.publish(false);
+    // ITPS::NonBlockingPublisher<arma::vec> kicker_pub("AI CMD", "Kicker", zero_vec_2d());
     // arma::vec zero_vec = {0, 0};
-    // ITPS::NonBlockingPublisher<arma::vec> kicker_pub("AI CMD", "Kicker", zero_vec);
     // kicker_pub.publish(zero_vec);
 
-
-    // PID_System::PID_Constants default_pid_consts;
-    // default_pid_consts.DIR_Kp = PID_DIR_KP; default_pid_consts.DIR_Ki = PID_DIR_KI; default_pid_consts.DIR_Kd = PID_DIR_KD;
-    // default_pid_consts.RD_Kp = PID_RD_KP;   default_pid_consts.RD_Ki = PID_RD_KI;   default_pid_consts.RD_Kd = PID_RD_KD;
-    // default_pid_consts.RV_Kp = PID_RV_KP;   default_pid_consts.RV_Ki = PID_RV_KI;   default_pid_consts.RV_Kd = PID_RV_KD;
-    // default_pid_consts.TD_Kp = PID_TD_KP;   default_pid_consts.TD_Ki = PID_TD_KI;   default_pid_consts.TD_Kd = PID_TD_KD;
-    // default_pid_consts.TV_Kp = PID_TV_KP;   default_pid_consts.TV_Ki = PID_TV_KI;   default_pid_consts.TV_Kd = PID_TV_KD;
-    
-    // ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", default_pid_consts);
 
     // delay(500); //wait 500ms for vfirm_client_module to be ready
     // init_sensor_pub.publish(true); // signal the vfirm client to send init packet
@@ -168,42 +68,136 @@ int main(int arc, char *argv[]) {
     //     }
     // });
 
-    // boost::thread([&]{
-    //     arma::vec zero_vec = {0, 0};
-    //     ITPS::NonBlockingPublisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)", zero_vec); 
+    // boost::thread([]{
+    //     CTRL::SetPoint<float> rotat_sp;
+    //     CTRL::SetPoint<arma::vec> trans_sp;
+    //     rotat_sp.type = CTRL::velocity;
+    //     rotat_sp.value = 0.00;
+    //     trans_sp.type = CTRL::velocity;
+    //     trans_sp.value = zero_vec_2d();
+    //     ITPS::NonBlockingPublisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub("AI CMD", "Trans", trans_sp); 
+    //     ITPS::NonBlockingPublisher<CTRL::SetPoint<float>> rotat_setpoint_pub("AI CMD", "Rotat", rotat_sp); 
+    //     delay(800); // wait for other threads are ready
+        
 
-    //     Motion::MotionCMD default_cmd;
-    //     default_cmd.setpoint_3d = {0, 0, 0};
-    //     default_cmd.mode = Motion::CTRL_Mode::TVRV;
-    //     default_cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
-    //     ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD", default_cmd);
+    //     int refresh_origin_cnt = 0;
+    //     bool refresh;
+
+    //     bool DorV;
+    //     double x, y;
+
+    //     PID_System::PID_Constants pid_consts;
+    //     pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
+    //     pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
+    //     ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", pid_consts);
         
-        
-    //     delay(1200); // wait for everything is started
-    //     arma::vec origin = {0, 0};
-    //     std::cout << "Enter robot origin <x, y>" << std::endl;
-    //     std::cin >> origin(0) >> origin(1);
-    //     robot_origin_w_pub.publish(origin);
-    //     init_sensor_pub.publish(true); 
-    //     Motion::MotionCMD cmd;
-    //     Motion::ReferenceFrame frame;
-    //     bool is_world_frame;
-    //     int mode_idx;
-    //     std::cout << "Reference Frame: World[1] or RobotBody[0]" << std::endl;
-    //     std::cin >> is_world_frame;
-    //     frame = is_world_frame ? Motion::ReferenceFrame::WorldFrame : Motion::ReferenceFrame::BodyFrame;
+    //     // std::cout << ">>> TD: Kp, Ki, Kd" << std::endl;
+    //     // std::cin >> pid_consts.TD_Kp >> pid_consts.TD_Ki >> pid_consts.TD_Kd;
+    //     // pid_const_pub.publish(pid_consts);
+
     //     while(1) {
-    //         std::cout << "Ctrl Mode: TDRD[0] TDRV[1] TVRD[2] TVRV[3]" << std::endl;
-    //         std::cin >> mode_idx;
-    //         cmd.mode = static_cast<Motion::CTRL_Mode>(mode_idx);
-    //         cmd.ref_frame = frame;
-    //         cmd.setpoint_3d = {0, 0, 0};
-    //         std::cout << "cmd3D: <x, y, theta>" << std::endl;
-    //         std::cin >> cmd.setpoint_3d(0) >> cmd.setpoint_3d(1) >> cmd.setpoint_3d(2); 
-    //         command_pub.publish(cmd);
+
+    //         // std::cout << ">>> RD: Kp, Ki, Kd" << std::endl;
+    //         // std::cin >> pid_consts.RD_Kp >> pid_consts.RD_Ki >> pid_consts.RD_Kd;
+    //         // pid_const_pub.publish(pid_consts);
+        
+    //         std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> " << std::endl;
+    //         std::cout << "Rotation Disp [1] ? or Vel [0]  |  SetPoint [x]" << std::endl;
+    //         std::cin >> DorV >> x;
+    //         rotat_sp.type = DorV ? CTRL::displacement : CTRL::velocity;
+    //         rotat_sp.value = (float)x;
+
+    //         std::cout << "Translation Vel SetPoint [x, y]" << std::endl;
+    //         std::cin >> x >> y;
+    //         trans_sp.type = CTRL::velocity;
+    //         trans_sp.value = {x, y};
+    //         std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< " << std::endl;
+
+    //         rotat_setpoint_pub.publish(rotat_sp);
+    //         trans_setpoint_pub.publish(trans_sp);
+    //         delay(3000);
+
+    //         rotat_sp.type = CTRL::velocity;
+    //         rotat_sp.value = 0;
+    //         trans_sp.type = CTRL::velocity;
+    //         trans_sp.value = {0, 0};
+    //         rotat_setpoint_pub.publish(rotat_sp);
+    //         trans_setpoint_pub.publish(trans_sp);
+
     //     }
+        
     // });
-    // // -----------------------------------------
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /* Motion Module unit test */ // motion is a wrapper of control module with math to transform coordinate systems
+    boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
+    ekf_module->run(thread_pool);
+
+    boost::shared_ptr<ControlModule> ctrl_module(new PID_System());
+    ctrl_module->run(thread_pool);
+
+    boost::shared_ptr<MotionModule> motion_module(new MotionModule());
+    motion_module->run(thread_pool);
+
+    ITPS::NonBlockingPublisher<bool> dribbler_pub("AI CMD", "Dribbler", false);
+    dribbler_pub.publish(false);
+    arma::vec zero_vec = {0, 0};
+    ITPS::NonBlockingPublisher<arma::vec> kicker_pub("AI CMD", "Kicker", zero_vec);
+    kicker_pub.publish(zero_vec);
+
+
+    PID_System::PID_Constants pid_consts;
+    pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
+    pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
+    ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", pid_consts);
+
+    delay(500); //wait 500ms for vfirm_client_module to be ready
+    init_sensor_pub.publish(true); // signal the vfirm client to send init packet
+
+    boost::thread([]{
+        ITPS::BlockingPublisher<bool> enable_signal_pub("AI CMD", "SafetyEnable"); // MQ Mode
+        while(1) {
+            enable_signal_pub.publish(true);
+        }
+    });
+
+    boost::thread([&]{
+        arma::vec zero_vec = {0, 0};
+        ITPS::NonBlockingPublisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)", zero_vec); 
+
+        Motion::MotionCMD default_cmd;
+        default_cmd.setpoint_3d = {0, 0, 0};
+        default_cmd.mode = Motion::CTRL_Mode::TVRV;
+        default_cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
+        ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD", default_cmd);
+        
+        
+        delay(1200); // wait for everything is started
+        arma::vec origin = {0, 0};
+        std::cout << "Enter robot origin <x, y>" << std::endl;
+        std::cin >> origin(0) >> origin(1);
+        robot_origin_w_pub.publish(origin);
+        init_sensor_pub.publish(true); 
+        Motion::MotionCMD cmd;
+        Motion::ReferenceFrame frame;
+        bool is_world_frame;
+        int mode_idx;
+        std::cout << "Reference Frame: World[1] or RobotBody[0]" << std::endl;
+        std::cin >> is_world_frame;
+        frame = is_world_frame ? Motion::ReferenceFrame::WorldFrame : Motion::ReferenceFrame::BodyFrame;
+        while(1) {
+            std::cout << "Ctrl Mode: TDRD[0] TDRV[1] TVRD[2] TVRV[3]" << std::endl;
+            std::cin >> mode_idx;
+            cmd.mode = static_cast<Motion::CTRL_Mode>(mode_idx);
+            cmd.ref_frame = frame;
+            cmd.setpoint_3d = {0, 0, 0};
+            std::cout << "cmd3D: <x, y, theta>" << std::endl;
+            std::cin >> cmd.setpoint_3d(0) >> cmd.setpoint_3d(1) >> cmd.setpoint_3d(2); 
+            command_pub.publish(cmd);
+        }
+    });
+    // -----------------------------------------
 
     while(1);
 
