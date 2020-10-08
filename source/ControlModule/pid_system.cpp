@@ -51,11 +51,13 @@ void PID_System::task(ThreadPool& thread_pool) {
     PID_Controller<float> rotat_disp_pid(PID_RD_KP, PID_RD_KI, PID_RD_KD);
     PID_Controller<arma::vec> trans_disp_pid(PID_TD_KP, PID_TD_KI, PID_TD_KD);
 
-    float rotat_disp_out, rotat_vel_out;
+    float rotat_disp_out = 0.0, rotat_vel_out = 0.0;
     arma::vec trans_disp_out, trans_vel_out;
     arma::vec output_3d;
     Vec_2D trans_proto_out;
     PID_Constants pid_consts;
+    float corr_angle = 0.0;
+    float angle_err = 0.0;
 
     delay(INIT_DELAY); // controller shall not start before the 
                        // garbage data are refreshed by other modules 
@@ -88,30 +90,41 @@ void PID_System::task(ThreadPool& thread_pool) {
             // PID calculations : Error = SetPoint - CurrPoint = ExpectedValue - ActualValue
             // Rotation Controller
             if(rotat_setpoint.type == displacement) {
-                if(std::signbit(rotat_setpoint.value) == std::signbit(feedback.rotat_disp)) { // if they have the same sign, both in 0 ~ 180 or both in 0 ~ -180 
-                    rotat_disp_out = rotat_disp_pid.calculate(rotat_setpoint.value - feedback.rotat_disp);
-                }
-                else { // having opposite sign means one is in the 0 ~ 180 region and the other is in 0 ~ -180
-                    
-                    float error = rotat_setpoint.value - feedback.rotat_disp; // Expected Value - Actual Value
-                    float alt_error = error > 0 ? (error - 360) : (360 + error);
-                    // find the direction with the shortest error value
-                    if(std::fabs(error) < std::fabs(alt_error)) {
-                        rotat_disp_out = rotat_disp_pid.calculate(error);
-                    } 
-                    else {
-                        rotat_disp_out = rotat_disp_pid.calculate(alt_error);
+                angle_err = rotat_setpoint.value - feedback.rotat_disp; // Expected Value - Actual Value
+                if(std::signbit(rotat_setpoint.value) != std::signbit(feedback.rotat_disp)) { 
+                    // having opposite sign means one is in the 0 ~ 180 region and the other is in 0 ~ -180
+                    float alt_error = angle_err > 0 ? (angle_err - 360) : (360 + angle_err);
+                    // find the direction with the shortest angle_err value
+                    if(std::fabs(angle_err) > std::fabs(alt_error)) {
+                        angle_err = alt_error;
                     }
                 }
+                rotat_disp_out = rotat_disp_pid.calculate(angle_err);
             }
             else { // type == velocity
                 rotat_disp_pid.init(CTRL_FREQUENCY);
+                if(rotat_setpoint.value > PID_MAX_ROT_PERC) {
+                    rotat_setpoint.value = PID_MAX_ROT_PERC;
+                } else if(rotat_setpoint.value < -PID_MAX_ROT_PERC) {
+                    rotat_setpoint.value = -PID_MAX_ROT_PERC;
+                }
                 rotat_vel_out = rotat_setpoint.value;
+
             }
 
             // Translation Movement Controller
             if(trans_setpoint.type == displacement) {
                 trans_disp_out = trans_disp_pid.calculate(trans_setpoint.value - feedback.trans_disp);
+
+                // correct deviation due to rotation momentum        
+                if(rotat_setpoint.type == displacement) {
+                    corr_angle = -rotat_disp_out * PID_TDRD_CORR;
+                }
+                else {
+                    corr_angle = -rotat_vel_out * PID_TDRV_CORR;
+                }
+                trans_disp_out = rotation_matrix_2D(corr_angle) * trans_disp_out; // correct direction by rotation matrix 
+
             }
             else {
                 // type == velocity
@@ -123,7 +136,18 @@ void PID_System::task(ThreadPool& thread_pool) {
                 //     feedback.trans_vel = T * feedback.trans_vel;
                 // }
                 trans_vel_out = trans_setpoint.value;
+
+                // correct deviation due to rotation momentum        
+                if(rotat_setpoint.type == displacement) {
+                    corr_angle = -rotat_disp_out * PID_TVRD_CORR;
+                }
+                else {
+                    corr_angle = -rotat_vel_out * PID_TVRV_CORR;
+                }
+                trans_vel_out = rotation_matrix_2D(corr_angle) * trans_vel_out; // correct direction by rotation matrix 
+
             }
+
 
 
             

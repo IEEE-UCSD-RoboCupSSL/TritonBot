@@ -40,3 +40,9 @@ float PID_RD_KD = 0.00;
 // float PID_RV_KI = 0.00;
 // float PID_RV_KD = 0.00;
 
+float PID_TDRD_CORR = 1.0;
+float PID_TVRD_CORR = 1.0;
+float PID_TDRV_CORR = 1.0;
+float PID_TVRV_CORR = 1.0;
+
+float PID_MAX_ROT_PERC = 30.00;

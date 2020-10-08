@@ -38,3 +38,10 @@ extern float PID_RD_KD;
 // extern float PID_DIR_KP;
 // extern float PID_DIR_KI; 
 // extern float PID_DIR_KD;
+
+extern float PID_TDRD_CORR; // orientation correction scaling factor 
+extern float PID_TVRD_CORR;
+extern float PID_TDRV_CORR;
+extern float PID_TVRV_CORR;
+
+extern float PID_MAX_ROT_PERC; // maximum allowed rotational velocity in percentage of max vel
