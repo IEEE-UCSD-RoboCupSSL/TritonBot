@@ -35,11 +35,10 @@ int main(int arc, char *argv[]) {
     ITPS::NonBlockingPublisher<bool> init_sensor_pub("vfirm-client", "re/init sensors", false);
 
     
-    // Connection Server Unit Test
-    // boost::shared_ptr<ConnectionServerModule> cs_module(new ConnectionServer());
-    // cs_module->run(thread_pool);
-
-    // while(1);
+    /* Connection Server Unit Test */
+    boost::shared_ptr<ConnectionServerModule> cs_module(new ConnectionServer());
+    cs_module->run(thread_pool);
+    while(1);
 
 
     boost::shared_ptr<FirmClientModule> uc_client_module(new VFirmClient());

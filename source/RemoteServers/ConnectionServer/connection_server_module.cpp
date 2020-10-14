@@ -107,7 +107,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     int goal_width = 0;
 
     asio::io_service io_service;
-    asio::ip::tcp::endpoint endpoint_to_listen(asio::ip::tcp::v4(), 6666);
+    asio::ip::tcp::endpoint endpoint_to_listen(asio::ip::tcp::v4(), CONN_SERVER_PORT); 
     asio::ip::tcp::acceptor acceptor(io_service, endpoint_to_listen);
     asio::ip::tcp::socket socket(io_service);
     asio::streambuf read_buf;
@@ -119,7 +119,8 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     // TODO: since the following modules are not here yet... Uncomment in the future
     // while(!precise_kick_sub.subscribe());
     // while(!ball_capture_sub.subscribe());
-    logger.log(Info, "Server started, port number: 6666. Awaiting Remote Station connection... \n");
+    logger.log(Info, "Server started, port number:" + repr(CONN_SERVER_PORT) 
+                    + " Awaiting Remote Station connection... \n");
 
     try 
     {

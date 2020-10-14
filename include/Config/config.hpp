@@ -45,3 +45,9 @@ extern float PID_TDRV_CORR;
 extern float PID_TVRV_CORR;
 
 extern float PID_MAX_ROT_PERC; // maximum allowed rotational velocity in percentage of max vel
+
+
+extern int CONN_SERVER_PORT;
+extern int CMD_SERVER_PORT;
+extern int GVISION_SERVER_PORT;
+extern int EKF_SERVER_PORT;

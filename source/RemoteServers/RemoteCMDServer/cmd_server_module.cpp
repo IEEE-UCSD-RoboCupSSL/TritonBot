@@ -14,19 +14,20 @@
 
 
 using namespace boost;
-
+using namespace boost::asio;
+using namespace boost::asio::ip;
 
 // Implementation of task to be run on this thread
 void CMDServer::task(ThreadPool& thread_pool) {
-    UNUSED(thread_pool); // no child thread is needed in a async scheme
+    UNUSED(thread_pool); 
 
     B_Log logger;
     logger.add_tag("Command Server Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
-    asio::io_service io_service;
+    io_service io_service;
+    udp::endpoint ep_listen(udp::v4(), CMD_SERVER_PORT);
 
-    
 
 
     io_service.run();
