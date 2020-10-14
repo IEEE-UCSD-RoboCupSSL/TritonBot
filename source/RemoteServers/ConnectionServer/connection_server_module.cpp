@@ -119,8 +119,8 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     // TODO: since the following modules are not here yet... Uncomment in the future
     // while(!precise_kick_sub.subscribe());
     // while(!ball_capture_sub.subscribe());
-    logger.log(Info, "Server started, port number:" + repr(CONN_SERVER_PORT) 
-                    + " Awaiting Remote Station connection... \n");
+    logger.log(Info, "Server Started on Port Number:" + repr(CONN_SERVER_PORT) 
+                    + ", Awaiting Remote AI Connection...");
 
     try 
     {

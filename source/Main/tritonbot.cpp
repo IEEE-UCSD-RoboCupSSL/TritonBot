@@ -16,6 +16,7 @@
 #include "ControlModule/pid_system.hpp"
 #include "MotionModule/motion_module.hpp"
 #include "RemoteServers/ConnectionServer/connection_server_module.hpp"
+#include "RemoteServers/RemoteCMDServer/cmd_server_module.hpp"
 //////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
@@ -36,8 +37,13 @@ int main(int arc, char *argv[]) {
 
     
     /* Connection Server Unit Test */
-    boost::shared_ptr<ConnectionServerModule> cs_module(new ConnectionServer());
-    cs_module->run(thread_pool);
+    // boost::shared_ptr<ConnectionServerModule> cs_module(new ConnectionServer());
+    // cs_module->run(thread_pool);
+    // while(1);
+
+    /* CMD Server Unit Test */
+    boost::shared_ptr<CMDServerModule> cmd_server_module(new CMDServer());
+    cmd_server_module->run(thread_pool);
     while(1);
 
 

@@ -27,8 +27,23 @@ void CMDServer::task(ThreadPool& thread_pool) {
 
     io_service io_service;
     udp::endpoint ep_listen(udp::v4(), CMD_SERVER_PORT);
+    udp::socket socket(io_service, ep_listen);
 
+    size_t num_received;
+    std::string packet_received;
+    boost::array<char, UDP_RBUF_SIZE> receive_buffer; 
 
+    logger.log(Info, "CMD Server Started on Port Number:" + repr(CMD_SERVER_PORT) 
+                + ", Listening to Remote AI Commands... ");
+    Commands cmd;
+
+    while(1) {
+        num_received = socket.receive_from(asio::buffer(receive_buffer), ep_listen);
+        packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
+        logger.log(Info, packet_received);
+        cmd.ParseFromString(packet_received);
+        // ...
+    }
 
     io_service.run();
     

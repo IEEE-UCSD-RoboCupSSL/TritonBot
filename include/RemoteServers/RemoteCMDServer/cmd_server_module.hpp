@@ -2,13 +2,12 @@
 #include "PubSubSystem/module.hpp"
 
 
-class CommandServerModule : public Module {
+class CMDServerModule : public Module {
     public:
         virtual void task() {}
         virtual void task(ThreadPool& thread_pool);
 
-        virtual ~CommandServerModule() {}
+        virtual ~CMDServerModule() {}
 };
 
-using CMDServerModule = CommandServerModule;
 using CMDServer = CMDServerModule;

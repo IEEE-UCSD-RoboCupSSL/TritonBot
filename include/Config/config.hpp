@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 
+/* Json Configurable Global Variables */
 extern unsigned int THREAD_POOL_SIZE;
 
 extern unsigned int INIT_DELAY;
@@ -51,3 +52,9 @@ extern int CONN_SERVER_PORT;
 extern int CMD_SERVER_PORT;
 extern int GVISION_SERVER_PORT;
 extern int EKF_SERVER_PORT;
+
+
+/* Global Constants */
+
+const std::size_t UDP_RBUF_SIZE = 1024;
+const std::size_t UDP_WBUF_SIZE = 1024;
