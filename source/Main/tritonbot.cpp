@@ -15,6 +15,7 @@
 #include "ControlModule/control_module.hpp"
 #include "ControlModule/pid_system.hpp"
 #include "MotionModule/motion_module.hpp"
+#include "RemoteServers/ConnectionServer/connection_server_module.hpp"
 //////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
@@ -32,8 +33,13 @@ int main(int arc, char *argv[]) {
 
     ThreadPool thread_pool(THREAD_POOL_SIZE); // pre-allocate 10 threads in a pool
     ITPS::NonBlockingPublisher<bool> init_sensor_pub("vfirm-client", "re/init sensors", false);
-   
 
+    
+    // Connection Server Unit Test
+    // boost::shared_ptr<ConnectionServerModule> cs_module(new ConnectionServer());
+    // cs_module->run(thread_pool);
+
+    // while(1);
 
 
     boost::shared_ptr<FirmClientModule> uc_client_module(new VFirmClient());
