@@ -41,10 +41,7 @@ int main(int arc, char *argv[]) {
     // cs_module->run(thread_pool);
     // while(1);
 
-    /* CMD Server Unit Test */
-    boost::shared_ptr<CMDServerModule> cmd_server_module(new CMDServer());
-    cmd_server_module->run(thread_pool);
-    while(1);
+
 
 
     boost::shared_ptr<FirmClientModule> uc_client_module(new VFirmClient());
@@ -62,9 +59,9 @@ int main(int arc, char *argv[]) {
     // boost::shared_ptr<ControlModule> ctrl_module(new PID_System());
     // ctrl_module->run(thread_pool);
 
-    // ITPS::NonBlockingPublisher<bool> dribbler_pub("AI CMD", "Dribbler", false);
+    // ITPS::NonBlockingPublisher<bool> dribbler_pub("CapKick", "Dribbler", false);
     // dribbler_pub.publish(false);
-    // ITPS::NonBlockingPublisher<arma::vec> kicker_pub("AI CMD", "Kicker", zero_vec_2d());
+    // ITPS::NonBlockingPublisher<arma::vec> kicker_pub("CapKick", "Kicker", zero_vec_2d());
     // arma::vec zero_vec = {0, 0};
     // kicker_pub.publish(zero_vec);
 
@@ -73,7 +70,7 @@ int main(int arc, char *argv[]) {
     // init_sensor_pub.publish(true); // signal the vfirm client to send init packet
 
     // boost::thread([]{
-    //     ITPS::BlockingPublisher<bool> enable_signal_pub("AI CMD", "SafetyEnable"); // MQ Mode
+    //     ITPS::BlockingPublisher<bool> enable_signal_pub("AI Connection", "SafetyEnable"); // MQ Mode
     //     while(1) {
     //         enable_signal_pub.publish(true);
     //     }
@@ -141,7 +138,101 @@ int main(int arc, char *argv[]) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /* Motion Module unit test */ // motion is a wrapper of control module with math to transform coordinate systems
+    // /* Motion Module unit test */ // motion is a wrapper of control module with math to transform coordinate systems
+    // boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
+    // ekf_module->run(thread_pool);
+
+    // boost::shared_ptr<ControlModule> ctrl_module(new PID_System());
+    // ctrl_module->run(thread_pool);
+
+    // boost::shared_ptr<MotionModule> motion_module(new MotionModule());
+    // motion_module->run(thread_pool);
+
+    // ITPS::NonBlockingPublisher<bool> dribbler_pub("CapKick", "Dribbler", false);
+    // dribbler_pub.publish(false);
+    // arma::vec zero_vec = {0, 0};
+    // ITPS::NonBlockingPublisher<arma::vec> kicker_pub("CapKick", "Kicker", zero_vec);
+    // kicker_pub.publish(zero_vec);
+
+
+    // PID_System::PID_Constants pid_consts;
+    // pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
+    // pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
+    // ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", pid_consts);
+
+    // delay(500); //wait 500ms for vfirm_client_module to be ready
+    // init_sensor_pub.publish(true); // signal the vfirm client to send init packet
+
+    // boost::thread([]{
+    //     ITPS::BlockingPublisher<bool> enable_signal_pub("AI Connection", "SafetyEnable"); // MQ Mode
+    //     while(1) {
+    //         enable_signal_pub.publish(true);
+    //     }
+    // });
+
+    // boost::thread([&]{
+    //     arma::vec zero_vec = {0, 0};
+    //     ITPS::NonBlockingPublisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)", zero_vec); 
+
+    //     Motion::MotionCMD default_cmd;
+    //     default_cmd.setpoint_3d = {0, 0, 0};
+    //     default_cmd.mode = Motion::CTRL_Mode::TVRV;
+    //     default_cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
+    //     ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD", default_cmd);
+        
+        
+    //     delay(1200); // wait for everything is started
+    //     arma::vec origin = {0, 0};
+    //     std::cout << "Enter robot origin <x, y>" << std::endl;
+    //     std::cin >> origin(0) >> origin(1);
+    //     robot_origin_w_pub.publish(origin);
+    //     init_sensor_pub.publish(true); 
+    //     Motion::MotionCMD cmd;
+    //     Motion::ReferenceFrame frame;
+    //     bool is_world_frame;
+    //     int mode_idx;
+    //     std::cout << "Reference Frame: World[1] or RobotBody[0]" << std::endl;
+    //     std::cin >> is_world_frame;
+    //     frame = is_world_frame ? Motion::ReferenceFrame::WorldFrame : Motion::ReferenceFrame::BodyFrame;
+    //     double angle;
+    //     while(1) {
+    //         std::cout << "Ctrl Mode: TDRD[0] TDRV[1] TVRD[2] TVRV[3]" << std::endl;
+    //         std::cin >> mode_idx;
+    //         cmd.mode = static_cast<Motion::CTRL_Mode>(mode_idx);
+    //         cmd.ref_frame = frame;
+    //         cmd.setpoint_3d = {0, 0, 0};
+    //         std::cout << "cmd3D: <x, y, theta>" << std::endl;
+    //         std::cin >> cmd.setpoint_3d(0) >> cmd.setpoint_3d(1) >> cmd.setpoint_3d(2); 
+    //         command_pub.publish(cmd);
+    //         // std::cin >> angle;
+    //         // cmd.mode = static_cast<Motion::CTRL_Mode>(0);
+    //         // cmd.ref_frame = frame;
+    //         // cmd.setpoint_3d = {0, 1000, angle};
+    //         // command_pub.publish(cmd);
+    //         // delay(1000);
+    //         // cmd.mode = static_cast<Motion::CTRL_Mode>(0);
+    //         // cmd.ref_frame = frame;
+    //         // cmd.setpoint_3d = {0, 2000, angle*2};
+    //         // command_pub.publish(cmd);
+    //         // delay(1000);
+    //         // cmd.mode = static_cast<Motion::CTRL_Mode>(0);
+    //         // cmd.ref_frame = frame;
+    //         // cmd.setpoint_3d = {0, 3000, angle*3};
+    //         // command_pub.publish(cmd);
+    //         // delay(1000);
+    //         // cmd.mode = static_cast<Motion::CTRL_Mode>(0);
+    //         // cmd.ref_frame = frame;
+    //         // cmd.setpoint_3d = {0, 4000, angle*4};
+    //         // command_pub.publish(cmd);
+    //         // delay(1000);
+        
+    //     }
+    // });
+    // // -----------------------------------------
+
+    // while(1);
+
+    /* CMD Server Unit Test */
     boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
     ekf_module->run(thread_pool);
 
@@ -151,10 +242,10 @@ int main(int arc, char *argv[]) {
     boost::shared_ptr<MotionModule> motion_module(new MotionModule());
     motion_module->run(thread_pool);
 
-    ITPS::NonBlockingPublisher<bool> dribbler_pub("AI CMD", "Dribbler", false);
+    ITPS::NonBlockingPublisher<bool> dribbler_pub("CapKick", "Dribbler", false);
     dribbler_pub.publish(false);
     arma::vec zero_vec = {0, 0};
-    ITPS::NonBlockingPublisher<arma::vec> kicker_pub("AI CMD", "Kicker", zero_vec);
+    ITPS::NonBlockingPublisher<arma::vec> kicker_pub("CapKick", "Kicker", zero_vec);
     kicker_pub.publish(zero_vec);
 
 
@@ -163,79 +254,18 @@ int main(int arc, char *argv[]) {
     pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
     ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", pid_consts);
 
-    delay(500); //wait 500ms for vfirm_client_module to be ready
-    init_sensor_pub.publish(true); // signal the vfirm client to send init packet
+    ITPS::NonBlockingPublisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)", zero_vec_2d()); 
 
     boost::thread([]{
-        ITPS::BlockingPublisher<bool> enable_signal_pub("AI CMD", "SafetyEnable"); // MQ Mode
+        ITPS::BlockingPublisher<bool> enable_signal_pub("AI Connection", "SafetyEnable"); // MQ Mode
         while(1) {
             enable_signal_pub.publish(true);
         }
     });
 
-    boost::thread([&]{
-        arma::vec zero_vec = {0, 0};
-        ITPS::NonBlockingPublisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)", zero_vec); 
-
-        Motion::MotionCMD default_cmd;
-        default_cmd.setpoint_3d = {0, 0, 0};
-        default_cmd.mode = Motion::CTRL_Mode::TVRV;
-        default_cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
-        ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD", default_cmd);
-        
-        
-        delay(1200); // wait for everything is started
-        arma::vec origin = {0, 0};
-        std::cout << "Enter robot origin <x, y>" << std::endl;
-        std::cin >> origin(0) >> origin(1);
-        robot_origin_w_pub.publish(origin);
-        init_sensor_pub.publish(true); 
-        Motion::MotionCMD cmd;
-        Motion::ReferenceFrame frame;
-        bool is_world_frame;
-        int mode_idx;
-        std::cout << "Reference Frame: World[1] or RobotBody[0]" << std::endl;
-        std::cin >> is_world_frame;
-        frame = is_world_frame ? Motion::ReferenceFrame::WorldFrame : Motion::ReferenceFrame::BodyFrame;
-        double angle;
-        while(1) {
-            std::cout << "Ctrl Mode: TDRD[0] TDRV[1] TVRD[2] TVRV[3]" << std::endl;
-            std::cin >> mode_idx;
-            cmd.mode = static_cast<Motion::CTRL_Mode>(mode_idx);
-            cmd.ref_frame = frame;
-            cmd.setpoint_3d = {0, 0, 0};
-            std::cout << "cmd3D: <x, y, theta>" << std::endl;
-            std::cin >> cmd.setpoint_3d(0) >> cmd.setpoint_3d(1) >> cmd.setpoint_3d(2); 
-            command_pub.publish(cmd);
-            // std::cin >> angle;
-            // cmd.mode = static_cast<Motion::CTRL_Mode>(0);
-            // cmd.ref_frame = frame;
-            // cmd.setpoint_3d = {0, 1000, angle};
-            // command_pub.publish(cmd);
-            // delay(1000);
-            // cmd.mode = static_cast<Motion::CTRL_Mode>(0);
-            // cmd.ref_frame = frame;
-            // cmd.setpoint_3d = {0, 2000, angle*2};
-            // command_pub.publish(cmd);
-            // delay(1000);
-            // cmd.mode = static_cast<Motion::CTRL_Mode>(0);
-            // cmd.ref_frame = frame;
-            // cmd.setpoint_3d = {0, 3000, angle*3};
-            // command_pub.publish(cmd);
-            // delay(1000);
-            // cmd.mode = static_cast<Motion::CTRL_Mode>(0);
-            // cmd.ref_frame = frame;
-            // cmd.setpoint_3d = {0, 4000, angle*4};
-            // command_pub.publish(cmd);
-            // delay(1000);
-        
-        }
-    });
-    // -----------------------------------------
-
+    boost::shared_ptr<CMDServerModule> cmd_server_module(new CMDServer());
+    cmd_server_module->run(thread_pool);
     while(1);
-
-    
 
     return 0;
 }

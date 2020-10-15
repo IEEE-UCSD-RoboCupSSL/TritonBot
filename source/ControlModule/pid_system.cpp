@@ -22,6 +22,7 @@ void PID_System::init_subscribers(void) {
     }
     catch(std::exception& e) {
         B_Log logger;
+        logger.add_tag("[pid_system.cpp]");
         logger.log(Error, e.what());
         while(1);
     }

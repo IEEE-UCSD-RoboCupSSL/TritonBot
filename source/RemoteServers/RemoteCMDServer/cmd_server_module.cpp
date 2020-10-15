@@ -11,11 +11,21 @@
 #include "Utility/boost_logger.hpp"
 #include "Config/config.hpp"
 #include "Utility/common.hpp"
+#include "MotionModule/motion_module.hpp"
 
 
 using namespace boost;
 using namespace boost::asio;
 using namespace boost::asio::ip;
+
+
+static Motion::MotionCMD default_cmd() {
+    Motion::MotionCMD dft_cmd;
+    dft_cmd.setpoint_3d = {0, 0, 0};
+    dft_cmd.mode = Motion::CTRL_Mode::TVRV;
+    dft_cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
+    return dft_cmd;
+}
 
 // Implementation of task to be run on this thread
 void CMDServer::task(ThreadPool& thread_pool) {
@@ -31,18 +41,54 @@ void CMDServer::task(ThreadPool& thread_pool) {
 
     size_t num_received;
     std::string packet_received;
-    boost::array<char, UDP_RBUF_SIZE> receive_buffer; 
+    boost::array<char, UDP_RBUF_SIZE> receive_buffer;
+
+
+
+    ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD", default_cmd());
 
     logger.log(Info, "CMD Server Started on Port Number:" + repr(CMD_SERVER_PORT) 
                 + ", Listening to Remote AI Commands... ");
     Commands cmd;
+    Motion::MotionCMD m_cmd;
+    arma::vec m_vec3d = {0, 0, 0};
 
     while(1) {
         num_received = socket.receive_from(asio::buffer(receive_buffer), ep_listen);
         packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
-        logger.log(Info, packet_received);
+        // logger.log(Info, packet_received);
         cmd.ParseFromString(packet_received);
-        // ...
+
+        // logger.log(Debug, cmd.DebugString());
+
+        if(cmd.enable_ball_auto_capture() == false) {
+            // Listening to remote motion commands
+            switch(cmd.mode()) {
+                case 0: m_cmd.mode = Motion::CTRL_Mode::TDRD; break;
+                case 1: m_cmd.mode = Motion::CTRL_Mode::TDRV; break;
+                case 2: m_cmd.mode = Motion::CTRL_Mode::TVRD; break;
+                case 3: m_cmd.mode = Motion::CTRL_Mode::TVRV; break;
+                default: m_cmd.mode = Motion::CTRL_Mode::TVRV;
+            }
+            if(cmd.is_world_frame()) {
+                m_cmd.ref_frame = Motion::WorldFrame;
+            }
+            else {
+                m_cmd.ref_frame = Motion::BodyFrame;
+            }
+
+            m_cmd.setpoint_3d = {cmd.motion_set_point().x(), 
+                                 cmd.motion_set_point().y(),
+                                 cmd.motion_set_point().z()};
+
+            command_pub.publish(m_cmd);
+        }
+        else {
+            // Listening to internal CapKick module's commands
+
+            // ......
+        }
+
     }
 
     io_service.run();

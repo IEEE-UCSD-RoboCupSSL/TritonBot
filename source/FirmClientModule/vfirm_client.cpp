@@ -94,6 +94,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     }
     catch(std::exception& e) {
         B_Log logger;
+        logger.add_tag("[vfirm_client.cpp]");
         logger.log(Error, e.what());
         while(1);
     }

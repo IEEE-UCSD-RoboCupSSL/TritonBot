@@ -27,6 +27,7 @@ void MotionEKF_Module::init_subscribers() {
     }
     catch(std::exception& e) {
         B_Log logger;
+        logger.add_tag("[motion_ekf_module.cpp]");
         logger.log(Error, e.what());
         while(1);
     }

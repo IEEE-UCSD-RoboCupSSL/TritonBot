@@ -3,10 +3,10 @@
 #include "Utility/boost_logger.hpp"
 #include "Utility/common.hpp"
 
-ControlModule::ControlModule(void) : enable_signal_sub("AI CMD", "SafetyEnable"), 
+ControlModule::ControlModule(void) : enable_signal_sub("AI Connection", "SafetyEnable"), 
                                      sensor_sub("MotionEKF", "MotionData"), 
-                                     dribbler_signal_sub("AI CMD", "Dribbler"), 
-                                     kicker_setpoint_sub("AI CMD", "Kicker"), 
+                                     dribbler_signal_sub("CapKick", "Dribbler"), 
+                                     kicker_setpoint_sub("CapKick", "Kicker"), 
                                      trans_setpoint_sub("AI CMD", "Trans"), 
                                      rotat_setpoint_sub("AI CMD", "Rotat"), 
                                      output_pub("FirmClient", "Commands")
@@ -33,6 +33,7 @@ void ControlModule::init_subscribers(void) {
     }
     catch(std::exception& e) {
         B_Log logger;
+        logger.add_tag("[control_module.cpp]");
         logger.log(Error, e.what());
         while(1);
     }
