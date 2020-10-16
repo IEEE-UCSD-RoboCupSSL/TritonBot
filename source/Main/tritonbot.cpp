@@ -59,9 +59,9 @@ int main(int arc, char *argv[]) {
     // boost::shared_ptr<ControlModule> ctrl_module(new PID_System());
     // ctrl_module->run(thread_pool);
 
-    // ITPS::NonBlockingPublisher<bool> dribbler_pub("CapKick", "Dribbler", false);
+    // ITPS::NonBlockingPublisher<bool> dribbler_pub("BallCapture", "Dribbler", false);
     // dribbler_pub.publish(false);
-    // ITPS::NonBlockingPublisher<arma::vec> kicker_pub("CapKick", "Kicker", zero_vec_2d());
+    // ITPS::NonBlockingPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
     // arma::vec zero_vec = {0, 0};
     // kicker_pub.publish(zero_vec);
 
@@ -148,10 +148,10 @@ int main(int arc, char *argv[]) {
     // boost::shared_ptr<MotionModule> motion_module(new MotionModule());
     // motion_module->run(thread_pool);
 
-    // ITPS::NonBlockingPublisher<bool> dribbler_pub("CapKick", "Dribbler", false);
+    // ITPS::NonBlockingPublisher<bool> dribbler_pub("BallCapture", "Dribbler", false);
     // dribbler_pub.publish(false);
     // arma::vec zero_vec = {0, 0};
-    // ITPS::NonBlockingPublisher<arma::vec> kicker_pub("CapKick", "Kicker", zero_vec);
+    // ITPS::NonBlockingPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec);
     // kicker_pub.publish(zero_vec);
 
 
@@ -242,11 +242,9 @@ int main(int arc, char *argv[]) {
     boost::shared_ptr<MotionModule> motion_module(new MotionModule());
     motion_module->run(thread_pool);
 
-    ITPS::NonBlockingPublisher<bool> dribbler_pub("CapKick", "Dribbler", false);
-    dribbler_pub.publish(false);
-    arma::vec zero_vec = {0, 0};
-    ITPS::NonBlockingPublisher<arma::vec> kicker_pub("CapKick", "Kicker", zero_vec);
-    kicker_pub.publish(zero_vec);
+    ITPS::NonBlockingPublisher<bool> dribbler_pub("BallCapture", "Dribbler", true);
+    ITPS::NonBlockingPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
+
 
 
     PID_System::PID_Constants pid_consts;
