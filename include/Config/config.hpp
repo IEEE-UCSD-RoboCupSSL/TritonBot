@@ -54,7 +54,16 @@ extern int GVISION_SERVER_PORT;
 extern int EKF_SERVER_PORT;
 
 
-/* Global Constants */
 
+
+extern int GRSIM_VISION_PORT;
+extern std::string GRSIM_VISION_IP; 
+
+
+
+/* Global Constants */
 const std::size_t UDP_RBUF_SIZE = 1024;
 const std::size_t UDP_WBUF_SIZE = 1024;
+
+
+

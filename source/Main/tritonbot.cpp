@@ -12,6 +12,8 @@
 #include "FirmClientModule/vfirm_client.hpp"
 #include "EKF-Module/motion_ekf_module.hpp"
 #include "EKF-Module/virtual_motion_ekf.hpp"
+#include "EKF-Module/ball_ekf_module.hpp"
+#include "EKF-Module/virtual_ball_ekf.hpp"
 #include "ControlModule/control_module.hpp"
 #include "ControlModule/pid_system.hpp"
 #include "MotionModule/motion_module.hpp"
@@ -231,6 +233,18 @@ int main(int arc, char *argv[]) {
     // // -----------------------------------------
 
     // while(1);
+
+    /* Ball EKF Module Unit Test */
+    boost::shared_ptr<BallEKF_Module> bekf_module(new VirtualBallEKF());
+    bekf_module->run(thread_pool);
+    ITPS::NonBlockingSubscriber<BallEKF_Module::BallData> ball_data_sub("BallEKF", "BallData");
+    ball_data_sub.subscribe();
+
+    while(1) {
+        std::cout << ball_data_sub.latest_msg().loc << std::endl;
+    }
+
+
 
     /* CMD Server Unit Test */
     boost::shared_ptr<MotionEKF_Module> ekf_module (new VirtualMotionEKF());
