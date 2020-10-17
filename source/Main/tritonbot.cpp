@@ -241,7 +241,9 @@ int main(int arc, char *argv[]) {
     ball_data_sub.subscribe();
 
     while(1) {
-        std::cout << ball_data_sub.latest_msg().loc << std::endl;
+        std::cout << ball_data_sub.latest_msg().loc 
+                  << ball_data_sub.latest_msg().vel
+                  << std::endl;
     }
 
 
