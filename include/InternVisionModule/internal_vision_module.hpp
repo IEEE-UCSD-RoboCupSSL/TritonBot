@@ -11,7 +11,7 @@ class InternalVisionModule : public Module {
         InternalVisionModule();
         virtual ~InternalVisionModule();
 
-        virtual void task() = 0;
+        
         virtual void task(ThreadPool& thread_pool) = 0;
 
 

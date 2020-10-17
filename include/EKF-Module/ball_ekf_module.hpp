@@ -15,7 +15,7 @@ class BallEKF_Module : public Module {
         BallEKF_Module();
         virtual ~BallEKF_Module();
 
-        virtual void task() = 0;
+        
         virtual void task(ThreadPool& thread_pool) = 0;
 
 

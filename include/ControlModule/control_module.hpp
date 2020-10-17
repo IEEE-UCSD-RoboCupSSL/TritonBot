@@ -18,7 +18,7 @@ class ControlModule : public Module {
         ControlModule(void);
         virtual ~ControlModule() {}
 
-        virtual void task() = 0;
+        
         virtual void task(ThreadPool& thread_pool) = 0;
 
 

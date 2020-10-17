@@ -18,7 +18,7 @@ class MotionEKF_Module : public Module {
         MotionEKF_Module();
         virtual ~MotionEKF_Module();
 
-        virtual void task() = 0;
+        
         virtual void task(ThreadPool& thread_pool) = 0;
 
 

@@ -15,8 +15,8 @@ class Module {
 
         }
 
-        virtual void task() = 0;
-        virtual void task(ThreadPool& thread_pool) = 0;
+        virtual void task() {}
+        virtual void task(ThreadPool& thread_pool) {}
         
         //======================Create New Thread Version=================================//
         /* create a new thread and run the module in that thread */

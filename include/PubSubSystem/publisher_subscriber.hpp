@@ -156,6 +156,7 @@ namespace ITPS {
     class Publisher {
         public:
             Publisher(std::string topic_name, std::string msg_name, std::string mode) {
+                // if two publisher uses the same topic_nam + msg_name + mode, they would share the same msg channel (handled inside MsgChannel Constructor)
                 channel = boost::shared_ptr<ITPS::MsgChannel<Msg>>(new ITPS::MsgChannel<Msg>(topic_name, msg_name, mode));
             }
             ~Publisher() {}
