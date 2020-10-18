@@ -8,7 +8,7 @@
 
 static BallEKF::BallData dft_bd() {
     BallEKF::BallData rtn;
-    rtn.loc = zero_vec_2d();
+    rtn.disp = zero_vec_2d();
     rtn.vel = zero_vec_2d();
     return rtn;
 } 

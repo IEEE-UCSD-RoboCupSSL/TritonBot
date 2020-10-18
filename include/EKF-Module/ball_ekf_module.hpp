@@ -8,7 +8,7 @@ class BallEKF_Module : public Module {
     public:
 
         struct BallData {
-            arma::vec loc;
+            arma::vec disp;
             arma::vec vel;
         };
 

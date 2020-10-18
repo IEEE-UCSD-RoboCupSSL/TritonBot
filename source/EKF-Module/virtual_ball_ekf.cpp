@@ -49,11 +49,11 @@ void VirtualBallEKF::task(ThreadPool& thread_pool) {
 }
 
 void VirtualBallEKF::velocity_calc_timer_task() {
-    arma::vec vel = ((ball_data.loc - prev_loc) / vel_sample_period_ms) * 1000.00; // unit: mm/s
+    arma::vec vel = ((ball_data.disp - prev_disp) / vel_sample_period_ms) * 1000.00; // unit: mm/s
     if(arma::norm(vel) < vel_max_thresh) {
         ball_data.vel = vel;
     }
-    prev_loc = ball_data.loc;
+    prev_disp = ball_data.disp;
 
     // recursive call at the next time point
     timer->expires_from_now(posix_time::millisec(vel_sample_period_ms));
@@ -78,17 +78,15 @@ void VirtualBallEKF::loop() {
     balls = packet.detection().balls();
     
 
-    std::cout << balls.size() << std::endl;
-
     if(balls.size() == 1) {
         auto ball = balls[0];
 
         // grsim's x & y are reversed due to diff view perspective
         if(is_blue_team_side) {
-            ball_data.loc = {-ball.y(), ball.x()};
+            ball_data.disp = {-ball.y(), ball.x()};
         }
         else {
-            ball_data.loc = {ball.y(), -ball.x()};
+            ball_data.disp = {ball.y(), -ball.x()};
         }
         publish_ball_data(ball_data);
     

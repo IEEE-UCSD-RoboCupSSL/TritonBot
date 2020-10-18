@@ -1,7 +1,7 @@
 #include "Config/config.hpp"
 #include <string>
 
-unsigned int THREAD_POOL_SIZE = 20;
+unsigned int THREAD_POOL_SIZE = 30;
 
 unsigned int INIT_DELAY = 1000; // 1 sec
 unsigned int DEFAULT_SUBSCRIBER_TIMEOUT = 3000; // 3 sec

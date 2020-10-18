@@ -18,7 +18,7 @@ class VirtualBallEKF : public BallEKF_Module {
         boost::shared_ptr<boost::asio::deadline_timer> timer;
         boost::asio::io_service io_service;
         
-        arma::vec prev_loc = {0, 0};
+        arma::vec prev_disp = {0, 0};
         BallEKF::BallData ball_data;
         B_Log logger;
         void loop();
