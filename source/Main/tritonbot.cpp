@@ -100,22 +100,22 @@ int main(int arc, char *argv[]) {
     
     // .............................................................................................. //
 
-    // special dribbler distance test
-    ITPS::NonBlockingSubscriber<MotionEKF::MotionData> motion_data_sub("MotionEKF", "MotionData"); 
-    boost::shared_ptr<BallEKF_Module> bekf_module(new VirtualBallEKF());
-    bekf_module->run(thread_pool);
-    ITPS::NonBlockingSubscriber<BallEKF_Module::BallData> ball_data_sub("BallEKF", "BallData");
+    // // special dribbler distance test
+    // ITPS::NonBlockingSubscriber<MotionEKF::MotionData> motion_data_sub("MotionEKF", "MotionData"); 
+    // boost::shared_ptr<BallEKF_Module> bekf_module(new VirtualBallEKF());
+    // bekf_module->run(thread_pool);
+    // ITPS::NonBlockingSubscriber<BallEKF_Module::BallData> ball_data_sub("BallEKF", "BallData");
     
-    motion_data_sub.subscribe();
-    ball_data_sub.subscribe();
+    // motion_data_sub.subscribe();
+    // ball_data_sub.subscribe();
 
-    delay(1000);
-    while(1) {
-        // std::cout << ball_data_sub.latest_msg().loc << " "
-        //           << motion_data_sub.latest_msg().trans_disp << " "
-        //           << std::endl;
-        std::cout << arma::norm(ball_data_sub.latest_msg().loc - motion_data_sub.latest_msg().trans_disp) << std::endl;
-    }
+    // delay(1000);
+    // while(1) {
+    //     // std::cout << ball_data_sub.latest_msg().loc << " "
+    //     //           << motion_data_sub.latest_msg().trans_disp << " "
+    //     //           << std::endl;
+    //     std::cout << arma::norm(ball_data_sub.latest_msg().disp - motion_data_sub.latest_msg().trans_disp) << std::endl;
+    // }
 
     return 0;
 }

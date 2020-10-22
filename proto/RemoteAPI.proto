@@ -14,12 +14,13 @@ message Vec3D {
     double z = 3;
 }
 
-message RemoteGeometry {
-    int32 field_length = 1;
-    int32 field_width = 2;
-    int32 goal_width = 3;
-    int32 goal_depth = 4;
-}
+// message RemoteGeometry {
+//     int32 field_length = 1;
+//     int32 field_width = 2;
+//     int32 goal_width = 3;
+//     int32 goal_depth = 4;
+// }
+
 
 
 message Commands {

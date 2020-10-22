@@ -8,7 +8,7 @@
 #include "Utility/common.hpp"
 
 const bool is_blue_team_side = true;
-const double vel_sample_period_ms = 50.00; // 50 ms 
+const int vel_sample_period_ms = 50; // 50 ms 
 const double vel_max_thresh = 10000.00; // 10000 mm/s == 10 m/s (threshold for the norm of vel vector)
 
 using namespace boost;

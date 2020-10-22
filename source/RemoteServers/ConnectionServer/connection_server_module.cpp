@@ -14,82 +14,6 @@
 
 using namespace boost;
 
-#define __MAGIC asio::ip::tcp::socket& socket, \
-                std::string& write_buf, \
-                asio::streambuf& read_buf, \
-                B_Log& logger, \
-                const system::error_code& error
-
-#define __MAGIC_BIND(FUNC_NAME) boost::bind(&FUNC_NAME, \
-                                            boost::ref(socket), \
-                                            boost::ref(write_buf), \
-                                            boost::ref(read_buf), \
-                                            boost::ref(logger), \
-                                            asio::placeholders::error)
-
-//======================== Local callback function declaration =========================//
-static void on_connected(__MAGIC);
-
-static void on_geodata_received(__MAGIC);
-
-static void on_status_return(__MAGIC);
-//======================== End of local callback declaration ===========================//
-
-
-//======================== Local callback function implementation =========================//
-static void on_connected(__MAGIC)
-{
-    if(error)
-    {
-        logger.log(Error, error.message());
-        return;
-    }
-
-    logger.log(Info, "Accepted socket request from: " + socket.remote_endpoint().address().to_string() + "\n");
-
-    write_buf.clear();
-    write_buf = "CONNECTION ESTABLISHED\n";
-    boost::asio::write(socket, asio::buffer(write_buf));
-    
-    asio::async_read_until(socket, read_buf, "\n", __MAGIC_BIND(on_geodata_received));
-}
-
-static void on_geodata_received(__MAGIC)
-{
-    if(error)
-    {
-        logger.log(Error, error.message());
-        return;
-    }
-
-    RemoteGeometry data;
-    std::istream input_stream(&read_buf); // check me
-    std::string received;
-
-    received = std::string(std::istreambuf_iterator<char>(input_stream), {});            
-    data.ParseFromString(received);
-
-    logger.log( Info, "(field length, field width) " + repr(data.field_length()) + ' ' + repr(data.field_width()));
-    logger.log( Info, "(goal_depth, goal_width)" + repr(data.goal_depth()) + ' ' + repr(data.goal_width()));
-
-    // TODO: since the following modules are not here yet... Uncomment in the future
-    // bool precise_kick_status = precise_kick_sub.latest_msg();
-    // bool ball_capture_status = ball_capture_sub.latest_msg();
-
-    write_buf.clear();
-    write_buf = "GEOMETRY RECEIVED\n";
-    boost::asio::write(socket, asio::buffer(write_buf));
-
-    
-    while(1) {
-        std::cout << "bageyalu" << std::endl;
-    }
-}
-
-
-
-//======================== End of local callback implementation ===========================//
-
 
 // Implementation of task to be run on this thread
 void ConnectionServer::task(ThreadPool& thread_pool) {
@@ -119,18 +43,55 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     // TODO: since the following modules are not here yet... Uncomment in the future
     // while(!precise_kick_sub.subscribe());
     // while(!ball_capture_sub.subscribe());
+
     logger.log(Info, "Server Started on Port Number:" + repr(CONN_SERVER_PORT) 
                     + ", Awaiting Remote AI Connection...");
 
     try 
     {
-        acceptor.async_accept(socket, __MAGIC_BIND(on_connected)); // blocking func
+        acceptor.accept(socket); // blocks until getting a connection request and accept the connection
     }
     catch(std::exception& e)
     {
         logger.log(Error, "[Exception]" + std::string(e.what()));
+        while(1);
     }
 
-    io_service.run();
+
+
+    while(1) {
+        // get first line seperated string from the receiving buffer
+        std::istream input_stream(&read_buf);
+        asio::read_until(socket, read_buf, "\n"); 
+        std::string received = std::string(std::istreambuf_iterator<char>(input_stream), {});
+        std::stringstream ss(received);
+
+        // Tokenize the received string
+        std::vector<std::string> tokens;
+        std::string tmp_str;
+        while(getline(ss, tmp_str, ' ')) 
+        { 
+            tokens.push_back(tmp_str); 
+        }   
+
+        // Processing CommandLines
+        if(tokens.size() > 0) {
+            if(tokens[0] == "init") {
+                
+            }
+
+            else if(tokens[0] == "") {
+
+            }
+
+            else { // invalid command 
+                logger.log(Warning, "Invalid Command Received From Remote Side");
+            }
+        }
+    }
+
+
+
+
     
 }
