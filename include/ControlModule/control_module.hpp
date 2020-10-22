@@ -35,7 +35,7 @@ class ControlModule : public Module {
         arma::mat headless_transform(double robot_orient);
 
     private:
-        ITPS::BlockingSubscriber<bool> enable_signal_sub;
+        ITPS::NonBlockingSubscriber<bool> enable_signal_sub;
         ITPS::NonBlockingSubscriber< MotionEKF::MotionData > sensor_sub;
         ITPS::NonBlockingSubscriber<bool> dribbler_signal_sub;
         ITPS::NonBlockingSubscriber< arma::vec > kicker_setpoint_sub;

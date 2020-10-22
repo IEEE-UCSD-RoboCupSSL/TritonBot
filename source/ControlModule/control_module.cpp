@@ -40,7 +40,7 @@ void ControlModule::init_subscribers(void) {
 }
 
 bool ControlModule::get_enable_signal(void) {
-    return enable_signal_sub.pop_msg(SAFETY_EN_TIMEOUT, false); // returns false if timeout
+    return enable_signal_sub.latest_msg();
 }
 
 arma::vec ControlModule::get_kicker_setpoint(void) {
