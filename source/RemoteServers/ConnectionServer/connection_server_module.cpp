@@ -23,7 +23,6 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     logger.add_tag("Connection Server Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
-    RemoteGeometry commands;
 
     int field_length = 0;
     int field_width = 0;
@@ -77,7 +76,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
         // Processing CommandLines
         if(tokens.size() > 0) {
             if(tokens[0] == "init") {
-                
+
             }
 
             else if(tokens[0] == "") {
