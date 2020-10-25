@@ -25,8 +25,8 @@ void InternalEkfServer::task(ThreadPool& thread_pool)
 
     /*** TCP server setup***/
     asio::io_service io_service;
-    asio::ip::udp::endpoint endpoint_to_listen(asio::ip::udp::v4(), EKF_SERVER_PORT);
-    asio::ip::udp::socket socket(io_service, endpoint_to_listen);
+    asio::ip::udp::endpoint endpoint_to_send(asio::ip::udp::v4(), EKF_SERVER_PORT);
+    asio::ip::udp::socket socket(io_service, endpoint_to_send);
     
     std::string write_buf;
 
@@ -52,25 +52,28 @@ void InternalEkfServer::task(ThreadPool& thread_pool)
         while(true){
             /*** Building protobuf object ***/
             MotionEKF_Module::MotionData latest_data = ekf_data_sub.latest_msg();
-            Vec2D* zero_vec_vel;
-            Vec2D* zero_vec_dis;
-            zero_vec_vel->set_x(latest_data.trans_vel(1,1));
-            zero_vec_vel->set_y(latest_data.trans_vel(1,2));
-            zero_vec_dis->set_x(latest_data.trans_disp(1,1));
-            zero_vec_dis->set_y(latest_data.trans_disp(1,2));
-            data.set_allocated_trans_vel(zero_vec_vel);
-            data.set_allocated_trans_disp(zero_vec_dis);
+            Vec2D zero_vec_vel = Vec2D();
+            Vec2D zero_vec_dis = Vec2D();
+
+            // TODO: Check if vec access is correct
+            zero_vec_vel.set_x(latest_data.trans_vel(0));
+            zero_vec_vel.set_y(latest_data.trans_vel(1));
+            zero_vec_dis.set_x(latest_data.trans_disp(0));
+            zero_vec_dis.set_y(latest_data.trans_disp(1));
+            data.set_allocated_trans_vel(&zero_vec_vel);
+            data.set_allocated_trans_disp(&zero_vec_dis);
             data.set_rotat_disp(latest_data.rotat_disp);
             data.set_rotat_vel(latest_data.rotat_vel);
 
             /*** Serialize protobuf object and send ***/
             data.SerializeToString(&write_buf);
-            asio::write(socket, asio::buffer(write_buf));
             
-            //write_buf += "\n";
-            //TODO: Do we still need this?
 
-            socket.send_to(asio::buffer(write_buf), endpoint_to_listen);
+            // TODO: Do we still need this?
+            //write_buf += "\n";
+            
+            // TODO: Netcat is not printing stuff out.
+            socket.send_to(asio::buffer(write_buf), endpoint_to_send);
             /*** Release and clear protobuf object ***/
             data.release_trans_disp();
             data.release_trans_vel();

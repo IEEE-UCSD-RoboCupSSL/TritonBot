@@ -37,16 +37,17 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
     logger.log(Info, "Server Started on Port Number:" + repr(GVISION_SERVER_PORT) 
                 + ", Receiving Global Vision Data");
 
-    std::string to_send;
     size_t num_received;
     try{
         while(true){
             num_received = socket.receive_from(boost::asio::buffer(receive_buffer), endpoint_to_listen);
 
             std::string data = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
-            //TODO: data.erase(--data.end()); 
-            // remove delimiter... I dont know if we still need this since changed to UDP
             
+            // TODO: remove delimiter... I dont know if we still need this since changed to UDP
+            // data.erase(--data.end()); 
+            
+            logger.log(Info, "Data received\n");
 
             world_data_pub.publish(data); // publish serialized data
         }
