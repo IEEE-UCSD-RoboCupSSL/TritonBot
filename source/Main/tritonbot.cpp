@@ -19,6 +19,8 @@
 #include "MotionModule/motion_module.hpp"
 #include "RemoteServers/ConnectionServer/connection_server_module.hpp"
 #include "RemoteServers/RemoteCMDServer/cmd_server_module.hpp"
+#include "RemoteServers/GlobalVisionServer/global_vision_server_module.hpp"
+#include "RemoteServers/InternalEkfServer/internal_ekf_server_module.hpp"
 //////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
@@ -34,9 +36,22 @@ int main(int arc, char *argv[]) {
     
     B_Log logger;
 
+    ITPS::BlockingPublisher<VF_Commands> firm_cmd_pub("FirmClient", "Commands");
+
     ThreadPool thread_pool(THREAD_POOL_SIZE); // pre-allocate # threads in a pool
     ITPS::NonBlockingPublisher<bool> init_sensor_pub("vfirm-client", "re/init sensors", false);
 
+    boost::shared_ptr<FirmClientModule> uc_client_module(new VFirmClient());
+    uc_client_module->run(thread_pool);
+
+    boost::shared_ptr<MotionEKF_Module> ekf_module(new VirtualMotionEKF());
+    ekf_module->run(thread_pool);
+
+    boost::shared_ptr<GlobalVisionServerModule> glob_vision_server_module(new GlobalVisionServer());
+    glob_vision_server_module->run(thread_pool);
+
+    boost::shared_ptr<InternalEkfServerModule> int_ekf_server_module(new InternalEkfServerModule());
+    int_ekf_server_module->run(thread_pool);
 
     while(true){
 

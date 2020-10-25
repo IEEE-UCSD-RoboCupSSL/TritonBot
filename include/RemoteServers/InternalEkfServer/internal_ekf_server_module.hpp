@@ -2,12 +2,12 @@
 #include "PubSubSystem/module.hpp"
 
 
-class GlobalVisionServerModule : public Module {
+class InternalEkfServerModule : public Module {
     public:
         virtual void task() {}
         virtual void task(ThreadPool& thread_pool);
 
-        virtual ~GlobalVisionServerModule() {}
+        virtual ~InternalEkfServerModule() {}
 };
 
-using GlobalVisionServer = GlobalVisionServerModule;
+using InternalEkfServer = InternalEkfServerModule;
