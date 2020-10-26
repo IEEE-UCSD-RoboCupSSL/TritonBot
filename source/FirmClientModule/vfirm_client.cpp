@@ -26,7 +26,6 @@
 
 using namespace boost;
 
-static VF_Commands default_cmd;
 
 //========================== Local Function Declaration ==============================//
 
@@ -159,7 +158,6 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
 }
 
 
-
 /* callback handler when socket received a new data packet */
 static void on_data_received(asio::ip::tcp::socket& socket, 
                              std::string& write_buf,
@@ -196,6 +194,18 @@ static void on_data_received(asio::ip::tcp::socket& socket,
     }
 
 
+    Vec_2D zero_vec;
+    VF_Commands default_cmd;
+
+    zero_vec.set_x(0.00);
+    zero_vec.set_y(0.00);
+
+    default_cmd.set_init(false);
+    default_cmd.set_allocated_translational_output(&zero_vec);
+    default_cmd.set_rotational_output(0.00);
+    default_cmd.set_allocated_kicker(&zero_vec);
+    default_cmd.set_dribbler(false);    
+
     VF_Commands cmd;
     // conditionally blocking (this method blocks when the message queue is empty)
     cmd = firm_cmd_sub.pop_msg(FIRM_CMD_SUB_TIMEOUT, default_cmd);
@@ -204,6 +214,10 @@ static void on_data_received(asio::ip::tcp::socket& socket,
     cmd.set_init(false);
     cmd.SerializeToString(&write_buf);
     write_buf += "\n"; // Don't forget the newline, the server side use it as delim !!!!!
+
+    default_cmd.release_translational_output();  // memory headache, Happy C++ coding :(  see, java is so awesome :)
+    default_cmd.release_kicker();
+
 
     // set the write event
     boost::asio::async_write(socket, asio::buffer(write_buf), 
@@ -272,8 +286,6 @@ static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger) {
     cmd.SerializeToString(&write);
     write += '\n'; // Don't forget the newline, the server side use it as delim !!!!!
     boost::asio::write(socket, boost::asio::buffer(write));
-
-    default_cmd = cmd; // make a copy
 
     cmd.release_translational_output();  // memory headache, Happy C++ coding :(  see, java is so awesome :)
     cmd.release_kicker();

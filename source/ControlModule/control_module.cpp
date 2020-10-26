@@ -20,6 +20,9 @@ ControlModule::ControlModule(void) : enable_signal_sub("AI Connection", "SafetyE
     halt_cmd.set_rotational_output(0.00);
     halt_cmd.set_allocated_kicker(&zero_vec);
     halt_cmd.set_dribbler(false);
+
+    halt_cmd.release_kicker();
+    halt_cmd.release_translational_output();
 }
 
 void ControlModule::init_subscribers(void) {

@@ -47,7 +47,7 @@ void PID_System::task(ThreadPool& thread_pool) {
 
 
     VF_Commands output_cmd;
-    output_cmd = this->halt_cmd; // default to halt
+    output_cmd = halt_cmd; // default to halt
 
     PID_Controller<float> rotat_disp_pid(PID_RD_KP, PID_RD_KI, PID_RD_KD);
     PID_Controller<arma::vec> trans_disp_pid(PID_TD_KP, PID_TD_KI, PID_TD_KD);
@@ -208,4 +208,5 @@ void PID_System::task(ThreadPool& thread_pool) {
 
     halt_cmd.release_translational_output();
     halt_cmd.release_kicker();
+
 }
