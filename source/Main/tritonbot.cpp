@@ -20,6 +20,8 @@
 #include "MotionModule/motion_module.hpp"
 #include "RemoteServers/ConnectionServer/connection_server_module.hpp"
 #include "RemoteServers/RemoteCMDServer/cmd_server_module.hpp"
+#include "RemoteServers/GlobalVisionServer/global_vision_server_module.hpp"
+#include "RemoteServers/InternalEkfServer/internal_ekf_server_module.hpp"
 //////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
@@ -43,6 +45,9 @@ int main(int arc, char *argv[]) {
     boost::shared_ptr<ControlModule> control_module(new PID_System());
     boost::shared_ptr<CMDServerModule> cmd_server_module(new CMDServer());
     boost::shared_ptr<ConnectionServerModule> connection_server_module(new ConnectionServer());
+    boost::shared_ptr<GlobalVisionServerModule> global_vision_server_module(new GlobalVisionServer());
+    boost::shared_ptr<InternalEkfServerModule> intern_ekf_server_module(new InternalEkfServer());
+
     
     // Configs
     PID_System::PID_Constants pid_consts;
@@ -61,7 +66,8 @@ int main(int arc, char *argv[]) {
     control_module->run(thread_pool);
     cmd_server_module->run(thread_pool);
     connection_server_module->run(thread_pool);
-
+    global_vision_server_module->run(thread_pool);
+    intern_ekf_server_module->run(thread_pool);
     
 
     while(1); // this program should run forever 

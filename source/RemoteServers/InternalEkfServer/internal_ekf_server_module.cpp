@@ -68,7 +68,7 @@ void InternalEkfServer::task(ThreadPool& thread_pool)
             /*** Serialize protobuf object and send ***/
             data.SerializeToString(&write_buf);
 
-            logger.log(Info, data.DebugString());
+            logger.log(Debug, data.DebugString());
             
             socket.send_to(asio::buffer(write_buf), endpoint_to_send);
             /*** Release and clear protobuf object ***/
