@@ -22,7 +22,7 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
 
     VisionData visData;
 
-    /*** TCP server setup***/
+    /*** UDP server setup***/
     asio::io_service io_service;
     asio::ip::udp::endpoint endpoint_to_listen(asio::ip::udp::v4(), GVISION_SERVER_PORT);
     asio::ip::udp::socket socket(io_service, endpoint_to_listen);
@@ -46,6 +46,7 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
             
             // TODO: remove delimiter... I dont know if we still need this since changed to UDP
             // data.erase(--data.end()); 
+            // ANS: not need to worry about delimiter because UDP doesn't need delimiter to identify packet length
             
             logger.log(Info, "Data received\n");
 
