@@ -33,6 +33,7 @@ int main(int arc, char *argv[]) {
     // B_Log::sink->set_filter(severity >= Debug && tag_attr == "VFirmClient Module");
     B_Log::sink->set_filter(severity >= Info);    
     B_Log logger;
+    
 
     // Preallocate Threads 
     ThreadPool thread_pool(THREAD_POOL_SIZE); // pre-allocate # threads in a pool
