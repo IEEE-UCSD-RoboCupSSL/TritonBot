@@ -42,7 +42,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     asio::streambuf read_buf;
     std::string write_buf;
 
-    ITPS::NonBlockingPublisher<bool> safety_enable_pub("AI Connection", "SafetyEnable", false);
+    ITPS::NonBlockingPublisher<bool> safety_enable_pub("AI Connection", "SafetyEnable", true); // To-do: change it back to false after testing
     ITPS::NonBlockingPublisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)", zero_vec_2d());
     ITPS::NonBlockingPublisher<bool> init_sensors_pub("vfirm-client", "re/init sensors", false);
     // ITPS::BlockingSubscriber<bool> precise_kick_sub("ConnectionServer", "KickerStatusRtn");

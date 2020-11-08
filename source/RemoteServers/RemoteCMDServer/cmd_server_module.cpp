@@ -63,7 +63,7 @@ void CMDServer::task(ThreadPool& thread_pool) {
 
         if(cmd.enable_ball_auto_capture() == false) {
             // Listening to remote motion commands
-            switch(cmd.mode()) {
+            switch((int)cmd.mode()) {
                 case 0: m_cmd.mode = Motion::CTRL_Mode::TDRD; break;
                 case 1: m_cmd.mode = Motion::CTRL_Mode::TDRV; break;
                 case 2: m_cmd.mode = Motion::CTRL_Mode::TVRD; break;
