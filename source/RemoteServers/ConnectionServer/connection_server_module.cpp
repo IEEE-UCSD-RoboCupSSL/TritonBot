@@ -65,7 +65,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
         logger.add_tag("[connection_server_module.cpp]");
         logger.log(Error, e.what());
         safety_enable_pub.publish(false);
-        while(1);
+        std::exit(0);
     }
 
     logger.log(Info, "Connection Established");

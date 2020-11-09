@@ -38,7 +38,7 @@ void ControlModule::init_subscribers(void) {
         B_Log logger;
         logger.add_tag("[control_module.cpp]");
         logger.log(Error, e.what());
-        while(1);
+        std::exit(0);
     }
 }
 

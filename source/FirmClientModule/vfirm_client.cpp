@@ -95,7 +95,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
         B_Log logger;
         logger.add_tag("[vfirm_client.cpp]");
         logger.log(Error, e.what());
-        while(1);
+        std::exit(0);
     }
 
     logger(Info) << "\033[0;32m Initialized \033[0m";
@@ -115,7 +115,10 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     }
     catch(std::exception& e)
     {
-        logger.log(Error, "\033[0;31m [Exception] "  + std::string(e.what()) + " \033[0m");
+        B_Log logger;
+        logger.add_tag("[vfirm_client.cpp]");
+        logger.log(Error, e.what());
+        std::exit(0);
     }
 
     io_service.run(); // this line blocks until the async tasks queue becomes empty
@@ -136,8 +139,10 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
                                 B_Log& logger,  
                                 const system::error_code& error) {
     if(error) {
+        B_Log logger;
+        logger.add_tag("[vfirm_client.cpp]");
         logger.log(Error, error.message());
-        return;
+        std::exit(0);
     }
     logger(Info) << "\033[0;32m socket connected \033[0m";
 
@@ -168,8 +173,10 @@ static void on_data_received(asio::ip::tcp::socket& socket,
                              B_Log& logger,  
                              const system::error_code& error) {
     if(error) {
+        B_Log logger;
+        logger.add_tag("[vfirm_client.cpp]");
         logger.log(Error, error.message());
-        return;
+        std::exit(0);
     }
     VF_Data data;                             
     std::istream input_stream(&read_buf); // check me
@@ -245,8 +252,10 @@ static void on_cmd_sent(asio::ip::tcp::socket& socket,
                         B_Log& logger,  
                         const system::error_code& error) {
     if(error) {
+        B_Log logger;
+        logger.add_tag("[vfirm_client.cpp]");
         logger.log(Error, error.message());
-        return;
+        std::exit(0);
     } 
 
     // set the next read event

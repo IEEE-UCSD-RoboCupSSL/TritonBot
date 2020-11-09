@@ -41,7 +41,7 @@ void MotionModule::init_subscribers(void) {
         B_Log logger;
         logger.add_tag("[motion_module.cpp]");
         logger.log(Error, e.what());
-        while(1);
+        std::exit(0);
     }
 
 }

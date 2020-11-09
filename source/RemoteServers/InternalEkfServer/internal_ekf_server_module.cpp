@@ -41,7 +41,7 @@ void InternalEkfServer::task(ThreadPool& thread_pool)
         B_Log logger;
         logger.add_tag("[internal_ekf_server_module.cpp]");
         logger.log(Error, e.what());
-        while(1);
+        std::exit(0);
     }
 
     logger.log(Info, "Server Started on Port Number:" + repr(EKF_SERVER_PORT) 

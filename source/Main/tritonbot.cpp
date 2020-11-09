@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <armadillo>
 #include "PubSubSystem/thread_pool.hpp"
@@ -7,6 +6,8 @@
 #include "Utility/systime.hpp"
 #include "Utility/common.hpp"
 #include "Config/config.hpp"
+
+#include "Main/settings.hpp"
 
 ////////////////////////MODULES///////////////////////////
 #include "FirmClientModule/firmware_client_module.hpp"
@@ -26,7 +27,7 @@
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
 
-int main(int arc, char *argv[]) {
+int main(int argc, char *argv[]) {
     // Logger Initialization
     B_Log::static_init();
     B_Log::set_shorter_format();
@@ -34,6 +35,12 @@ int main(int arc, char *argv[]) {
     B_Log::sink->set_filter(severity >= Info);    
     B_Log logger;
     
+    // Process Json configurations
+
+
+    // Process Comandline Arguments
+    bool is_virtual = process_args(argc, argv);
+
 
     // Preallocate Threads 
     ThreadPool thread_pool(THREAD_POOL_SIZE); // pre-allocate # threads in a pool
