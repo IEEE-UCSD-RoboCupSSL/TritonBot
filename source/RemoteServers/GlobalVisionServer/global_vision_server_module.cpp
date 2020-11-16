@@ -20,7 +20,7 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
     logger.add_tag("Global Vision Server Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
-    VisionData visData;
+    VisionData vis_data;
 
     /*** UDP server setup***/
     asio::io_service io_service;
@@ -42,15 +42,17 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
         while(true){
             num_received = socket.receive_from(boost::asio::buffer(receive_buffer), endpoint_to_listen);
 
-            std::string data = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
+            std::string packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
             
             // TODO: remove delimiter... I dont know if we still need this since changed to UDP
             // data.erase(--data.end()); 
             // ANS: not need to worry about delimiter because UDP doesn't need delimiter to identify packet length
             
-            logger.log(Info, "Data received\n");
+            vis_data.ParseFromString(packet_received);
 
-            world_data_pub.publish(data); // publish serialized data
+            logger.log(Info, vis_data.DebugString());
+            // world_data_pub.publish(data); // publish serialized data
+
         }
     }
     catch(std::exception& e)
