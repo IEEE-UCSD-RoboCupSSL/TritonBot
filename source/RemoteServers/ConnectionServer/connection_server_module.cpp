@@ -14,12 +14,7 @@
 
 using namespace boost;
 
-// Reference: https://stackoverflow.com/questions/4654636/how-to-determine-if-a-string-is-a-number-with-c
-static bool is_number(const std::string& s)
-{
-    return !s.empty() && std::find_if(s.begin(), 
-        s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
-}
+
 
 // Implementation of task to be run on this thread
 void ConnectionServer::task(ThreadPool& thread_pool) {
@@ -106,7 +101,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
 
             // Format: init [x] [y]     where (x,y) is the origin of the robot in the world coordinates
             if(tokens[0] == "init") {
-                if(tokens.size() != 3 || !is_number(tokens[1]) || !is_number(tokens[2])) {
+                if(tokens.size() != 3) {
                     rtn_str = "Invalid Arguments";
                 }
                 else {
