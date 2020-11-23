@@ -33,6 +33,7 @@ class ControlModule : public Module {
         SetPoint<float> get_rotat_setpoint(void);
         void publish_output(VF_Commands& cmd);
         arma::mat headless_transform(double robot_orient);
+        bool get_no_slowdown(void);
 
     private:
         ITPS::NonBlockingSubscriber<bool> enable_signal_sub;
@@ -41,7 +42,8 @@ class ControlModule : public Module {
         ITPS::NonBlockingSubscriber< arma::vec > kicker_setpoint_sub;
         ITPS::NonBlockingSubscriber< SetPoint<arma::vec> > trans_setpoint_sub;
         ITPS::NonBlockingSubscriber< SetPoint<float> > rotat_setpoint_sub;
-        ITPS::BlockingPublisher< VF_Commands > output_pub;     
+        ITPS::BlockingPublisher< VF_Commands > output_pub; 
+        ITPS::NonBlockingSubscriber<bool> no_slowdown_sub;     
         
 };
 

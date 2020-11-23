@@ -68,6 +68,8 @@ void CMDServer::task(ThreadPool& thread_pool) {
                 case 1: m_cmd.mode = Motion::CTRL_Mode::TDRV; break;
                 case 2: m_cmd.mode = Motion::CTRL_Mode::TVRD; break;
                 case 3: m_cmd.mode = Motion::CTRL_Mode::TVRV; break;
+                case 4: m_cmd.mode = Motion::CTRL_Mode::NSTDRD; break;
+                case 5: m_cmd.mode = Motion::CTRL_Mode::NSTDRV; break;
                 default: m_cmd.mode = Motion::CTRL_Mode::TVRV;
             }
             if(cmd.is_world_frame()) {
