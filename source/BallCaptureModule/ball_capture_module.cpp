@@ -13,8 +13,16 @@ static Motion::MotionCMD default_cmd() {
     return dft_cmd;
 }
 
+static bool dribbler_control = false;
+
+static bool is_ball_captured = false;
+
 BallCaptureModule::BallCaptureModule() : enable_sub("CMD Server", "EnableAutoBallCapture"),
-                                         command_pub("CMD Server", "MotionCMD", default_cmd())
+                                         ball_data_sub("BallEKF", "BallData"),
+                                         command_pub("CMD Server", "MotionCMD", default_cmd()),
+                                         dribbler_signal_pub("CMD Server", "isDone", dribbler_control),
+                                         status_signal_pub("CMD Server", "isDone", is_ball_captured)
+                                         
 {}
 
 BallCaptureModule::~BallCaptureModule() {} 
@@ -23,6 +31,8 @@ BallCaptureModule::~BallCaptureModule() {}
 void BallCaptureModule::init_subscribers() {
     try {
         // ...
+        enable_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        ball_data_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
         B_Log logger;
@@ -36,6 +46,7 @@ void BallCaptureModule::init_subscribers() {
 
 void BallCaptureModule::task(ThreadPool& thread_pool) {
     UNUSED(thread_pool);
+    init_subscribers();
 
 
     

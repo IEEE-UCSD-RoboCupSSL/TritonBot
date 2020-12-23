@@ -1,6 +1,7 @@
 #pragma once
 #include "PubSubSystem/module.hpp"
 #include <armadillo>
+#include "ProtoGenerated/RemoteAPI.pb.h"
 
 
 
@@ -27,6 +28,7 @@ class BallEKF_Module : public Module {
     private:
         ITPS::NonBlockingPublisher<BallEKF_Module::BallData> ball_data_pub;
         // add ssl vision subscriber later
+        ITPS::NonBlockingSubscriber<VisionData> world_data_sub;
 
 };
 

@@ -20,7 +20,10 @@ class BallCaptureModule : public Module {
 
     private:
         ITPS::NonBlockingSubscriber<bool> enable_sub;
+        ITPS::NonBlockingSubscriber<BallEKF_Module::BallData> ball_data_sub;
         ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub;
+        ITPS::NonBlockingPublisher<bool> dribbler_signal_pub;
+        ITPS::NonBlockingPublisher<bool> status_signal_pub;
         
 };
 
