@@ -37,3 +37,4 @@ void BallEKF_Module::init_subscribers() {
 void BallEKF_Module::publish_ball_data(BallData data) {
     ball_data_pub.publish(data);
 }
+

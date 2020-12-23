@@ -2,6 +2,7 @@
 #include "PubSubSystem/module.hpp"
 #include <armadillo>
 #include "ProtoGenerated/RemoteAPI.pb.h"
+#include "EKF-Module/motion_ekf_module.hpp"
 
 
 
@@ -25,11 +26,9 @@ class BallEKF_Module : public Module {
 
         void publish_ball_data(BallData data);
 
-    private:
         ITPS::NonBlockingPublisher<BallEKF_Module::BallData> ball_data_pub;
         // add ssl vision subscriber later
-        ITPS::NonBlockingSubscriber<VisionData> world_data_sub;
-
+        
 };
 
 // alias

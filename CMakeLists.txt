@@ -84,7 +84,6 @@ aux_source_directory(./source/RemoteServers/InternalEkfServer INTEKF_srcs)
 
 
 
-
 #add macro definitions "#define xxx"
 add_definitions(-DBOOST_LOG_DYN_LINK) #macro needed by boost logger
 

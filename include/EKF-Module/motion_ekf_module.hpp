@@ -34,7 +34,7 @@ class MotionEKF_Module : public Module {
         ITPS::BlockingSubscriber<VF_Data> firm_data_sub; /* internal sensor data, which should be
                                                   * sampled faster than the ssl vision data
                                                   */ 
-        // ITPS::Subscriber<SSL_VisionData>  (trivial mode) .... To-do  
+        // ITPS::Subscriber<SSL_VisionData>  (trivial mode) .... To-do 
 
 
 };

@@ -23,6 +23,7 @@
 #include "RemoteServers/RemoteCMDServer/cmd_server_module.hpp"
 #include "RemoteServers/GlobalVisionServer/global_vision_server_module.hpp"
 #include "RemoteServers/InternalEkfServer/internal_ekf_server_module.hpp"
+#include "BallCaptureModule/ball_capture_module.hpp"
 //////////////////////////////////////////////////////////
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]) {
     boost::shared_ptr<ConnectionServerModule> connection_server_module(new ConnectionServer());
     boost::shared_ptr<GlobalVisionServerModule> global_vision_server_module(new GlobalVisionServer());
     boost::shared_ptr<InternalEkfServerModule> intern_ekf_server_module(new InternalEkfServer());
-
+    boost::shared_ptr<BallCaptureModule> ball_capture_module(new BallCaptureModule());
     
     // Configs
     PID_System::PID_Constants pid_consts;
@@ -76,6 +77,7 @@ int main(int argc, char *argv[]) {
     connection_server_module->run(thread_pool);
     global_vision_server_module->run(thread_pool);
     intern_ekf_server_module->run(thread_pool);
+    ball_capture_module->run(thread_pool);
     
 
     while(1); // this program should run forever 
