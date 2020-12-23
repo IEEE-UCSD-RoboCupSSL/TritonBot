@@ -115,7 +115,15 @@ void PID_System::task(ThreadPool& thread_pool) {
 
             // Translation Movement Controller
             if(trans_setpoint.type == displacement) {
-                trans_disp_out = trans_disp_pid.calculate(trans_setpoint.value - feedback.trans_disp);
+                double ns_mag;
+                if(get_no_slowdown()) {
+                    ns_mag = 100.00;
+                }
+                else {
+                    ns_mag = 1.00;
+                }
+
+                trans_disp_out = trans_disp_pid.calculate(ns_mag * (trans_setpoint.value - feedback.trans_disp) );
 
                 // correct deviation due to rotation momentum        
                 if(rotat_setpoint.type == displacement) {

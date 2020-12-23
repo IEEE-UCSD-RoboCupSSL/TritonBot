@@ -5,6 +5,8 @@
 #include "Utility/boost_logger.hpp"
 
 
+
+
 static CTRL::SetPoint<arma::vec> default_trans_sp() {
     CTRL::SetPoint<arma::vec> rtn;
     arma::vec zero_vec = {0, 0};
@@ -24,9 +26,10 @@ MotionModule::MotionModule() : trans_setpoint_pub("AI CMD", "Trans", default_tra
                                rotat_setpoint_pub("AI CMD", "Rotat", default_rot_sp()),
                                sensor_sub("MotionEKF", "MotionData"), // NonBlocking Mode
                                robot_origin_w_sub("ConnectionInit", "RobotOrigin(WorldFrame)"), // NonBlocking Mode
-                               command_sub("CMD Server", "MotionCMD") // NonBlocking Mode because this module needs to keep the loop running 
-                                                                      // non-blocking to calculate transformation matrix that changes along
-                                                                      // the orientation of a moving robot
+                               command_sub("CMD Server", "MotionCMD"), // NonBlocking Mode because this module needs to keep the loop running 
+                                                                       // non-blocking to calculate transformation matrix that changes along
+                                                                       // the orientation of a moving robot
+                               no_slowdown_pub("AI CMD", "NoSlowdown", false)
 {}
 
 MotionModule::~MotionModule() {}
@@ -80,6 +83,12 @@ void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame se
         case TVRV: trans_setpoint.type = CTRL::velocity;
                    rotat_setpoint.type = CTRL::velocity;
                    break;
+        case NSTDRD: trans_setpoint.type = CTRL::displacement;
+                     rotat_setpoint.type = CTRL::displacement;
+                     break;
+        case NSTDRV: trans_setpoint.type = CTRL::displacement;
+                     rotat_setpoint.type = CTRL::velocity;
+                     break;
     }
 
     trans_setpoint.value = {setpoint_3d(0), setpoint_3d(1)};
@@ -88,7 +97,7 @@ void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame se
 
     // If CMD setpoint is described in World Reference Frame, we do a Homogeneouse Transformation
     if(setpoint_ref_frame == WorldFrame) {
-        if(mode == TDRD || mode == TDRV) { // Position Control : Homo-transform a homgeneous POINT
+        if(mode == TDRD || mode == TDRV || mode == NSTDRD || mode == NSTDRV) { // Position Control : Homo-transform a homgeneous POINT
         
             arma::vec bot_origin = robot_origin_w_sub.latest_msg();
             double bot_orien = sensor_sub.latest_msg().rotat_disp;
@@ -102,9 +111,14 @@ void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame se
 
             arma::vec setpoint_b = A * setpoint_w; // apply transformation to get the same point represented in the body frame
 
+            // if division factor is approx. eq to zero
+            if(std::fabs(setpoint_b(2)) < 0.000001) {
+                setpoint_b(2) = 0.000001;
+            }
+            
             // update setpoint to the setpoint in robot's perspective
             trans_setpoint.value = {setpoint_b(0)/setpoint_b(2), setpoint_b(1)/setpoint_b(2)}; // the division is to divide the scaling factor, according to rules of homogeneous coord systems
-            // To-do : add divide by zero exception handling
+            
 
             /* for rotational, we simply unify their zero orientations to avoid needing transformations */
         }
@@ -124,6 +138,13 @@ void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame se
 
     trans_setpoint_pub.publish(trans_setpoint);
     rotat_setpoint_pub.publish(rotat_setpoint);
+
+    if(mode == NSTDRD || mode == NSTDRV) {
+        no_slowdown_pub.publish(true);
+    }
+    else {
+        no_slowdown_pub.publish(false);
+    }
     
 }
 

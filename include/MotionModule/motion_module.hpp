@@ -11,8 +11,10 @@ class MotionModule : public Module {
         enum CTRL_Mode {TDRD = 0, //TDRD: translational displacement & rotational displacement (at the same time)
                         TDRV = 1, //TDRV: translational displacement & rotational velocity (at the same time)
                         TVRD = 2, //TVRD: translational velocity & rotational displacement (at the same time)
-                        TVRV = 3}; //TVRV: translational velocity & rotational velocity (at the same time)  
-        
+                        TVRV = 3, //TVRV: translational velocity & rotational velocity (at the same time)  
+                        NSTDRD = 4, // No slowdown TDRD 
+                        NSTDRV = 5  // No slowdown TDRV
+                        };
         enum ReferenceFrame {WorldFrame = 0, BodyFrame = 1};
 
         struct MotionCMD {
@@ -44,6 +46,7 @@ class MotionModule : public Module {
         ITPS::NonBlockingSubscriber< MotionCMD > command_sub;
         ITPS::NonBlockingPublisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub;
         ITPS::NonBlockingPublisher<CTRL::SetPoint<float>> rotat_setpoint_pub;
+        ITPS::NonBlockingPublisher<bool> no_slowdown_pub; // work-around for no slowdown modes
         
 
 

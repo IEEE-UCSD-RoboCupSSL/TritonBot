@@ -9,7 +9,8 @@ ControlModule::ControlModule(void) : enable_signal_sub("AI Connection", "SafetyE
                                      kicker_setpoint_sub("Kicker", "KickingSetPoint"), 
                                      trans_setpoint_sub("AI CMD", "Trans"), 
                                      rotat_setpoint_sub("AI CMD", "Rotat"), 
-                                     output_pub("FirmClient", "Commands")
+                                     output_pub("FirmClient", "Commands"),
+                                     no_slowdown_sub("AI CMD", "NoSlowdown")
 {
     
     Vec_2D zero_vec;
@@ -33,6 +34,8 @@ void ControlModule::init_subscribers(void) {
         trans_setpoint_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         rotat_setpoint_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         sensor_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        no_slowdown_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+
     }
     catch(std::exception& e) {
         B_Log logger;
@@ -88,3 +91,7 @@ void ControlModule::publish_output(VF_Commands& cmd) {
     output_pub.publish(cmd); 
 }
 
+
+bool ControlModule::get_no_slowdown(void) {
+    return no_slowdown_sub.latest_msg();
+}
