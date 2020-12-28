@@ -11,22 +11,18 @@ To build
 mkdir build
 cd build
 cmake .. 
-make
+make proto
+make -j
 ```
 Upon modifications were made in CMakeLists.txt, rerun cmake by:
 ```
 make clean
 cmake ..
-make
+make proto
+make -j
 ```
 
 ### Project Structure
 
 ........ run tree
 
-
-### Google Test
-```
-git submodule init
-git submodule update
-```

@@ -52,7 +52,7 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
 
             world_data_pub.publish(visDataReceived); // publish serialized data
 
-        }
+        }   
     }
     catch(std::exception& e)
     {

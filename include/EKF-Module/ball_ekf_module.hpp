@@ -9,9 +9,12 @@
 class BallEKF_Module : public Module {
     public:
 
+        /* Ball frame: Blue team gate is at about (0, -4500) while yellow team gate is at about (0, 4500)
+        When facing yellow team gate, the eastward direction is the positive direction while westward direction
+        is the negative direction. */
         struct BallData {
-            arma::vec disp;
-            arma::vec vel;
+            arma::vec disp; // Location of ball relative to center of the field in ball frame.
+            arma::vec vel;  // Velocity of ball in ball frame
         };
 
         BallEKF_Module();

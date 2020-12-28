@@ -91,26 +91,26 @@ add_definitions(-DBOOST_LOG_DYN_LINK) #macro needed by boost logger
 
 
 
-###--------------------------------Protobuf--------------------------------###
-#run protoc to auto generate protobuf source code
+####--------------------------------Protobuf--------------------------------###
+##run protoc to auto generate protobuf source code
 file(GLOB PROTO_DEFS "${CMAKE_CURRENT_SOURCE_DIR}/proto/*.proto")
 set(PROTO_GEN_MSG  "${CMAKE_CURRENT_SOURCE_DIR}/proto/proto_generated.cmake_msg")
-add_custom_command( OUTPUT ${PROTO_GEN_MSG}
-                    COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated
-                    COMMAND protoc  -I=${CMAKE_CURRENT_SOURCE_DIR}/proto/ 
-                                    --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated 
-                                    ${PROTO_DEFS}
-                    COMMAND touch ${PROTO_GEN_MSG}
-                    DEPENDS ${PROTO_DEFS}
-                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-                    COMMENT "Generating Protobuf Source Code in ${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated"
-                    VERBATIM
-                   )
-
-add_custom_target(PROTO_GEN DEPENDS ${PROTO_GEN_MSG})
+#add_custom_command( OUTPUT ${PROTO_GEN_MSG}
+#                    COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated
+#                    COMMAND protoc  -I=${CMAKE_CURRENT_SOURCE_DIR}/proto/
+#                                    --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated
+#                                    ${PROTO_DEFS}
+#                    COMMAND touch ${PROTO_GEN_MSG}
+#                    DEPENDS ${PROTO_DEFS}
+#                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+#                    COMMENT "Generating Protobuf Source Code in ${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated"
+#                    VERBATIM
+#                   )
+#
+#add_custom_target(PROTO_GEN DEPENDS ${PROTO_GEN_MSG})
 file(GLOB PROTO_PRIVATE_INC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.h")
 file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
-###------------------------------------------------------------------------###
+####------------------------------------------------------------------------###
 
 
 
@@ -118,8 +118,8 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 add_executable(${Target} ${Main_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
                ${MCInterface_srcs} ${EKF_srcs} ${Config_srcs} ${Motion_srcs} ${CNNS_srcs} ${CMDS_srcs} ${BCAP_srcs} ${VIS_srcs} ${INTEKF_srcs})
 
-# need to generate proto sources before compiling everything else
-add_dependencies(${Target} PROTO_GEN) 
+## need to generate proto sources before compiling everything else
+#add_dependencies(${Target} PROTO_GEN)
 
 #specify the libraries to be linked to the target added by [add_executable]
 target_link_libraries(${Target} PUBLIC  ${Boost_Libraries} Boost::date_time 
@@ -146,6 +146,16 @@ add_custom_target(clean-proto-generated
     VERBATIM
 )
 
+add_custom_target(proto
+    COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated
+    COMMAND protoc  -I=${CMAKE_CURRENT_SOURCE_DIR}/proto/
+    --cpp_out=${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated
+    ${PROTO_DEFS}
+    COMMAND touch ${PROTO_GEN_MSG}
+    DEPENDS ${PROTO_DEFS}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    COMMENT "Generating Protobuf Source Code in ${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated"
+    VERBATIM)
 
 #Tests
 

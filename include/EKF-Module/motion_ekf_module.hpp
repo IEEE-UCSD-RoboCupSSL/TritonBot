@@ -8,10 +8,13 @@
 class MotionEKF_Module : public Module {
     public:
 
+        /* Motion frame: when facing yellow gate from blue gate, it is the positive x direction. The positive y direction
+         * is the positive x direction rotated counter-clockwise by 90 degree */
         struct MotionData {
             arma::vec trans_disp;
             arma::vec trans_vel;
-            float rotat_disp;
+            float rotat_disp;   // By default this value is 0 for blue team robots since they are facing the yellow gate.
+                                // Reversely, this value is 180 for yellow team since they are facing the blue gate.
             float rotat_vel; 
         };
 

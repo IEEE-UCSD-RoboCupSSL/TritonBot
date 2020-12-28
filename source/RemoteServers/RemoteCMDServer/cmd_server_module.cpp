@@ -46,9 +46,14 @@ void CMDServer::task(ThreadPool& thread_pool) {
 
 
     ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD", default_cmd());
+    ITPS::NonBlockingPublisher<bool> drib_enable_pub("CMD Server", "EnableAutoBallCapture", false);
+    ITPS::NonBlockingSubscriber<bool> drib_signal_sub("Ball Capture Module", "isDribbled");
+
+    drib_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
 
     logger.log(Info, "CMD Server Started on Port Number:" + repr(CMD_SERVER_PORT) 
                 + ", Listening to Remote AI Commands... ");
+
     Commands cmd;
     Motion::MotionCMD m_cmd;
     arma::vec m_vec3d = {0, 0, 0};
@@ -62,6 +67,7 @@ void CMDServer::task(ThreadPool& thread_pool) {
         // logger.log(Debug, cmd.DebugString());
 
         if(cmd.enable_ball_auto_capture() == false) {
+            drib_enable_pub.publish(false);
             // Listening to remote motion commands
             switch((int)cmd.mode()) {
                 case 0: m_cmd.mode = Motion::CTRL_Mode::TDRD; break;
@@ -87,8 +93,8 @@ void CMDServer::task(ThreadPool& thread_pool) {
         }
         else {
             // Listening to internal CapKick module's commands
-
-            // ......
+            drib_enable_pub.publish(true);
+            while(!drib_signal_sub.latest_msg());
         }
 
     }

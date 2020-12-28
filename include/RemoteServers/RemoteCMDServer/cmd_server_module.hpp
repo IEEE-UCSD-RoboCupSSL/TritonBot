@@ -8,6 +8,8 @@ class CMDServerModule : public Module {
         virtual void task(ThreadPool& thread_pool);
 
         virtual ~CMDServerModule() {}
+
+
 };
 
 using CMDServer = CMDServerModule;
