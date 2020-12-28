@@ -93,8 +93,8 @@ void CMDServer::task(ThreadPool& thread_pool) {
         }
         else {
             // Listening to internal CapKick module's commands
-            drib_enable_pub.publish(true);
-            while(!drib_signal_sub.latest_msg());
+//            drib_enable_pub.publish(true);
+//            while(!drib_signal_sub.latest_msg());
         }
 
     }
