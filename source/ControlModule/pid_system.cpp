@@ -59,6 +59,7 @@ void PID_System::task(ThreadPool& thread_pool) {
     PID_Constants pid_consts;
     float corr_angle = 0.0;
     float angle_err = 0.0;
+    float pid_amplifier;
 
     delay(INIT_DELAY); // controller shall not start before the 
                        // garbage data are refreshed by other modules 
@@ -70,9 +71,13 @@ void PID_System::task(ThreadPool& thread_pool) {
         trans_disp_pid.init(CTRL_FREQUENCY);
 
         while(get_enable_signal()) {
+            pid_amplifier = 1.00;
+            if(get_no_slowdown()) {
+                pid_amplifier = NS_PID_AMP;
+            }
             pid_consts = pid_consts_sub.latest_msg();
             rotat_disp_pid.update_pid_consts(pid_consts.RD_Kp, pid_consts.RD_Ki, pid_consts.RD_Kd);
-            trans_disp_pid.update_pid_consts(pid_consts.TD_Kp, pid_consts.TD_Ki, pid_consts.TD_Kd);
+            trans_disp_pid.update_pid_consts(pid_amplifier * pid_consts.TD_Kp, pid_consts.TD_Ki, pid_consts.TD_Kd);
 
             feedback = get_ekf_feedbacks();
  

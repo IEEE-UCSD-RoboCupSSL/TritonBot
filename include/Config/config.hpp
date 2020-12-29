@@ -20,6 +20,9 @@ extern unsigned int SAFETY_EN_TIMEOUT;
 
 extern unsigned int CTRL_FREQUENCY;
 
+
+extern float NS_PID_AMP;
+
 extern float PID_TD_KP;
 extern float PID_TD_KI;
 extern float PID_TD_KD;

@@ -23,8 +23,9 @@ unsigned int SAFETY_EN_TIMEOUT = 500; // 500 ms
 unsigned int CTRL_FREQUENCY = 500; // Hz
 
 
+float NS_PID_AMP = 2.5;
 
-float PID_TD_KP = 0.50;
+float PID_TD_KP = 0.20;
 float PID_TD_KI = 0.00;
 float PID_TD_KD = 0.00;
 
