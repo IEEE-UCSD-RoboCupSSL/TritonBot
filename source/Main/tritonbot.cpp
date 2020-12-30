@@ -63,9 +63,6 @@ int main(int argc, char *argv[]) {
     pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
     pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
     ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", pid_consts);
-        // dummy publishers for now
-    ITPS::NonBlockingPublisher<bool> dribbler_pub("BallCapture", "Dribbler", false);
-    ITPS::NonBlockingPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
 
     // Run the servers
     firm_client_module->run(thread_pool);

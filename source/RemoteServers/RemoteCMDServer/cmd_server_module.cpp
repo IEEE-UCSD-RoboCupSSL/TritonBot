@@ -45,9 +45,13 @@ void CMDServer::task(ThreadPool& thread_pool) {
 
 
 
-    ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub("CMD Server", "MotionCMD", default_cmd());
+    ITPS::NonBlockingPublisher< Motion::MotionCMD > m_cmd_pub("CMD Server", "MotionCMD", default_cmd());
     ITPS::NonBlockingPublisher<bool> drib_enable_pub("CMD Server", "EnableAutoBallCapture", false);
     ITPS::NonBlockingSubscriber<bool> drib_signal_sub("Ball Capture Module", "isDribbled");
+
+    ITPS::NonBlockingPublisher<bool> dribbler_pub("BallCapture", "Dribbler", false); // Sammuel: use this pub to turn dribbler on/off
+    ITPS::NonBlockingPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
+
 
     drib_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
 
@@ -56,7 +60,7 @@ void CMDServer::task(ThreadPool& thread_pool) {
 
     Commands cmd;
     Motion::MotionCMD m_cmd;
-    arma::vec m_vec3d = {0, 0, 0};
+    arma::vec kick_vec2d = {0, 0};
 
     while(1) {
         num_received = socket.receive_from(asio::buffer(receive_buffer), ep_listen);
@@ -88,8 +92,12 @@ void CMDServer::task(ThreadPool& thread_pool) {
             m_cmd.setpoint_3d = {cmd.motion_set_point().x(), 
                                  cmd.motion_set_point().y(),
                                  cmd.motion_set_point().z()};
+            m_cmd_pub.publish(m_cmd);
 
-            command_pub.publish(m_cmd);
+            kick_vec2d = {cmd.kicker_set_point().x(), cmd.kicker_set_point().y()};
+            kicker_pub.publish(kick_vec2d);
+            
+
         }
         else {
             // Listening to internal CapKick module's commands
