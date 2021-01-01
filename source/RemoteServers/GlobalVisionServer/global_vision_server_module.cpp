@@ -24,23 +24,23 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
     asio::io_service io_service;
     asio::ip::udp::endpoint endpoint_to_listen(asio::ip::udp::v4(), GVISION_SERVER_PORT);
     asio::ip::udp::socket socket(io_service, endpoint_to_listen);
-    
-    boost::array<char, 1024> receive_buffer;
 
     /*** Publisher setup ***/
     //ITPS::NonBlockingPublisher<std::string> world_data_pub("GlobalVisionServer", "WorldData");
     ITPS::BlockingPublisher<VisionData> world_data_pub("GlobalVisionServer", "WorldData");
     
     
-    logger.log(Info, "Server Started on Port Number:" + repr(GVISION_SERVER_PORT) 
+    logger.log(Info, "Started on Port Number:" + repr(GVISION_SERVER_PORT)
                 + ", Receiving Global Vision Data");
 
-    size_t num_received;
     try{
         while(true){
+            size_t num_received;
+            boost::array<char, 1024> receive_buffer;
             num_received = socket.receive_from(boost::asio::buffer(receive_buffer), endpoint_to_listen);
 
-            std::string packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
+            std::string packet_received;
+            packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
             
             // TODO: remove delimiter... I dont know if we still need this since changed to UDP
             // data.erase(--data.end()); 
@@ -48,9 +48,23 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
 
             logger.log(Info, "Data received\n");
             VisionData visDataReceived;
-            visDataReceived.ParseFromString(packet_received);
+            if(!visDataReceived.ParseFromString(packet_received)){
+                logger.log(Error, "[Global Vision Server]: Vision data parsing failed!" );
+                delay(100);
+                continue;
+            }
+
+            if(true){
+                logger.log(Info, "[Global Vision Server]:" + visDataReceived.DebugString());
+                delay(100);
+            }
 
             world_data_pub.publish(visDataReceived); // publish serialized data
+
+            visDataReceived.release_ball_pos();
+            visDataReceived.release_ball_vel();
+            visDataReceived.release_bot_pos();
+            visDataReceived.release_bot_vel();
 
         }   
     }

@@ -28,7 +28,7 @@ static Motion::MotionCMD default_cmd() {
 }
 
 // Implementation of task to be run on this thread
-void CMDServer::task(ThreadPool& thread_pool) {
+[[noreturn]] void CMDServer::task(ThreadPool& thread_pool) {
     UNUSED(thread_pool); 
 
     B_Log logger;
@@ -62,7 +62,7 @@ void CMDServer::task(ThreadPool& thread_pool) {
     Motion::MotionCMD m_cmd;
     arma::vec kick_vec2d = {0, 0};
 
-    while(1) {
+    while(true) {
         num_received = socket.receive_from(asio::buffer(receive_buffer), ep_listen);
         packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
         // logger.log(Info, packet_received);
@@ -70,7 +70,7 @@ void CMDServer::task(ThreadPool& thread_pool) {
 
         // logger.log(Debug, cmd.DebugString());
 
-        if(cmd.enable_ball_auto_capture() == false) {
+        if(!cmd.enable_ball_auto_capture()) {
             drib_enable_pub.publish(false);
             // Listening to remote motion commands
             switch((int)cmd.mode()) {

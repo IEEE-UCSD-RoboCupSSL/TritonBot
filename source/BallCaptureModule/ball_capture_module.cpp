@@ -89,7 +89,7 @@ void BallCaptureModule::init_subscribers() {
         }
 
         //if(enable_sub.latest_msg()){
-        if(true){
+        if(false){
             MotionEKF_Module::MotionData latest_motion_data = motion_data_sub.latest_msg(); // Robot data is in robot frame
             BallEKF_Module::BallData latest_ball_data = ball_data_sub.latest_msg(); // Ball data is in world frame
 
