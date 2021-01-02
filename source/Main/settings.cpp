@@ -47,8 +47,8 @@ bool process_args(int argc, char *argv[]) {
             // <port base>
             CONN_SERVER_PORT = std::stoi( std::string(argv[argc - 3]), nullptr, 10 );
             CMD_SERVER_PORT = CONN_SERVER_PORT + 1;
-            GVISION_SERVER_PORT = CONN_SERVER_PORT + 2;
-            EKF_SERVER_PORT = CONN_SERVER_PORT + 3;
+            EKF_SERVER_PORT = CONN_SERVER_PORT + 2;
+            GVISION_SERVER_PORT = CONN_SERVER_PORT + 3;
             
             // <vfirm ip>
             VFIRM_IP_ADDR = std::string(argv[argc - 2]);
@@ -60,8 +60,8 @@ bool process_args(int argc, char *argv[]) {
             // <port base>
             CONN_SERVER_PORT = std::stoi( std::string(argv[argc - 2]), nullptr, 10 );
             CMD_SERVER_PORT = CONN_SERVER_PORT + 1;
-            GVISION_SERVER_PORT = CONN_SERVER_PORT + 2;
-            EKF_SERVER_PORT = CONN_SERVER_PORT + 3;
+            EKF_SERVER_PORT = CONN_SERVER_PORT + 2;
+            GVISION_SERVER_PORT = CONN_SERVER_PORT + 3;
             
             // <vfirm port>
             VFIRM_IP_PORT = std::stoi( std::string(argv[argc - 1]), nullptr, 10 );

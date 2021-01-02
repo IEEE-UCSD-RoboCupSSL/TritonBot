@@ -49,11 +49,11 @@ float PID_TVRV_CORR = 1.0;
 float PID_MAX_ROT_PERC = 30.00;
 
 
-
-int CONN_SERVER_PORT = 6000;
-int CMD_SERVER_PORT = 6001;
-int GVISION_SERVER_PORT = 6002;
-int EKF_SERVER_PORT = 6003;
+/* These values will be different for different robots, hence be reset in another file */
+int CONN_SERVER_PORT = 6000; // juts an arbitary default val
+int CMD_SERVER_PORT = 6001; // juts an arbitary default val
+int EKF_SERVER_PORT = 6002; // juts an arbitary default val
+int GVISION_SERVER_PORT = 6003; // juts an arbitary default val
 
 
 
