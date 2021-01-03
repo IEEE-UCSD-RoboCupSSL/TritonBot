@@ -102,6 +102,12 @@ void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame se
             arma::vec bot_origin = robot_origin_w_sub.latest_msg();
             double bot_orien = sensor_sub.latest_msg().rotat_disp;
 
+            /* The math trick here is we define body frame to be (bot_origin_x, bot_origin_y, bot_orien)
+             * in which bot_origin_x/y are static, while bot_orien changes along with the moving robot.
+             * This is meant to simplify things to avoid having a body frame that moves. So we in fact
+             * have a stationary body frame that essentially only have the rotation transformation being meaningful
+             */
+
             /* a not-so-obvious simplification was done by 
                 * using bot_origin as the bot curr location */
             arma::mat A = wtb_homo_transform(bot_origin, bot_orien); // world to body homogeneous transformation

@@ -28,10 +28,10 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
     boost::array<char, UDP_RBUF_SIZE> receive_buffer;
 
     /*** Publisher setup ***/
-    //ITPS::NonBlockingPublisher<std::string> world_data_pub("GlobalVisionServer", "WorldData");
-    ITPS::BlockingPublisher<VisionData> world_data_pub("GlobalVisionServer", "WorldData");
-    
-    
+    // Note: will convert received worldframe data to body frame in which bot position is relative to the bot origin
+    ITPS::NonBlockingPublisher<arma::vec> trans_disp_pub("GVision Server", "BotPos[BodyFrame]", zero_vec_2d()); 
+
+
     logger.log(Info, "Server Started on Port Number:" + repr(GVISION_SERVER_PORT) 
                 + ", Receiving Global Vision Data");
 
@@ -44,17 +44,14 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
 
             packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
             
-            // TODO: remove delimiter... I dont know if we still need this since changed to UDP
-            // data.erase(--data.end()); 
-            // ANS: not need to worry about delimiter because UDP doesn't need delimiter to identify packet length
 
             //logger.log(Info, "Data received\n");
             
             visDataReceived.ParseFromString(packet_received);
 
-            logger.log(Info, visDataReceived.ball_pos().DebugString());
+            // logger.log(Info, visDataReceived.ball_pos().DebugString());
 
-            // world_data_pub.publish(visDataReceived); // publish serialized data
+            world_data_pub.publish(visDataReceived); // publish serialized data
 
         }   
     }

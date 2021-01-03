@@ -32,11 +32,10 @@ VirtualMotionEKF::~VirtualMotionEKF() = default;
     MotionEKF::MotionData m_data;
 
     while(true) {
-        // Motion data is return in non-global frame!
-        // The actual
+        // firm data is in body(not global) frame!
         vf_data = get_firmware_data();
 
-        if(true){
+        if(false){
             logger.log(Info, "[virtual_motion_ekf] trans_disp_x_y: (" + std::to_string(vf_data.translational_displacement().x()) + ", " + std::to_string(vf_data.translational_displacement().y()) + ")");
             logger.log(Info, "[virtual_motion_ekf] trans_vel_x_y: (" + std::to_string(vf_data.translational_velocity().x()) + ", " + std::to_string(vf_data.translational_velocity().y()) + ")");
             logger.log(Info, "[virtual_motion_ekf] rotate_disp: (" + std::to_string(vf_data.rotational_displacement()) + ")");
@@ -55,71 +54,4 @@ VirtualMotionEKF::~VirtualMotionEKF() = default;
         publish_motion_data(m_data);
         
     }
-}
-
-void VirtualMotionEKF::getPositionData() {
-    grsim_endpoint = boost::shared_ptr<udp::endpoint>(
-            new udp::endpoint(address::from_string(GRSIM_VISION_IP), GRSIM_VISION_PORT)
-    );
-    this->socket = boost::shared_ptr<udp::socket>(new udp::socket(io_service));
-    this->timer = boost::shared_ptr<deadline_timer>(new deadline_timer(io_service));
-
-    socket->open(grsim_endpoint->protocol());
-    socket->set_option(udp::socket::reuse_address(true));
-    socket->bind(*grsim_endpoint);
-    socket->set_option(ip::multicast::join_group(grsim_endpoint->address()));
-
-    // default async task that keeps looping in the background
-    io_service.post(boost::bind(&VirtualMotionEKF::loop, this)); // .post means postpone, meaning that this task has lower priority in the task queue
-
-    // timed periodic task
-    timer->expires_from_now(posix_time::millisec(vel_sample_period_ms));
-    timer->async_wait(boost::bind(&VirtualMotionEKF::velocity_calc_timer_task, this));
-}
-
-void VirtualMotionEKF::loop() {
-    boost::array<char, UDP_RBUF_SIZE> receive_buffer;
-
-    size_t num_bytes_received;
-    std::string packet_string;
-    SSL_WrapperPacket packet;
-    google::protobuf::RepeatedPtrField<SSL_DetectionBall> balls;
-
-    num_bytes_received = socket->receive_from(asio::buffer(receive_buffer), *grsim_endpoint);
-    packet_string = std::string(receive_buffer.begin(),
-                                receive_buffer.begin() + num_bytes_received);
-
-    packet.ParseFromString(packet_string);
-
-    balls = packet.detection().balls();
-
-
-    if(balls.size() == 1) {
-        auto ball = balls[0];
-
-        // grsim's x & y are reversed due to diff view perspective
-        if(is_blue_team_side) {
-            motion_data.trans_disp = {-ball.y(), ball.x()};
-        }
-        else {
-            motion_data.trans_disp = {ball.y(), -ball.x()};
-        }
-
-    }
-
-    // Recursive call to enqueue loop func as an dft async task
-    io_service.post(boost::bind(&VirtualMotionEKF::loop, this));
-
-}
-
-void VirtualMotionEKF::velocity_calc_timer_task() {
-    arma::vec vel = ((motion_data.trans_disp - prev_disp) / vel_sample_period_ms) * 1000.00; // unit: mm/s
-    if(arma::norm(vel) < vel_max_thresh) {
-        motion_data.trans_vel = vel;
-    }
-    prev_disp = motion_data.trans_disp;
-
-    // recursive call at the next time point
-    timer->expires_from_now(posix_time::millisec(vel_sample_period_ms));
-    timer->async_wait(boost::bind(&VirtualMotionEKF::velocity_calc_timer_task, this));
 }

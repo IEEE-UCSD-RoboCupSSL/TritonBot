@@ -20,8 +20,6 @@ class VirtualMotionEKF : public MotionEKF_Module {
 
         arma::vec prev_disp = {0, 0};
         MotionEKF::MotionData motion_data;
-        void getPositionData();
-        void loop();
-        void velocity_calc_timer_task();
+
 
 };
