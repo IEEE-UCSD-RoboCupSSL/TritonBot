@@ -14,7 +14,9 @@ static BallEKF::BallData dft_bd() {
 } 
 
 
-BallEKF_Module::BallEKF_Module() : ball_data_pub("BallEKF", "BallData", dft_bd())
+BallEKF_Module::BallEKF_Module() : ball_data_pub("BallEKF", "BallData", dft_bd()),
+                                   ball_loc_sub("GVision Server", "BallPos(BodyFrame)"),
+                                   ball_vel_sub("GVision Server", "BallVel(BodyFrame)")
 {}
 
 BallEKF_Module::~BallEKF_Module() {} 
@@ -22,7 +24,8 @@ BallEKF_Module::~BallEKF_Module() {}
 
 void BallEKF_Module::init_subscribers() {
     try {
-        // add ssl vision subscriber later
+        ball_loc_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        ball_vel_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
         B_Log logger;
@@ -36,5 +39,13 @@ void BallEKF_Module::init_subscribers() {
 
 void BallEKF_Module::publish_ball_data(BallData data) {
     ball_data_pub.publish(data);
+}
+
+arma::vec BallEKF_Module::get_ball_loc() {
+    return ball_loc_sub.latest_msg();
+}
+
+arma::vec BallEKF_Module::get_ball_vel() {
+    return ball_vel_sub.latest_msg();
 }
 

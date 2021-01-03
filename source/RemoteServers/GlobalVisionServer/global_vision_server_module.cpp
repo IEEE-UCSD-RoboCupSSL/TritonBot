@@ -57,6 +57,16 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
     /*** Subscriber setup ***/
     ITPS::NonBlockingSubscriber<arma::vec> robot_origin_w_sub("ConnectionInit", "RobotOrigin(WorldFrame)");
     ITPS::NonBlockingSubscriber<MotionEKF::MotionData> sensor_sub("MotionEKF", "MotionData");
+    try {
+        robot_origin_w_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        sensor_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+    }
+    catch(std::exception& e) {
+        B_Log logger;
+        logger.add_tag("[global_vision_server_module.cpp]");
+        logger.log(Error, e.what());
+        std::exit(0);
+    }
 
     logger.log(Info, "Server Started on Port Number:" + repr(GVISION_SERVER_PORT) 
                 + ", Receiving Global Vision Data");

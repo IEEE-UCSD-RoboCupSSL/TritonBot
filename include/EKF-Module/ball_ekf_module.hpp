@@ -28,9 +28,12 @@ class BallEKF_Module : public Module {
         virtual void init_subscribers();
 
         void publish_ball_data(BallData data);
+        arma::vec get_ball_loc();
+        arma::vec get_ball_vel();
 
         ITPS::NonBlockingPublisher<BallEKF_Module::BallData> ball_data_pub;
-        // add ssl vision subscriber later
+        ITPS::NonBlockingSubscriber<arma::vec> ball_loc_sub; //("GVision Server", "BallPos(BodyFrame)"); 
+        ITPS::NonBlockingSubscriber<arma::vec> ball_vel_sub; //("GVision Server", "BallVel(BodyFrame)");
         
 };
 

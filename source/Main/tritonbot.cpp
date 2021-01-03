@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     // Logger Initialization
     B_Log::static_init();
     B_Log::set_shorter_format();
-    // B_Log::sink->set_filter(severity >= Debug && tag_attr == "Global Vision Server Module");
+    //B_Log::sink->set_filter(severity >= Debug && tag_attr == "PseudoBallEKF Module");
     B_Log::sink->set_filter(severity >= Info);    
     B_Log logger;
     
