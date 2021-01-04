@@ -33,7 +33,7 @@ float PID_TD_KD = 0.00;
 // float PID_TV_KI = 0.00;
 // float PID_TV_KD = 0.00;
 
-float PID_RD_KP = 0.30;
+float PID_RD_KP = 0.50;
 float PID_RD_KI = 0.00;
 float PID_RD_KD = 0.00;
 
