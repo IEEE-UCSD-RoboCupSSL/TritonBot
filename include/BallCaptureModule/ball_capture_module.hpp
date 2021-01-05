@@ -23,8 +23,12 @@ class BallCaptureModule : public Module {
 
     private:
         ITPS::NonBlockingSubscriber<bool> enable_sub;
-        ITPS::NonBlockingSubscriber<BallEKF_Module::BallData> ball_data_sub;
-        ITPS::NonBlockingSubscriber<MotionEKF_Module::MotionData> motion_data_sub;
+        ITPS::NonBlockingSubscriber<arma::vec> ball_pos_sub;
+        ITPS::NonBlockingSubscriber<arma::vec> ball_velo_sub;
+        ITPS::NonBlockingSubscriber<arma::vec> bot_pos_sub;
+        ITPS::NonBlockingSubscriber<arma::vec> bot_velo_sub;
+        ITPS::NonBlockingSubscriber<float> bot_ang_sub;
+        ITPS::NonBlockingSubscriber<float> bot_ang_velo_sub;
         ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub;
         ITPS::NonBlockingPublisher<bool> dribbler_signal_pub;
         ITPS::NonBlockingPublisher<bool> status_signal_pub;

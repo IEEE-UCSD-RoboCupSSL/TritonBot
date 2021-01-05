@@ -28,7 +28,7 @@ static Motion::MotionCMD default_cmd() {
 }
 
 // Implementation of task to be run on this thread
-void CMDServer::task(ThreadPool& thread_pool) {
+[[noreturn]] void CMDServer::task(ThreadPool& thread_pool) {
     UNUSED(thread_pool); 
 
     B_Log logger;
@@ -46,10 +46,9 @@ void CMDServer::task(ThreadPool& thread_pool) {
 
 
     ITPS::NonBlockingPublisher< Motion::MotionCMD > m_cmd_pub("CMD Server", "MotionCMD", default_cmd());
-    ITPS::NonBlockingPublisher<bool> drib_enable_pub("CMD Server", "EnableAutoBallCapture", false);
+    ITPS::NonBlockingPublisher<bool> drib_enable_pub("CMD Server", "EnableDribbler", false);
     ITPS::NonBlockingSubscriber<bool> drib_signal_sub("Ball Capture Module", "isDribbled");
 
-    ITPS::NonBlockingPublisher<bool> dribbler_pub("BallCapture", "Dribbler", false); // Sammuel: use this pub to turn dribbler on/off
     ITPS::NonBlockingPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
 
 
@@ -62,7 +61,7 @@ void CMDServer::task(ThreadPool& thread_pool) {
     Motion::MotionCMD m_cmd;
     arma::vec kick_vec2d = {0, 0};
 
-    while(1) {
+    while(true) {
         num_received = socket.receive_from(asio::buffer(receive_buffer), ep_listen);
         packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
         // logger.log(Info, packet_received);
