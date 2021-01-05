@@ -94,8 +94,8 @@ void BallCaptureModule::init_subscribers() {
                              + std::to_string(ball_velo_sub.latest_msg()(1)) + " )\n");
             logger.log(Info, "Bot displacement (x, y): ( " + std::to_string(bot_pos_sub.latest_msg()(0)) + " , "
                              + std::to_string(bot_pos_sub.latest_msg()(1)) + " )\n");
-            logger.log(Info, "Bot velocity (x, y): ( " + std::to_string(ball_velo_sub.latest_msg()(0)) + " , "
-                             + std::to_string(ball_velo_sub.latest_msg()(1)) + " )\n");
+            logger.log(Info, "Bot velocity (x, y): ( " + std::to_string(bot_velo_sub.latest_msg()(0)) + " , "
+                             + std::to_string(bot_velo_sub.latest_msg()(1)) + " )\n");
             logger.log(Info, "Bot angle (O): ( " + std::to_string(bot_ang_sub.latest_msg()) + " )\n");
             logger.log(Info, "Bot ang velocity (w): ( " + std::to_string(bot_ang_velo_sub.latest_msg()) + " )\n");
             delay(100);
