@@ -48,11 +48,20 @@ static Motion::MotionCMD default_cmd() {
     ITPS::NonBlockingPublisher< Motion::MotionCMD > m_cmd_pub("CMD Server", "MotionCMD", default_cmd());
     ITPS::NonBlockingPublisher<bool> drib_enable_pub("CMD Server", "EnableDribbler", false);
     ITPS::NonBlockingSubscriber<bool> drib_signal_sub("Ball Capture Module", "isDribbled");
+    ITPS::NonBlockingSubscriber< Motion::MotionCMD > capture_cmd_sub("Ball Capture Module", "MotionCMD");
 
     ITPS::NonBlockingPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
 
-
-    drib_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+    try {
+        drib_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        capture_cmd_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+    }
+    catch(std::exception& e) {
+        B_Log logger;
+        logger.add_tag("[cmd_server_module.cpp]");
+        logger.log(Error, std::string(e.what()));
+        std::exit(0);
+    }
 
     logger.log(Info, "CMD Server Started on Port Number:" + repr(CMD_SERVER_PORT) 
                 + ", Listening to Remote AI Commands... ");
@@ -61,7 +70,7 @@ static Motion::MotionCMD default_cmd() {
     Motion::MotionCMD m_cmd;
     arma::vec kick_vec2d = {0, 0};
 
-    while(true) {
+    while(1) {
         num_received = socket.receive_from(asio::buffer(receive_buffer), ep_listen);
         packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
         // logger.log(Info, packet_received);
@@ -70,6 +79,7 @@ static Motion::MotionCMD default_cmd() {
         // logger.log(Debug, cmd.DebugString());
 
         if(cmd.enable_ball_auto_capture() == false) {
+//        if(false){
             drib_enable_pub.publish(false);
             // Listening to remote motion commands
             switch((int)cmd.mode()) {
@@ -99,9 +109,16 @@ static Motion::MotionCMD default_cmd() {
 
         }
         else {
+
             // Listening to internal CapKick module's commands
-//            drib_enable_pub.publish(true);
-//            while(!drib_signal_sub.latest_msg());
+            drib_enable_pub.publish(true);
+
+            m_cmd = capture_cmd_sub.latest_msg();
+            m_cmd_pub.publish(m_cmd);
+
+            kick_vec2d = {cmd.kicker_set_point().x(), cmd.kicker_set_point().y()};
+            kicker_pub.publish(kick_vec2d);
+
         }
 
     }

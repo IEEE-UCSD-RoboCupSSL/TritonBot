@@ -48,6 +48,7 @@ VirtualMotionEKF::~VirtualMotionEKF() = default;
         m_data.trans_vel = {vf_data.translational_velocity().x(),
                             vf_data.translational_velocity().y()};
 
+        // Rotational data are all in world frame
         m_data.rotat_disp = vf_data.rotational_displacement();
         m_data.rotat_vel = vf_data.rotational_velocity();
 
