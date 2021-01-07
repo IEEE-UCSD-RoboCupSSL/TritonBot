@@ -109,11 +109,11 @@ void PID_System::task(ThreadPool& thread_pool) {
             }
             else { // type == velocity
                 rotat_disp_pid.init(CTRL_FREQUENCY);
-                if(rotat_setpoint.value > PID_MAX_ROT_PERC) {
-                    rotat_setpoint.value = PID_MAX_ROT_PERC;
-                } else if(rotat_setpoint.value < -PID_MAX_ROT_PERC) {
-                    rotat_setpoint.value = -PID_MAX_ROT_PERC;
-                }
+                // if(rotat_setpoint.value > PID_MAX_ROT_PERC) {
+                //     rotat_setpoint.value = PID_MAX_ROT_PERC;
+                // } else if(rotat_setpoint.value < -PID_MAX_ROT_PERC) {
+                //     rotat_setpoint.value = -PID_MAX_ROT_PERC;
+                // }
                 rotat_vel_out = rotat_setpoint.value;
 
             }
@@ -136,12 +136,6 @@ void PID_System::task(ThreadPool& thread_pool) {
             else {
                 // type == velocity
                 trans_disp_pid.init(CTRL_FREQUENCY);
-                // if(is_headless_mode()) {
-                //     // transform the worldframe setpoint to bodyframe coordinates/vectors
-                //     arma::mat T = headless_transform(feedback.rotat_disp);
-                //     trans_setpoint.value = T * trans_setpoint.value;
-                //     feedback.trans_vel = T * feedback.trans_vel;
-                // }
                 trans_vel_out = trans_setpoint.value;
 
                 // correct deviation due to rotation momentum        
@@ -161,11 +155,11 @@ void PID_System::task(ThreadPool& thread_pool) {
 
             /* PID output selections
              *
-             * velocity and displacement are not linear independent, 
+             * velocity and displacement are not independent, 
              * so generally they should be mutually exclusive.
              * 
              * translational and rotational variables are linear independent,
-             * so they can have controller running at the same time
+             * so they can have different controllers running at the same time
              */ 
            
             // translational velocity 
@@ -188,7 +182,7 @@ void PID_System::task(ThreadPool& thread_pool) {
             
 
 
-            
+            /* Effect of Normalizing: more power spent on rotation results in less spent on translation, vice versa */
             if(arma::norm(output_3d) > 100.00) {
                 // Normalize the output vector to limit the maximum output vector norm to 100.00
                 output_3d = arma::normalise(output_3d);
