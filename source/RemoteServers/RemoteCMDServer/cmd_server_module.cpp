@@ -49,6 +49,8 @@ static Motion::MotionCMD default_cmd() {
     
     ITPS::NonBlockingSubscriber< Motion::MotionCMD > capture_cmd_sub("Ball Capture Module", "MotionCMD");
 
+    ITPS::NonBlockingPublisher< bool > en_autocap_pub("CMD Server", "EnableAutoCap", false);
+
     ITPS::NonBlockingPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
 
     try {
@@ -78,6 +80,7 @@ static Motion::MotionCMD default_cmd() {
 
         if(cmd.enable_ball_auto_capture() == false) {
             // Listening to remote motion commands
+            en_autocap_pub.publish(false);
             switch((int)cmd.mode()) {
                 case 0: m_cmd.mode = Motion::CTRL_Mode::TDRD; break;
                 case 1: m_cmd.mode = Motion::CTRL_Mode::TDRV; break;
@@ -105,9 +108,8 @@ static Motion::MotionCMD default_cmd() {
 
         }
         else {
-
             // Listening to internal AutoCapture module's commands
-
+            en_autocap_pub.publish(true);
             m_cmd = capture_cmd_sub.latest_msg();
             m_cmd_pub.publish(m_cmd);
 

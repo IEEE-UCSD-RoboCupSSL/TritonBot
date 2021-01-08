@@ -5,7 +5,7 @@
 
 ControlModule::ControlModule(void) : enable_signal_sub("AI Connection", "SafetyEnable"), 
                                      sensor_sub("MotionEKF", "MotionData"), 
-                                     dribbler_signal_sub("CMD Server", "EnableDribbler"),
+                                     dribbler_signal_sub("BallCapture", "EnableDribbler"),
                                      kicker_setpoint_sub("Kicker", "KickingSetPoint"), 
                                      trans_setpoint_sub("AI CMD", "Trans"), 
                                      rotat_setpoint_sub("AI CMD", "Rotat"), 

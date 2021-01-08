@@ -16,12 +16,12 @@ static Motion::MotionCMD default_cmd() {
 }
 
 
-BallCaptureModule::BallCaptureModule() : enable_sub("CMD Server", "EnableDribbler"),
+BallCaptureModule::BallCaptureModule() : enable_sub("CMD Server", "EnableAutoCap"),
                                          ball_data_sub("BallEKF", "BallData"),
                                          bot_data_sub("MotionEKF", "MotionData"),
                                          command_pub("Ball Capture Module", "MotionCMD", default_cmd()),
                                          autocap_done_pub("Ball Capture Module", "isDribbled", false),
-                                         drib_enable_pub("CMD Server", "EnableDribbler", false),
+                                         drib_enable_pub("BallCapture", "EnableDribbler", false),
                                          logger()
                                          
 {
