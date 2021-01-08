@@ -111,8 +111,8 @@ static Motion::MotionCMD default_cmd() {
             m_cmd = capture_cmd_sub.latest_msg();
             m_cmd_pub.publish(m_cmd);
 
-            kick_vec2d = {cmd.kicker_set_point().x(), cmd.kicker_set_point().y()};
-            kicker_pub.publish(kick_vec2d);
+            // kick_vec2d = {cmd.kicker_set_point().x(), cmd.kicker_set_point().y()};
+            // kicker_pub.publish(kick_vec2d);
 
         }
 

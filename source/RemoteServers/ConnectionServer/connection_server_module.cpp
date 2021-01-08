@@ -115,7 +115,15 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
                     rtn_str = "Invalid Arguments";
                 }
                 else {
-
+                    int t0 = millis();
+                    // wait until auto capture is done for up to 2 seconds
+                    while(!autocap_done_sub.latest_msg() && (millis() - t0) < 2000);
+                    if(autocap_done_sub.latest_msg()) {
+                        rtn_str = "Success";
+                    }
+                    else {
+                        rtn_str = "Fail";
+                    }
                 }
             }
 
