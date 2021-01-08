@@ -3,6 +3,7 @@
 #include "Utility/boost_logger.hpp"
 #include "Utility/common.hpp"
 #include "Utility/systime.hpp"
+#include "EKF-Module/ball_ekf_module.hpp"
 
 
 // Note: rotational data are all in world frame
@@ -19,11 +20,9 @@ static bool dribbler_control = false;
 static bool is_ball_captured = false;
 
 BallCaptureModule::BallCaptureModule() : enable_sub("CMD Server", "EnableDribbler"),
-                                         ball_pos_sub("GVision Server", "BallPos(BodyFrame)"),
-                                         ball_velo_sub("GVision Server", "BallVel(BodyFrame)"),
+                                         ball_data_sub("BallEKF", "BallData"),
                                          bot_data_sub("MotionEKF", "MotionData"),
                                          command_pub("Ball Capture Module", "MotionCMD", default_cmd()),
-                                         dribbler_signal_pub("Ball Capture Module", "isOn", dribbler_control),
                                          status_signal_pub("Ball Capture Module", "isDribbled", is_ball_captured),
                                          logger()
                                          
@@ -35,21 +34,9 @@ BallCaptureModule::~BallCaptureModule() = default;
 
 
 void BallCaptureModule::init_subscribers() {
-    // try {
-    //     // ...
-    //     enable_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-    // }
-    // catch(std::exception& e) {
-    //     B_Log logger;
-    //     logger.add_tag("[ball_capture_module.cpp]");
-    //     logger.log(Error, std::string(e.what()) + " | EnableAutoBallCapture");
-    //     std::exit(0);
-    // }
 
     try {
-        // ...
-        ball_velo_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        ball_pos_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        ball_data_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         bot_data_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         enable_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
 
@@ -61,50 +48,39 @@ void BallCaptureModule::init_subscribers() {
         std::exit(0);
     }
 
-    // try {
-    //     // ...
-    //     motion_data_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-    // }
-    // catch(std::exception& e) {
-    //     B_Log logger;
-    //     logger.add_tag("[ball_capture_module.cpp]");
-    //     logger.log(Error, std::string(e.what()) + " | MotionEKF");
-    //     std::exit(0);
-    // }
-
 }
 
 
-[[noreturn]] void BallCaptureModule::task(ThreadPool& thread_pool) {
+// [[noreturn]] 
+void BallCaptureModule::task(ThreadPool& thread_pool) {
     UNUSED(thread_pool);
     init_subscribers();
 
     while(true){
 
-        if(false){
-            logger.log(Info, "Ball displacement (x, y): ( " + std::to_string(ball_pos_sub.latest_msg()(0)) + " , "
-                             + std::to_string(ball_pos_sub.latest_msg()(1)) + " )\n");
-//            logger.log(Info, "Ball velocity (x, y): ( " + std::to_string(ball_velo_sub.latest_msg()(0)) + " , "
-//                             + std::to_string(ball_velo_sub.latest_msg()(1)) + " )\n");
-//            logger.log(Info, "Bot displacement (x, y): ( " + std::to_string(bot_data_sub.latest_msg().trans_disp(0)) + " , "
-//                             + std::to_string(bot_data_sub.latest_msg().trans_disp(1)) + " )\n");
-//            logger.log(Info, "Delta displacement (x, y): ( " + std::to_string(ball_pos_sub.latest_msg()(0) - bot_data_sub.latest_msg().trans_disp(0)) +
-//            ", " + std::to_string(ball_pos_sub.latest_msg()(1) - bot_data_sub.latest_msg().trans_disp(1)) + " )\n");
-//            logger.log(Info, "Bot velocity (x, y): ( " + std::to_string(bot_data_sub.latest_msg().trans_vel(0)) + " , "
-//                             + std::to_string(bot_data_sub.latest_msg().trans_vel(1)) + " )\n");
-//            logger.log(Info, "Bot angle (O): ( " + std::to_string(bot_data_sub.latest_msg().rotat_disp) + " )\n");
-//            logger.log(Info, "Bot ang velocity (w): ( " + std::to_string(bot_data_sub.latest_msg().rotat_vel) + " )\n");
-            delay(100);
-        }
+//         if(false){
+//             logger.log(Info, "Ball displacement (x, y): ( " + std::to_string(ball_pos_sub.latest_msg()(0)) + " , "
+//                              + std::to_string(ball_pos_sub.latest_msg()(1)) + " )\n");
+// //            logger.log(Info, "Ball velocity (x, y): ( " + std::to_string(ball_velo_sub.latest_msg()(0)) + " , "
+// //                             + std::to_string(ball_velo_sub.latest_msg()(1)) + " )\n");
+// //            logger.log(Info, "Bot displacement (x, y): ( " + std::to_string(bot_data_sub.latest_msg().trans_disp(0)) + " , "
+// //                             + std::to_string(bot_data_sub.latest_msg().trans_disp(1)) + " )\n");
+// //            logger.log(Info, "Delta displacement (x, y): ( " + std::to_string(ball_pos_sub.latest_msg()(0) - bot_data_sub.latest_msg().trans_disp(0)) +
+// //            ", " + std::to_string(ball_pos_sub.latest_msg()(1) - bot_data_sub.latest_msg().trans_disp(1)) + " )\n");
+// //            logger.log(Info, "Bot velocity (x, y): ( " + std::to_string(bot_data_sub.latest_msg().trans_vel(0)) + " , "
+// //                             + std::to_string(bot_data_sub.latest_msg().trans_vel(1)) + " )\n");
+// //            logger.log(Info, "Bot angle (O): ( " + std::to_string(bot_data_sub.latest_msg().rotat_disp) + " )\n");
+// //            logger.log(Info, "Bot ang velocity (w): ( " + std::to_string(bot_data_sub.latest_msg().rotat_vel) + " )\n");
+//             delay(100);
+//         }
 
         if(enable_sub.latest_msg()){
-        //if(true){
 
-            if(false){
-                logger.log(Info, "[ball capture] dribble status: " + std::to_string(check_ball_captured_V(ball_pos_sub.latest_msg(), bot_data_sub.latest_msg())));
-                delay(100);
-            }
-            arma::vec ball_pos = ball_pos_sub.latest_msg();
+            // if(false){
+            //     logger.log(Info, "[ball capture] dribble status: " + std::to_string(check_ball_captured_V(ball_data_sub.latest_msg().disp, bot_data_sub.latest_msg())));
+            //     delay(100);
+            // }
+            arma::vec ball_pos = ball_data_sub.latest_msg().disp;
             MotionEKF_Module::MotionData latest_motion_data = bot_data_sub.latest_msg();
 
             double delta_x = ball_pos(0) - latest_motion_data.trans_disp(0);
@@ -131,7 +107,6 @@ void BallCaptureModule::init_subscribers() {
                 ", " + std::to_string(angle + bot_data_sub.latest_msg().rotat_disp) + ")\n");
             }
 
-            dribbler_signal_pub.publish(check_ball_captured_V(ball_pos, latest_motion_data));
         }
     }
         
@@ -191,9 +166,6 @@ double BallCaptureModule::calc_angle(double delta_y, double delta_x){
 
 
 
-bool BallCaptureModule::is_this_module_enabled() {
-    return false;
-}
 
 
 

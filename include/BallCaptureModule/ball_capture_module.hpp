@@ -19,15 +19,12 @@ class BallCaptureModule : public Module {
 
     protected:
         virtual void init_subscribers();
-        bool is_this_module_enabled();
 
     private:
         ITPS::NonBlockingSubscriber<bool> enable_sub;
-        ITPS::NonBlockingSubscriber<arma::vec> ball_pos_sub;
-        ITPS::NonBlockingSubscriber<arma::vec> ball_velo_sub;
+        ITPS::NonBlockingSubscriber<BallEKF::BallData> ball_data_sub;
         ITPS::NonBlockingSubscriber<MotionEKF::MotionData> bot_data_sub;
         ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub;
-        ITPS::NonBlockingPublisher<bool> dribbler_signal_pub;
         ITPS::NonBlockingPublisher<bool> status_signal_pub;
         B_Log logger;
 

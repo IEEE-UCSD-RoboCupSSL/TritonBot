@@ -79,7 +79,6 @@ static Motion::MotionCMD default_cmd() {
         // logger.log(Debug, cmd.DebugString());
 
         if(cmd.enable_ball_auto_capture() == false) {
-//        if(false){
             drib_enable_pub.publish(false);
             // Listening to remote motion commands
             switch((int)cmd.mode()) {
