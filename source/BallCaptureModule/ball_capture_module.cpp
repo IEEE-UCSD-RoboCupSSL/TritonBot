@@ -129,12 +129,12 @@ bool BallCaptureModule::check_ball_captured_V(arma::vec ball_pos, MotionEKF_Modu
     double const Y_TRESHOLD = 20.0;
     double const DRIBBLER_OFFSET = 100.0;
 
-    double const delta_x = ball_pos(0) - latest_motion_data.trans_disp(0);
-    double const delta_y = ball_pos(1) - latest_motion_data.trans_disp(1);
-//    double const z = delta_x/delta_y;
-//    double const angle = std::atan(z) * 180 / PI;
+    double delta_x = ball_pos(0) - latest_motion_data.trans_disp(0);
+    double delta_y = ball_pos(1) - latest_motion_data.trans_disp(1);
 
-    if(std::abs(delta_x) < X_TRESHOLD && delta_y < DRIBBLER_OFFSET + Y_TRESHOLD && delta_y > DRIBBLER_OFFSET - Y_TRESHOLD){
+    if(std::abs(delta_x) < X_TRESHOLD 
+        && delta_y < DRIBBLER_OFFSET + Y_TRESHOLD 
+        && delta_y > DRIBBLER_OFFSET - Y_TRESHOLD){
         return true;
     }
 
