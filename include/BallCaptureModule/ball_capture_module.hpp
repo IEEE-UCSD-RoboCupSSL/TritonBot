@@ -25,7 +25,8 @@ class BallCaptureModule : public Module {
         ITPS::NonBlockingSubscriber<BallEKF::BallData> ball_data_sub;
         ITPS::NonBlockingSubscriber<MotionEKF::MotionData> bot_data_sub;
         ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub;
-        ITPS::NonBlockingPublisher<bool> status_signal_pub;
+        ITPS::NonBlockingPublisher<bool> autocap_done_pub;
+        ITPS::NonBlockingPublisher<bool> drib_enable_pub;
         B_Log logger;
 
         /*

@@ -46,14 +46,12 @@ static Motion::MotionCMD default_cmd() {
 
 
     ITPS::NonBlockingPublisher< Motion::MotionCMD > m_cmd_pub("CMD Server", "MotionCMD", default_cmd());
-    ITPS::NonBlockingPublisher<bool> drib_enable_pub("CMD Server", "EnableDribbler", false);
-    ITPS::NonBlockingSubscriber<bool> drib_signal_sub("Ball Capture Module", "isDribbled");
+    
     ITPS::NonBlockingSubscriber< Motion::MotionCMD > capture_cmd_sub("Ball Capture Module", "MotionCMD");
 
     ITPS::NonBlockingPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
 
     try {
-        drib_signal_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         capture_cmd_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
@@ -79,7 +77,6 @@ static Motion::MotionCMD default_cmd() {
         // logger.log(Debug, cmd.DebugString());
 
         if(cmd.enable_ball_auto_capture() == false) {
-            drib_enable_pub.publish(false);
             // Listening to remote motion commands
             switch((int)cmd.mode()) {
                 case 0: m_cmd.mode = Motion::CTRL_Mode::TDRD; break;
@@ -109,8 +106,7 @@ static Motion::MotionCMD default_cmd() {
         }
         else {
 
-            // Listening to internal CapKick module's commands
-            drib_enable_pub.publish(true);
+            // Listening to internal AutoCapture module's commands
 
             m_cmd = capture_cmd_sub.latest_msg();
             m_cmd_pub.publish(m_cmd);

@@ -40,18 +40,15 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     ITPS::NonBlockingPublisher<bool> safety_enable_pub("AI Connection", "SafetyEnable", true); // To-do: change it back to false after testing
     ITPS::NonBlockingPublisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)", zero_vec_2d());
     ITPS::NonBlockingPublisher<bool> init_sensors_pub("vfirm-client", "re/init sensors", false);
-    // ITPS::BlockingSubscriber<bool> precise_kick_sub("ConnectionServer", "KickerStatusRtn");
-    // ITPS::BlockingSubscriber<bool> ball_capture_sub("ConnectionServer", "BallCaptureStatusRtn");
+    ITPS::NonBlockingSubscriber<bool> autocap_done_sub("Ball Capture Module", "isDribbled");
 
-    // TODO: since the following modules are not here yet... Uncomment in the future
-    // while(!precise_kick_sub.subscribe());
-    // while(!ball_capture_sub.subscribe());
 
     logger.log(Info, "Server Started on Port Number:" + repr(CONN_SERVER_PORT) 
                     + ", Awaiting Remote AI Connection...");
 
     try 
     {
+        autocap_done_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         acceptor.accept(socket); // blocks until getting a connection request and accept the connection
     }
     catch(std::exception& e)
@@ -113,8 +110,13 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
                 }
             }
 
-            else if(tokens[0] == "...") {
-                // ...
+            else if(tokens[0] == "reqdrib") {
+                if(tokens.size() != 1) {
+                    rtn_str = "Invalid Arguments";
+                }
+                else {
+
+                }
             }
 
             else { // invalid command 

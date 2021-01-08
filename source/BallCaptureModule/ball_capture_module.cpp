@@ -15,15 +15,13 @@ static Motion::MotionCMD default_cmd() {
     return dft_cmd;
 }
 
-static bool dribbler_control = false;
-
-static bool is_ball_captured = false;
 
 BallCaptureModule::BallCaptureModule() : enable_sub("CMD Server", "EnableDribbler"),
                                          ball_data_sub("BallEKF", "BallData"),
                                          bot_data_sub("MotionEKF", "MotionData"),
                                          command_pub("Ball Capture Module", "MotionCMD", default_cmd()),
-                                         status_signal_pub("Ball Capture Module", "isDribbled", is_ball_captured),
+                                         autocap_done_pub("Ball Capture Module", "isDribbled", false),
+                                         drib_enable_pub("CMD Server", "EnableDribbler", false),
                                          logger()
                                          
 {
@@ -74,14 +72,24 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
 //             delay(100);
 //         }
 
+        arma::vec ball_pos = ball_data_sub.latest_msg().disp;
+        MotionEKF_Module::MotionData latest_motion_data = bot_data_sub.latest_msg();
+
+        if(arma::norm(ball_pos - latest_motion_data.trans_disp) < 300.00) {
+            drib_enable_pub.publish(true);
+        }
+        else {
+            drib_enable_pub.publish(false);
+        }
+
+
         if(enable_sub.latest_msg()){
 
             // if(false){
             //     logger.log(Info, "[ball capture] dribble status: " + std::to_string(check_ball_captured_V(ball_data_sub.latest_msg().disp, bot_data_sub.latest_msg())));
             //     delay(100);
             // }
-            arma::vec ball_pos = ball_data_sub.latest_msg().disp;
-            MotionEKF_Module::MotionData latest_motion_data = bot_data_sub.latest_msg();
+
 
             double delta_x = ball_pos(0) - latest_motion_data.trans_disp(0);
             double delta_y = ball_pos(1) - latest_motion_data.trans_disp(1);
@@ -89,23 +97,26 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
 
             Motion::MotionCMD command;
 
-            if(angle < 20.0 && angle > -20.0){
+
+            if(!check_ball_captured_V(ball_pos, latest_motion_data)){
                 command.mode = Motion::CTRL_Mode::TDRD;
                 command.ref_frame = Motion::ReferenceFrame::BodyFrame;
-                command.setpoint_3d = {ball_pos(0), ball_pos(1), angle + bot_data_sub.latest_msg().rotat_disp};
+                command.setpoint_3d = {ball_pos(0), ball_pos(1), angle + latest_motion_data.rotat_disp};
                 command_pub.publish(command);
+                autocap_done_pub.publish(false);
             }
             else{
                 command.mode = Motion::CTRL_Mode::TVRD;
                 command.ref_frame = Motion::ReferenceFrame::BodyFrame;
-                command.setpoint_3d = {0, 0, angle + bot_data_sub.latest_msg().rotat_disp};
+                command.setpoint_3d = {0, 0, angle + latest_motion_data.rotat_disp};
                 command_pub.publish(command);
+                autocap_done_pub.publish(true);
             }
 
-            if(true){
-                logger.log(Info, "[ball capture] capture command (x, y, O) " + std::to_string(command.mode) + " : (" + std::to_string(delta_x) + ", " + std::to_string(delta_y) +
-                ", " + std::to_string(angle + bot_data_sub.latest_msg().rotat_disp) + ")\n");
-            }
+            // if(true){
+            //     logger.log(Info, "[ball capture] capture command (x, y, O) " + std::to_string(command.mode) + " : (" + std::to_string(delta_x) + ", " + std::to_string(delta_y) +
+            //     ", " + std::to_string(angle + bot_data_sub.latest_msg().rotat_disp) + ")\n");
+            // }
 
         }
     }
