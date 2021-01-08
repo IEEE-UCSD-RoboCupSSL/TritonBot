@@ -87,6 +87,10 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
             
             visDataReceived.ParseFromString(packet_received);
 
+            if(false){
+                logger.log(Info, "[Global Vision Server]:" + visDataReceived.DebugString());
+            }
+
             // logger.log(Info, visDataReceived.ball_pos().DebugString());
 
             /*** Data type & format & ref frame conversions ***/
@@ -107,7 +111,7 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
             ball_vel = transform(bot_origin, bot_orien, ball_vel);
             
             
-
+            // These are all body frames
             trans_disp_pub.publish(trans_disp);
             trans_vel_pub.publish(trans_vel);
             rot_disp_pub.publish(rot_disp);

@@ -27,10 +27,11 @@ void VirtualBallEKF::task(ThreadPool& thread_pool) {
 
     BallData ball_data;
 
-    while(true) {
+    while(false) {
         ball_data.disp = get_ball_loc();
         ball_data.vel = get_ball_vel();
 
         logger.log(Info, "<" + repr(ball_data.disp(0)) + ", " + repr(ball_data.disp(1)) + ">");
+        publish_ball_data(ball_data);
     }
 }

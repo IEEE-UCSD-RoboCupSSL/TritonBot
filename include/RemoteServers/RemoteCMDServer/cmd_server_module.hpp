@@ -5,7 +5,8 @@
 class CMDServerModule : public Module {
     public:
         virtual void task() {}
-        virtual void task(ThreadPool& thread_pool);
+
+    [[noreturn]] virtual void task(ThreadPool& thread_pool);
 
         virtual ~CMDServerModule() {}
 
