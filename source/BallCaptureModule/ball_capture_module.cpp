@@ -127,7 +127,7 @@ bool BallCaptureModule::check_ball_captured_V(arma::vec ball_pos, MotionEKF_Modu
     double const PI = 3.1415926;
     double const X_TRESHOLD = 40.0;
     double const Y_TRESHOLD = 20.0;
-    double const DRIBBLER_OFFSET = 100.0;
+    double const DRIBBLER_OFFSET = 103.0;
 
     double delta_x = ball_pos(0) - latest_motion_data.trans_disp(0);
     double delta_y = ball_pos(1) - latest_motion_data.trans_disp(1);
