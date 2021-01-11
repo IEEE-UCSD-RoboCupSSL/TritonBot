@@ -126,7 +126,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
         // Processing CommandLines
         if(tokens.size() > 0) {
 
-
+            logger.log(Info, tokens[0]);
             // Format: init [x] [y]     where (x,y) is the origin of the robot in the world coordinates
             if(tokens[0] == "init") {
                 if(tokens.size() != 3) {
