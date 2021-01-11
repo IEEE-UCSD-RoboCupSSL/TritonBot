@@ -20,7 +20,7 @@ BallCaptureModule::BallCaptureModule() : enable_sub("CMD Server", "EnableAutoCap
                                          ball_data_sub("BallEKF", "BallData"),
                                          bot_data_sub("MotionEKF", "MotionData"),
                                          command_pub("Ball Capture Module", "MotionCMD", default_cmd()),
-                                         autocap_done_pub("Ball Capture Module", "isDribbled", false),
+                                         ballcap_status_pub("Ball Capture Module", "isDribbled", false),
                                          drib_enable_pub("BallCapture", "EnableDribbler", false),
                                          logger()
                                          
@@ -83,6 +83,14 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
         }
 
 
+        if(!check_ball_captured_V(ball_pos, latest_motion_data)){
+            ballcap_status_pub.publish(false);
+        }
+        else{
+            ballcap_status_pub.publish(true);
+        }
+
+
         if(enable_sub.latest_msg()){
 
             // if(false){
@@ -103,14 +111,12 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
                 command.ref_frame = Motion::ReferenceFrame::BodyFrame;
                 command.setpoint_3d = {ball_pos(0), ball_pos(1), angle + latest_motion_data.rotat_disp};
                 command_pub.publish(command);
-                autocap_done_pub.publish(false);
             }
             else{
                 command.mode = Motion::CTRL_Mode::TVRD;
                 command.ref_frame = Motion::ReferenceFrame::BodyFrame;
                 command.setpoint_3d = {0, 0, angle + latest_motion_data.rotat_disp};
                 command_pub.publish(command);
-                autocap_done_pub.publish(true);
             }
 
             // if(true){
