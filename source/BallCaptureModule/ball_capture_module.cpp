@@ -19,6 +19,7 @@ static Motion::MotionCMD default_cmd() {
 BallCaptureModule::BallCaptureModule() : enable_sub("CMD Server", "EnableAutoCap"),
                                          ball_data_sub("BallEKF", "BallData"),
                                          bot_data_sub("MotionEKF", "MotionData"),
+                                         bot_loc_sub("GVision Server", "BotPos(BodyFrame)"),
                                          command_pub("Ball Capture Module", "MotionCMD", default_cmd()),
                                          ballcap_status_pub("Ball Capture Module", "isDribbled", false),
                                          drib_enable_pub("BallCapture", "EnableDribbler", false),
@@ -37,6 +38,7 @@ void BallCaptureModule::init_subscribers() {
         ball_data_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         bot_data_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         enable_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        bot_loc_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
 
     }
     catch(std::exception& e) {
@@ -73,9 +75,10 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
 //         }
 
         arma::vec ball_pos = ball_data_sub.latest_msg().disp;
+        arma::vec bot_pos_vis = bot_loc_sub.latest_msg();
         MotionEKF_Module::MotionData latest_motion_data = bot_data_sub.latest_msg();
 
-        if(arma::norm(ball_pos - latest_motion_data.trans_disp) < 300.00) {
+        if(arma::norm(ball_pos - bot_pos_vis) < 300.00) {
             drib_enable_pub.publish(true);
         }
         else {

@@ -24,6 +24,7 @@ class BallCaptureModule : public Module {
         ITPS::NonBlockingSubscriber<bool> enable_sub;
         ITPS::NonBlockingSubscriber<BallEKF::BallData> ball_data_sub;
         ITPS::NonBlockingSubscriber<MotionEKF::MotionData> bot_data_sub;
+        ITPS::NonBlockingSubscriber<arma::vec> bot_loc_sub;
         ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub;
         ITPS::NonBlockingPublisher<bool> ballcap_status_pub;
         ITPS::NonBlockingPublisher<bool> drib_enable_pub;
