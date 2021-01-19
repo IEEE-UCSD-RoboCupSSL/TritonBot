@@ -28,7 +28,7 @@
 
 
 
-#define AVOID_STARVATION_DELAY 100 // unit: microseconds
+#define AVOID_STARVATION_DELAY 1 // unit: microseconds
 
 
 
