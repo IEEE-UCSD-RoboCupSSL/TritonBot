@@ -21,8 +21,13 @@ static void backgnd_task(ITPS::NonBlockingSubscriber<bool>& ballcap_status_sub,
                          asio::ip::tcp::socket& socket) {
     bool prev_ballcap_status = false;
     while(1) {
+
+        delay(500); // this delay is important now because EKF is not yet implemented, 
+                    // pseudo ekf doesn't handle the issue of botLoc & ballLoc data being received at different frequency 
+
         std::string send_str;
-        bool ballcap_status = ballcap_status_sub.latest_msg(); 
+        bool ballcap_status;
+        ballcap_status = ballcap_status_sub.latest_msg(); 
         if(ballcap_status != prev_ballcap_status) {
             if(ballcap_status) {
                 send_str = "BallOnHold";
@@ -35,7 +40,7 @@ static void backgnd_task(ITPS::NonBlockingSubscriber<bool>& ballcap_status_sub,
             mu.unlock();
         }
         prev_ballcap_status = ballcap_status;
-        // delay(10);
+        
     }
 
 }
