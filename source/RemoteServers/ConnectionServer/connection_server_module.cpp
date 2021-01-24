@@ -19,7 +19,7 @@ boost::mutex mu;
 
 static void backgnd_task(ITPS::NonBlockingSubscriber<bool>& ballcap_status_sub, 
                          asio::ip::tcp::socket& socket) {
-    bool prev_ballcap_status = false;
+    bool prev_ballcap_status = true; // deliberately set it true to have a extra socket send at the begining
     while(1) {
 
         delay(500); // this delay is important now because EKF is not yet implemented, 
