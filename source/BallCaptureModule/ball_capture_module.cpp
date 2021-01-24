@@ -115,7 +115,7 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
             else{
                 command.mode = Motion::CTRL_Mode::TVRD;
                 command.ref_frame = Motion::ReferenceFrame::BodyFrame;
-                command.setpoint_3d = {0, 0, angle + latest_motion_data.rotat_disp};
+                command.setpoint_3d = {0, 5.00, 0};// angle + latest_motion_data.rotat_disp};
                 command_pub.publish(command);
             }
 
