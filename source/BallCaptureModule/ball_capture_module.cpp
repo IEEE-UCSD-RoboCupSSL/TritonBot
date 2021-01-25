@@ -54,7 +54,7 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
     UNUSED(thread_pool);
     init_subscribers();
 
-    while(true){
+    while(true){ // has delay (good for reducing high CPU usage)
 
 //         if(false){
 //             logger.log(Info, "Ball displacement (x, y): ( " + std::to_string(ball_pos_sub.latest_msg()(0)) + " , "
@@ -125,6 +125,8 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
             // }
 
         }
+        
+        delay(1); 
     }
         
 }

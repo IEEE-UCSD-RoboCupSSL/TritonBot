@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     boost::shared_ptr<CMDServerModule> cmd_server_module(new CMDServer());
     boost::shared_ptr<ConnectionServerModule> connection_server_module(new ConnectionServer());
     boost::shared_ptr<GlobalVisionServerModule> global_vision_server_module(new GlobalVisionServer());
-    boost::shared_ptr<InternalEkfServerModule> intern_ekf_server_module(new InternalEkfServer());
+    // boost::shared_ptr<InternalEkfServerModule> intern_ekf_server_module(new InternalEkfServer());
     boost::shared_ptr<BallCaptureModule> ball_capture_module(new BallCaptureModule());
     
     // Configs
@@ -73,11 +73,14 @@ int main(int argc, char *argv[]) {
     cmd_server_module->run(thread_pool);
     connection_server_module->run(thread_pool);
     global_vision_server_module->run(thread_pool);
-    intern_ekf_server_module->run(thread_pool);
+    // intern_ekf_server_module->run(thread_pool);
     ball_capture_module->run(thread_pool);
     
 
-    while(1); // this program should run forever 
+    while(1) { // has delay (good for reducing high CPU usage)
+        // this program should run forever 
+        delay(1000);
+    }
 
     return 0;
 }

@@ -65,7 +65,7 @@ void PID_System::task(ThreadPool& thread_pool) {
                        // garbage data are refreshed by other modules 
                        // after running for a bit 
     logger(Info) << "\033[0;32m Control Loop Started \033[0m";
-    while(1) {
+    while(1) { // has delay (good for reducing high CPU usage)
 
         rotat_disp_pid.init(CTRL_FREQUENCY);
         trans_disp_pid.init(CTRL_FREQUENCY);
@@ -196,6 +196,7 @@ void PID_System::task(ThreadPool& thread_pool) {
             output_cmd.set_rotational_output(output_3d(2));
 
             publish_output(output_cmd);
+
             delay(1.00/CTRL_FREQUENCY * 1000.00);
 
 

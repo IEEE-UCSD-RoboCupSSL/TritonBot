@@ -60,9 +60,11 @@ void MotionModule::task(ThreadPool& thread_pool) {
     delay(INIT_DELAY);
     logger(Info) << "\033[0;32m Loop Started \033[0m";
     
-    while(1) {
+    while(1) { // has delay (good for reducing high CPU usage)
         auto cmd = command_sub.latest_msg();
-        move(cmd.setpoint_3d, cmd.mode, cmd.ref_frame);        
+        move(cmd.setpoint_3d, cmd.mode, cmd.ref_frame);       
+
+        delay(1); 
     }
 }
 

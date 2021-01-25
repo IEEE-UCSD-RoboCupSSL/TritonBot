@@ -49,7 +49,7 @@ void InternalEkfServer::task(ThreadPool& thread_pool)
 
     try{
 
-        while(true){
+        while(true){ // has delay (good for reducing high CPU usage)
             /*** Building protobuf object ***/
             MotionEKF_Module::MotionData latest_data = ekf_data_sub.latest_msg();
             Vec2D vel = Vec2D();
@@ -75,6 +75,8 @@ void InternalEkfServer::task(ThreadPool& thread_pool)
             data.release_trans_disp();
             data.release_trans_vel();
             data.Clear();
+
+            delay(1);
 
         }
     }

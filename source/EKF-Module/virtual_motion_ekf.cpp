@@ -4,6 +4,7 @@
 #include "ProtoGenerated/vFirmware_API.pb.h"
 #include "Utility/boost_logger.hpp"
 #include "Config/config.hpp"
+#include "Utility/systime.hpp"
 
 using namespace boost;
 using namespace boost::asio;
@@ -31,7 +32,7 @@ VirtualMotionEKF::~VirtualMotionEKF() = default;
     VF_Data vf_data;
     MotionEKF::MotionData m_data;
 
-    while(true) {
+    while(true) { // has delay (good for reducing high CPU usage)
         // firm data is in body(not global) frame!
         vf_data = get_firmware_data();
 
@@ -53,6 +54,7 @@ VirtualMotionEKF::~VirtualMotionEKF() = default;
         m_data.rotat_vel = vf_data.rotational_velocity();
 
         publish_motion_data(m_data);
-        
+
+        delay(1);
     }
 }

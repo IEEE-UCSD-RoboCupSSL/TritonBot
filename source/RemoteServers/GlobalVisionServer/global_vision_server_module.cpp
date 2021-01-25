@@ -77,7 +77,7 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
     arma::vec trans_disp, trans_vel, ball_loc, ball_vel;
     float rot_disp, rot_vel; 
     try{
-        while(true){
+        while(true){ // has delay (good for reducing high CPU usage)
             num_received = socket.receive_from(boost::asio::buffer(receive_buffer), endpoint_to_listen);
 
             packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
@@ -118,6 +118,8 @@ void GlobalVisionServer::task(ThreadPool& thread_pool)
             rot_vel_pub.publish(rot_vel);
             ball_loc_pub.publish(ball_loc);
             ball_vel_pub.publish(ball_vel);
+
+            delay(1);
 
         }   
     }

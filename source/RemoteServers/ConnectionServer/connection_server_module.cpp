@@ -20,7 +20,7 @@ boost::mutex mu;
 static void backgnd_task(ITPS::NonBlockingSubscriber<bool>& ballcap_status_sub, 
                          asio::ip::tcp::socket& socket) {
     bool prev_ballcap_status = true; // deliberately set it true to have a extra socket send at the begining
-    while(1) {
+    while(1) { // has delay (good for reducing high CPU usage)
 
         delay(500); // this delay is important now because EKF is not yet implemented, 
                     // pseudo ekf doesn't handle the issue of botLoc & ballLoc data being received at different frequency 
@@ -101,7 +101,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     thread_pool.execute(boost::bind(&backgnd_task, boost::ref(ballcap_status_sub), boost::ref(socket)));
 
 
-    while(1) {
+    while(1) { // No delay, blocking-socket-read is used, usually won't use too much CPU resources
         // get first line seperated string from the receiving buffer
         std::istream input_stream(&read_buf);
 
@@ -115,7 +115,9 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
             safety_enable_pub.publish(false);
 
             // To-do: handle disconnect
-            while(1);
+            while(1) { // has delay (good for reducing high CPU usage)
+                delay(1000);
+            }
         }
     
         // Tokenize the received input

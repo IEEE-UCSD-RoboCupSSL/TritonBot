@@ -70,7 +70,7 @@ static Motion::MotionCMD default_cmd() {
     Motion::MotionCMD m_cmd;
     arma::vec kick_vec2d = {0, 0};
 
-    while(1) {
+    while(1) { // has delay (good for reducing high CPU usage)
         num_received = socket.receive_from(asio::buffer(receive_buffer), ep_listen);
         packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
         // logger.log(Info, packet_received);
@@ -117,6 +117,8 @@ static Motion::MotionCMD default_cmd() {
             // kicker_pub.publish(kick_vec2d);
 
         }
+
+        delay(1);
 
     }
 

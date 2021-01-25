@@ -6,6 +6,7 @@
 #include "ProtoGenerated/messages_robocup_ssl_detection.pb.h"
 #include "ProtoGenerated/messages_robocup_ssl_geometry.pb.h"
 #include "Utility/common.hpp"
+#include "Utility/systime.hpp"
 
 
 using namespace boost;
@@ -27,11 +28,13 @@ void VirtualBallEKF::task(ThreadPool& thread_pool) {
 
     BallData ball_data;
 
-    while(true) {
+    while(true) { // has delay (good for reducing high CPU usage)
         ball_data.disp = get_ball_loc();
         ball_data.vel = get_ball_vel();
 
         // logger.log(Info, "<" + repr(ball_data.disp(0)) + ", " + repr(ball_data.disp(1)) + ">");
         publish_ball_data(ball_data);
+
+        delay(1);
     }
 }
