@@ -179,7 +179,7 @@ namespace ITPS {
                                                // pull latest msg before publisher ever published anything
             }
             void publish(Msg message) {
-                boost::this_thread::sleep_for(boost::chrono::microseconds(AVOID_STARVATION_DELAY));
+                // boost::this_thread::sleep_for(boost::chrono::microseconds(AVOID_STARVATION_DELAY));
                 this->channel->set_msg(message);
             }    
 
@@ -285,7 +285,7 @@ namespace ITPS {
             Msg latest_msg() {
                 // non-blocking
                 Msg rtn = this->channel->get_msg();
-                boost::this_thread::sleep_for(boost::chrono::microseconds(AVOID_STARVATION_DELAY));
+                // boost::this_thread::sleep_for(boost::chrono::microseconds(AVOID_STARVATION_DELAY));
                 return rtn;
             }   
 
