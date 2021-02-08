@@ -113,7 +113,7 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
                 command_pub.publish(command);
             }
             else{
-                command.mode = Motion::CTRL_Mode::TVRD;
+                command.mode = Motion::CTRL_Mode::TVRV;
                 command.ref_frame = Motion::ReferenceFrame::BodyFrame;
                 command.setpoint_3d = {0, 5.00, 0};// angle + latest_motion_data.rotat_disp};
                 command_pub.publish(command);
@@ -133,7 +133,7 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
 
 bool BallCaptureModule::check_ball_captured_V(arma::vec ball_pos, MotionEKF_Module::MotionData latest_motion_data){
     double const PI = 3.1415926;
-    double const X_TRESHOLD = 100.0;
+    double const X_TRESHOLD = 80.0;
     double const Y_TRESHOLD = 20.0;
     double const DRIBBLER_OFFSET = 105.0;
 
