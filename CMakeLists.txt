@@ -126,13 +126,17 @@ target_link_libraries(${Target} PUBLIC  ${Boost_Libraries} Boost::date_time
                                                            Boost::chrono 
                                                            Boost::system 
                                                            Boost::thread 
-                                                           Boost::log
-                                        #${Armadillo_Libraries} # this won't compile matrix part of the library, strangely 
-                                        -larmadillo # use this old-school way to link the lib
-                                        ${PROTOBUF_LIBRARIES}
-                                        
-                      )
+                                                           Boost::log)
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(${Target} PUBLIC  /usr/local/lib/libarmadillo.dylib)
+else() # Ubuntu
+    #${Armadillo_Libraries} # this won't compile matrix part of the library, strangely 
+    #-larmadillo # use this old-school way to link the lib
+    target_link_libraries(${Target} PUBLIC  -larmadillo)
+endif()
+
+target_link_libraries(${Target} PUBLIC  ${PROTOBUF_LIBRARIES})
 
 
 
