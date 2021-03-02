@@ -81,8 +81,7 @@ static Motion::MotionCMD default_cmd() {
                 + ", Listening to Remote AI Commands... ");
 
     UDPData udpData;
-    VisionData visData;
-    Commands cmdData;
+
 
     Motion::MotionCMD m_cmd;
     arma::vec kick_vec2d = {0, 0};
@@ -94,17 +93,15 @@ static Motion::MotionCMD default_cmd() {
         packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
         // logger.log(Info, packet_received);
         udpData.ParseFromString(packet_received);
-        cmdData = udpData.commanddata();
-        visData = udpData.visiondata();
 
-        // logger.log(Debug, cmdData.DebugString());
+        // logger.log(Debug, udpData.commanddata().DebugString());
 
-        trans_disp = {visData.bot_pos().x(), visData.bot_pos().y()}; // not transformed yet
-        trans_vel = {visData.bot_vel().x(), visData.bot_vel().y()}; // not transformed yet
-        rot_disp = visData.bot_ang(); // angular data no need to transform
-        rot_vel = visData.bot_ang_vel(); // angular data no need to transform
-        ball_loc = {visData.ball_pos().x(), visData.ball_pos().y()}; // not transformed yet
-        ball_vel = {visData.ball_vel().x(), visData.ball_vel().y()}; // not transformed yet
+        trans_disp = {udpData.visiondata().bot_pos().x(), udpData.visiondata().bot_pos().y()}; // not transformed yet
+        trans_vel = {udpData.visiondata().bot_vel().x(), udpData.visiondata().bot_vel().y()}; // not transformed yet
+        rot_disp = udpData.visiondata().bot_ang(); // angular data no need to transform
+        rot_vel = udpData.visiondata().bot_ang_vel(); // angular data no need to transform
+        ball_loc = {udpData.visiondata().ball_pos().x(), udpData.visiondata().ball_pos().y()}; // not transformed yet
+        ball_vel = {udpData.visiondata().ball_vel().x(), udpData.visiondata().ball_vel().y()}; // not transformed yet
 
         // reference frame transformation math
         arma::vec bot_origin = robot_origin_w_sub.latest_msg();
@@ -122,10 +119,10 @@ static Motion::MotionCMD default_cmd() {
         ball_loc_pub.publish(ball_loc);
         ball_vel_pub.publish(ball_vel);
 
-        if(!cmdData.enable_ball_auto_capture()) {
+        if(!udpData.commanddata().enable_ball_auto_capture()) {
             // Listening to remote motion commands
             en_autocap_pub.publish(false);
-            switch((int)cmdData.mode()) {
+            switch((int)udpData.commanddata().mode()) {
                 case 0: m_cmd.mode = Motion::CTRL_Mode::TDRD; break;
                 case 1: m_cmd.mode = Motion::CTRL_Mode::TDRV; break;
                 case 2: m_cmd.mode = Motion::CTRL_Mode::TVRD; break;
@@ -134,20 +131,20 @@ static Motion::MotionCMD default_cmd() {
                 case 5: m_cmd.mode = Motion::CTRL_Mode::NSTDRV; break;
                 default: m_cmd.mode = Motion::CTRL_Mode::TVRV;
             }
-            if(cmdData.is_world_frame()) {
+            if(udpData.commanddata().is_world_frame()) {
                 m_cmd.ref_frame = Motion::WorldFrame;
             }
             else {
                 m_cmd.ref_frame = Motion::BodyFrame;
             }
-            m_cmd.setpoint_3d = {cmdData.motion_set_point().x(),
-                                 cmdData.motion_set_point().y(),
-                                 cmdData.motion_set_point().z()};
+            m_cmd.setpoint_3d = {udpData.commanddata().motion_set_point().x(),
+                                 udpData.commanddata().motion_set_point().y(),
+                                 udpData.commanddata().motion_set_point().z()};
             m_cmd_pub.publish(m_cmd);
 
-            kick_vec2d = {cmdData.kicker_set_point().x(), cmdData.kicker_set_point().y()};
+            kick_vec2d = {udpData.commanddata().kicker_set_point().x(), udpData.commanddata().kicker_set_point().y()};
             kicker_pub.publish(kick_vec2d);
-            
+
 
         }
         else {
@@ -156,7 +153,7 @@ static Motion::MotionCMD default_cmd() {
             m_cmd = capture_cmd_sub.latest_msg();
             m_cmd_pub.publish(m_cmd);
 
-            // kick_vec2d = {cmdData.kicker_set_point().x(), cmdData.kicker_set_point().y()};
+            // kick_vec2d = {udpData.commanddata().kicker_set_point().x(), udpData.commanddata().kicker_set_point().y()};
             // kicker_pub.publish(kick_vec2d);
 
         }
@@ -164,9 +161,6 @@ static Motion::MotionCMD default_cmd() {
         delay(1);
 
     }
-
-    io_service.run();
-    
 }
 
 // for explaination of the math, check motion_module.cpp
