@@ -13,10 +13,8 @@ extern unsigned int DEFAULT_SUBSCRIBER_TIMEOUT;
 extern std::string VFIRM_IP_ADDR;
 extern unsigned int VFIRM_IP_PORT;
 
-extern int CONN_SERVER_PORT;
-extern int CMD_SERVER_PORT;
-extern int GVISION_SERVER_PORT;
-extern int EKF_SERVER_PORT;
+extern int TCP_PORT;
+extern int UDP_PORT;
 
 extern int GRSIM_VISION_PORT;
 extern std::string GRSIM_VISION_IP; 

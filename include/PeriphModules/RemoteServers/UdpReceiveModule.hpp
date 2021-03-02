@@ -1,16 +1,16 @@
 #pragma once
 #include "Misc/PubSubSystem/Module.hpp"
+#include "Misc/PubSubSystem/Module.hpp"
 
-
-class CMDServerModule : public Module {
+class UdpReceiveModule : public Module {
     public:
         virtual void task() {}
 
     [[noreturn]] virtual void task(ThreadPool& thread_pool);
 
-        virtual ~CMDServerModule() {}
+        virtual ~UdpReceiveModule() {}
 
 
 };
 
-using CMDServer = CMDServerModule;
+using CMDServer = UdpReceiveModule;

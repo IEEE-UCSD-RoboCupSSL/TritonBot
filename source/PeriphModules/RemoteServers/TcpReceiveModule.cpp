@@ -1,4 +1,4 @@
-#include "PeriphModules/RemoteServers/ConServerModule.hpp"
+#include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
 
 #include <string>
 #include <thread>
@@ -62,7 +62,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     int goal_width = 0;
 
     asio::io_service io_service;
-    asio::ip::tcp::endpoint endpoint_to_listen(asio::ip::tcp::v4(), CONN_SERVER_PORT); 
+    asio::ip::tcp::endpoint endpoint_to_listen(asio::ip::tcp::v4(), TCP_PORT);
     asio::ip::tcp::acceptor acceptor(io_service, endpoint_to_listen);
     asio::ip::tcp::socket socket(io_service);
     asio::streambuf read_buf;
@@ -78,7 +78,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     
 
 
-    logger.log(Info, "Server Started on Port Number:" + repr(CONN_SERVER_PORT) 
+    logger.log(Info, "Server Started on Port Number:" + repr(TCP_PORT)
                     + ", Awaiting Remote AI Connection...");
 
     try 

@@ -14,9 +14,8 @@
 #include "CoreModules/ControlModule/ControlModule.hpp"
 #include "CoreModules/MotionModule/MotionModule.hpp"
 #include "CoreModules/BallCaptureModule/BallCaptureModule.hpp"
-#include "PeriphModules/RemoteServers/ConServerModule.hpp"
-#include "PeriphModules/RemoteServers/CmdServerModule.hpp"
-#include "PeriphModules/RemoteServers/GVisServerModule.hpp"
+#include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
+#include "PeriphModules/RemoteServers/UdpReceiveModule.hpp"
 #include "PeriphModules/FirmClientModule/FirmClientModule.hpp"
 //////////////////////////////////////////////////////////
 
@@ -46,10 +45,8 @@ int main(int argc, char *argv[]) {
     boost::shared_ptr<BallEKF_Module> ball_ekf_module(new VirtualBallEKF());
     boost::shared_ptr<MotionModule> motion_module(new MotionModule());
     boost::shared_ptr<ControlModule> control_module(new PID_System());
-    boost::shared_ptr<CMDServerModule> cmd_server_module(new CMDServer());
-    boost::shared_ptr<ConServerModule> connection_server_module(new ConnectionServer());
-    boost::shared_ptr<GVisServerModule> global_vision_server_module(new GlobalVisionServer());
-    // boost::shared_ptr<InternalEkfServerModule> intern_ekf_server_module(new InternalEkfServer());
+    boost::shared_ptr<UdpReceiveModule> udp_receive_module(new CMDServer());
+    boost::shared_ptr<TcpReceiveModule> tcp_receive_module(new ConnectionServer());
     boost::shared_ptr<BallCaptureModule> ball_capture_module(new BallCaptureModule());
     
     // Configs
@@ -64,9 +61,8 @@ int main(int argc, char *argv[]) {
     ball_ekf_module->run(thread_pool);
     motion_module->run(thread_pool);
     control_module->run(thread_pool);
-    cmd_server_module->run(thread_pool);
-    connection_server_module->run(thread_pool);
-    global_vision_server_module->run(thread_pool);
+    udp_receive_module->run(thread_pool);
+    tcp_receive_module->run(thread_pool);
     // intern_ekf_server_module->run(thread_pool);
     ball_capture_module->run(thread_pool);
     

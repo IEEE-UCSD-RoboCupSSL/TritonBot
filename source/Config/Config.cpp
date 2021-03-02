@@ -20,13 +20,8 @@ int GRSIM_VISION_PORT = 10020; // juts an example default val, will be reset in 
 std::string GRSIM_VISION_IP = "224.5.23.2"; // juts an example default val, will be reset in another code file
 
 /* These values will be different for different robots, hence be reset in another file */
-int CONN_SERVER_PORT = 6000; // juts an example default val, will be reset in another code file
-int CMD_SERVER_PORT = 6001; // juts an example default val, will be reset in another code file
-int EKF_SERVER_PORT = 6002; // juts an example default val, will be reset in another code file
-int GVISION_SERVER_PORT = 6003; // juts an example default val, will be reset in another code file
-
-
-
+int TCP_PORT = 6000; // juts an example default val, will be reset in another code file
+int UDP_PORT = 6001; // juts an example default val, will be reset in another code file
 
 unsigned int FIRM_CMD_MQ_SIZE = 1;
 unsigned int FIRM_DATA_MQ_SIZE = 10;
@@ -104,10 +99,8 @@ bool process_args(int argc, char *argv[]) {
     if(is_virtual) {
         if ( optind + 3 == argc ) {
             // <port base>
-            CONN_SERVER_PORT = std::stoi( std::string(argv[argc - 3]), nullptr, 10 );
-            CMD_SERVER_PORT = CONN_SERVER_PORT + 1;
-            EKF_SERVER_PORT = CONN_SERVER_PORT + 2;
-            GVISION_SERVER_PORT = CONN_SERVER_PORT + 3;
+            TCP_PORT = std::stoi(std::string(argv[argc - 3]), nullptr, 10 );
+            UDP_PORT = TCP_PORT + 1;
 
             // <vfirm ip>
             VFIRM_IP_ADDR = std::string(argv[argc - 2]);
@@ -117,10 +110,8 @@ bool process_args(int argc, char *argv[]) {
         }
         else if (optind + 2 == argc) {
             // <port base>
-            CONN_SERVER_PORT = std::stoi( std::string(argv[argc - 2]), nullptr, 10 );
-            CMD_SERVER_PORT = CONN_SERVER_PORT + 1;
-            EKF_SERVER_PORT = CONN_SERVER_PORT + 2;
-            GVISION_SERVER_PORT = CONN_SERVER_PORT + 3;
+            TCP_PORT = std::stoi(std::string(argv[argc - 2]), nullptr, 10 );
+            UDP_PORT = TCP_PORT + 1;
 
             // <vfirm port>
             VFIRM_IP_PORT = std::stoi( std::string(argv[argc - 1]), nullptr, 10 );
@@ -135,10 +126,8 @@ bool process_args(int argc, char *argv[]) {
 
         std::stringstream ss;
         ss << "\nThis program listens on LocalHost \n"
-           << "\tConnection Server Port   : " + repr(CONN_SERVER_PORT) + "\n"
-           << "\tCommand Server Port      : " + repr(CMD_SERVER_PORT) + "\n"
-           << "\tGlobal Vision Server Port: " + repr(GVISION_SERVER_PORT) + "\n"
-           << "\tEKF Server Port          : " + repr(EKF_SERVER_PORT) + "\n"
+           << "\tTCP Port   : " + repr(TCP_PORT) + "\n"
+           << "\tUDP Port      : " + repr(UDP_PORT) + "\n"
            << "Connecting to the Virtual Robot on grSim claimed by vfirm.exe listening on: \n"
            << "\t" + VFIRM_IP_ADDR + " " + repr(VFIRM_IP_PORT)
            << std::endl;

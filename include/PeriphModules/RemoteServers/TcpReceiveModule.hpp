@@ -2,12 +2,12 @@
 #include "Misc/PubSubSystem/Module.hpp"
 
 
-class ConServerModule : public Module {
+class TcpReceiveModule : public Module {
     public:
         virtual void task() {}
         virtual void task(ThreadPool& thread_pool);
 
-        virtual ~ConServerModule() {}
+        virtual ~TcpReceiveModule() {}
 };
 
-using ConnectionServer = ConServerModule;
+using ConnectionServer = TcpReceiveModule;
