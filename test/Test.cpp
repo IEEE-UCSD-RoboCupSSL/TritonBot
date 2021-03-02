@@ -2,7 +2,6 @@
 #include <gtest/gtest.h>
 
 #include "PubSubSystem/thread_pool.hpp"
-#include "FirmClientModule/vfirm_client.hpp"
 #include "Utility/boost_logger.hpp"
 
 
@@ -47,7 +46,6 @@
 //     std::string expected = "Hello, World!";
 //     EXPECT_EQ(0, actual.compare("Hello, World!")) << "Expected string: \"" << expected << "\"" << std::endl << "Actual string: \"" << actual << "\"" << std::endl;
 // }*/_pool.hpp"
-#include "FirmClientModule/vfirm_client.hpp"
 #include "Utility/boost_logger.hpp"
 
 
