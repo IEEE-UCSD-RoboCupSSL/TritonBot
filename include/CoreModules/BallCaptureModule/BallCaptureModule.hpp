@@ -26,6 +26,7 @@ class BallCaptureModule : public Module {
         ITPS::NonBlockingSubscriber<MotionEKF::MotionData> bot_data_sub;
         ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub;
         ITPS::NonBlockingPublisher<bool> ballcap_status_pub;
+
         ITPS::NonBlockingPublisher<bool> drib_enable_pub;
         B_Log logger;
 
@@ -40,6 +41,8 @@ class BallCaptureModule : public Module {
          *  @Note to developer: The dribbler is about 80 units wide and about 100 units away from the center of the robot.
          */
         bool check_ball_captured_V(arma::vec ball_pos, MotionEKF_Module::MotionData latest_motion_data);
+
+        bool check_close_enough(arma::vec ball_pos, MotionEKF_Module::MotionData latest_motion_data);
 
         double calc_angle(double delta_y, double delta_x);
         

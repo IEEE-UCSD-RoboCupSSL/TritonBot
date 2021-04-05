@@ -5,7 +5,7 @@
 #include "CoreModules/EKF-Module/BallEkfModule.hpp"
 #include "Config/Config.hpp"
 
-#define AUTOCAP_DECISION_THRESHOLD 50
+#define AUTOCAP_DECISION_THRESHOLD 80
 #define DRIBBLER_ENABLE_DIS 300.0
 
 // Note: rotational data are all in world frame
@@ -24,9 +24,7 @@ BallCaptureModule::BallCaptureModule() : enable_sub("CMD Server", "EnableAutoCap
                                          command_pub("Ball Capture Module", "MotionCMD", default_cmd()),
                                          ballcap_status_pub("Ball Capture Module", "isDribbled", false),
                                          drib_enable_pub("BallCapture", "EnableDribbler", false),
-                                         logger()
-                                         
-{
+                                         logger() {
     logger.add_tag("BallCapture Module");
 }
 
@@ -41,7 +39,7 @@ void BallCaptureModule::init_subscribers() {
         enable_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
 
     }
-    catch(std::exception& e) {
+    catch (std::exception &e) {
         B_Log logger;
         logger.add_tag("[ball_capture_module.cpp]");
         logger.log(Error, std::string(e.what()));
@@ -52,13 +50,13 @@ void BallCaptureModule::init_subscribers() {
 
 
 // [[noreturn]] 
-void BallCaptureModule::task(ThreadPool& thread_pool) {
+void BallCaptureModule::task(ThreadPool &thread_pool) {
     UNUSED(thread_pool);
     init_subscribers();
     int count = 0;
     int total = 0;
 
-    while(true){ // has delay (good for reducing high CPU usage)
+    while (true) { // has delay (good for reducing high CPU usage)
 
 //         if(false){
 //             logger.log(Info, "Ball displacement (x, y): ( " + std::to_string(ball_pos_sub.latest_msg()(0)) + " , "
@@ -81,27 +79,24 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
         arma::vec ball_pos = ball_data_sub.latest_msg().disp;
         MotionEKF_Module::MotionData latest_motion_data = bot_data_sub.latest_msg();
 
-        if(arma::norm(ball_pos - latest_motion_data.trans_disp) < 300.00) {
+        if (check_close_enough(ball_pos, latest_motion_data)) {
             drib_enable_pub.publish(true);
-        }
-        else {
+        } else {
             drib_enable_pub.publish(false);
         }
 
 
-
-        if(check_ball_captured_V(ball_pos, latest_motion_data)) {
+        if (check_ball_captured_V(ball_pos, latest_motion_data)) {
             count++;
         }
 
         total++;
 
-        if(total >= 100){
-            if(count >= AUTOCAP_DECISION_THRESHOLD){
+        if (total >= 100) {
+            if (count >= AUTOCAP_DECISION_THRESHOLD) {
                 averageResult = true;
                 ballcap_status_pub.publish(true);
-            }
-            else{
+            } else {
                 averageResult = false;
                 ballcap_status_pub.publish(false);
             }
@@ -110,7 +105,7 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
             total = 0;
         }
 
-        if(enable_sub.latest_msg()){
+        if (enable_sub.latest_msg()) {
 
             // if(false){
             //     logger.log(Info, "[ball capture] dribble status: " + std::to_string(check_ball_captured_V(ball_data_sub.latest_msg().disp, bot_data_sub.latest_msg())));
@@ -125,13 +120,12 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
             Motion::MotionCMD command;
 
 
-            if(!averageResult){
+            if (!averageResult) {
                 command.mode = Motion::CTRL_Mode::TDRD;
                 command.ref_frame = Motion::ReferenceFrame::BodyFrame;
                 command.setpoint_3d = {ball_pos(0), ball_pos(1), angle + latest_motion_data.rotat_disp};
                 command_pub.publish(command);
-            }
-            else{
+            } else {
                 command.mode = Motion::CTRL_Mode::TVRD;
                 command.ref_frame = Motion::ReferenceFrame::BodyFrame;
                 command.setpoint_3d = {0, 5.00, angle + latest_motion_data.rotat_disp};
@@ -144,13 +138,31 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
             // }
 
         }
-        
-        delay(1); 
+
+        delay(1);
     }
-        
+
 }
 
-bool BallCaptureModule::check_ball_captured_V(arma::vec ball_pos, MotionEKF_Module::MotionData latest_motion_data){
+bool BallCaptureModule::check_close_enough(arma::vec ball_pos, MotionEKF_Module::MotionData latest_motion_data) {
+    double const PI = 3.1415926;
+    double const X_TRESHOLD = 80.0;
+    double const Y_TRESHOLD = 150.0;
+    double const DRIBBLER_OFFSET = 105.0;
+
+    double delta_x = ball_pos(0) - latest_motion_data.trans_disp(0);
+    double delta_y = ball_pos(1) - latest_motion_data.trans_disp(1);
+
+    if (std::abs(delta_x) < X_TRESHOLD
+        && delta_y < DRIBBLER_OFFSET + Y_TRESHOLD
+        && delta_y > DRIBBLER_OFFSET - Y_TRESHOLD) {
+        return true;
+    }
+
+    return false;
+}
+
+bool BallCaptureModule::check_ball_captured_V(arma::vec ball_pos, MotionEKF_Module::MotionData latest_motion_data) {
     double const PI = 3.1415926;
     double const X_TRESHOLD = 80.0;
     double const Y_TRESHOLD = 20.0;
@@ -159,43 +171,42 @@ bool BallCaptureModule::check_ball_captured_V(arma::vec ball_pos, MotionEKF_Modu
     double delta_x = ball_pos(0) - latest_motion_data.trans_disp(0);
     double delta_y = ball_pos(1) - latest_motion_data.trans_disp(1);
 
-    if(std::abs(delta_x) < X_TRESHOLD 
-        && delta_y < DRIBBLER_OFFSET + Y_TRESHOLD 
-        && delta_y > DRIBBLER_OFFSET - Y_TRESHOLD){
+    if (std::abs(delta_x) < X_TRESHOLD
+        && delta_y < DRIBBLER_OFFSET + Y_TRESHOLD
+        && delta_y > DRIBBLER_OFFSET - Y_TRESHOLD) {
         return true;
     }
 
     return false;
 }
 
-double BallCaptureModule::calc_angle(double delta_y, double delta_x){
+double BallCaptureModule::calc_angle(double delta_y, double delta_x) {
     double angle;
 
-    if(delta_x < 0.0001 && delta_x > -0.0001){
-        if(delta_y > 0){
+    if (delta_x < 0.0001 && delta_x > -0.0001) {
+        if (delta_y > 0) {
             return 0;
-        }
-        else{
+        } else {
             return 179.9;
         }
 
     }
 
     // first quadrant
-    if(delta_y >= 0 && delta_x >= 0){
-        angle = std::atan(delta_y/delta_x) * 180.0 / 3.1415926 - 90;
+    if (delta_y >= 0 && delta_x >= 0) {
+        angle = std::atan(delta_y / delta_x) * 180.0 / 3.1415926 - 90;
     }
-    // second quadrant
-    else if(delta_y >= 0 && delta_x < 0) {
-        angle = 90 - std::atan(delta_y/-delta_x) * 180.0 / 3.1415926;
+        // second quadrant
+    else if (delta_y >= 0 && delta_x < 0) {
+        angle = 90 - std::atan(delta_y / -delta_x) * 180.0 / 3.1415926;
     }
-    // fourth quadrant
-    else if(delta_y < 0 && delta_x >= 0){
-        angle = std::atan(delta_y/delta_x) * 180.0 / 3.1415926 - 90;
+        // fourth quadrant
+    else if (delta_y < 0 && delta_x >= 0) {
+        angle = std::atan(delta_y / delta_x) * 180.0 / 3.1415926 - 90;
     }
-    // third quadrant
-    else{
-        angle = 90 - std::atan(delta_y/-delta_x) * 180.0 / 3.1415926;
+        // third quadrant
+    else {
+        angle = 90 - std::atan(delta_y / -delta_x) * 180.0 / 3.1415926;
     }
 
     return angle;
