@@ -5,6 +5,8 @@
 #include "CoreModules/EKF-Module/BallEkfModule.hpp"
 #include "Config/Config.hpp"
 
+#define AUTOCAP_DECISION_THRESHOLD 50
+#define DRIBBLER_ENABLE_DIS 300.0
 
 // Note: rotational data are all in world frame
 static Motion::MotionCMD default_cmd() {
@@ -53,6 +55,8 @@ void BallCaptureModule::init_subscribers() {
 void BallCaptureModule::task(ThreadPool& thread_pool) {
     UNUSED(thread_pool);
     init_subscribers();
+    int count = 0;
+    int total = 0;
 
     while(true){ // has delay (good for reducing high CPU usage)
 
@@ -72,6 +76,8 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
 //             delay(100);
 //         }
 
+        bool averageResult = false;
+
         arma::vec ball_pos = ball_data_sub.latest_msg().disp;
         MotionEKF_Module::MotionData latest_motion_data = bot_data_sub.latest_msg();
 
@@ -83,13 +89,26 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
         }
 
 
-        if(!check_ball_captured_V(ball_pos, latest_motion_data)){
-            ballcap_status_pub.publish(false);
-        }
-        else{
-            ballcap_status_pub.publish(true);
+
+        if(check_ball_captured_V(ball_pos, latest_motion_data)) {
+            count++;
         }
 
+        total++;
+
+        if(total >= 100){
+            if(count >= AUTOCAP_DECISION_THRESHOLD){
+                averageResult = true;
+                ballcap_status_pub.publish(true);
+            }
+            else{
+                averageResult = false;
+                ballcap_status_pub.publish(false);
+            }
+
+            count = 0;
+            total = 0;
+        }
 
         if(enable_sub.latest_msg()){
 
@@ -106,7 +125,7 @@ void BallCaptureModule::task(ThreadPool& thread_pool) {
             Motion::MotionCMD command;
 
 
-            if(!check_ball_captured_V(ball_pos, latest_motion_data)){
+            if(!averageResult){
                 command.mode = Motion::CTRL_Mode::TDRD;
                 command.ref_frame = Motion::ReferenceFrame::BodyFrame;
                 command.setpoint_3d = {ball_pos(0), ball_pos(1), angle + latest_motion_data.rotat_disp};
