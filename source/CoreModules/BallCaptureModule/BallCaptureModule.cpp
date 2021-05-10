@@ -146,8 +146,8 @@ void BallCaptureModule::task(ThreadPool &thread_pool) {
 
 bool BallCaptureModule::check_close_enough(arma::vec ball_pos, MotionEKF_Module::MotionData latest_motion_data) {
     double const PI = 3.1415926;
-    double const X_TRESHOLD = 80.0;
-    double const Y_TRESHOLD = 150.0;
+    double const X_TRESHOLD = 200.0;
+    double const Y_TRESHOLD = 200.0;
     double const DRIBBLER_OFFSET = 105.0;
 
     double delta_x = ball_pos(0) - latest_motion_data.trans_disp(0);
