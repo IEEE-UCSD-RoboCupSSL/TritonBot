@@ -45,16 +45,17 @@ int main(int argc, char *argv[]) {
         testRunner.run(threadPool);
         threadPool.stopIosRun();
     } else {
-        //delay(100);
+
+        // Note: these smart pointer will be freed when exiting this else block (might cause seg fault if not dealt properly, java is so awesome)
         // Construct module instances
-        std::shared_ptr<FirmClientModule> firmClientModule(new VFirmClient());
-        std::shared_ptr<MotionEKF_Module> motionEkfModule(new VirtualMotionEKF());
-        std::shared_ptr<BallEKF_Module> ballEkfModule(new VirtualBallEKF());
-        std::shared_ptr<MotionModule> motionModule(new MotionModule());
-        std::shared_ptr<ControlModule> controlModule(new PID_System());
-        std::shared_ptr<UdpReceiveModule> udpReceiveModule(new CMDServer());
-        std::shared_ptr<TcpReceiveModule> tcpReceiveModule(new ConnectionServer());
-        std::shared_ptr<BallCaptureModule> ballCaptureModule(new BallCaptureModule());
+        std::unique_ptr<FirmClientModule> firmClientModule(new VFirmClient());
+        std::unique_ptr<MotionEKF_Module> motionEkfModule(new VirtualMotionEKF());
+        std::unique_ptr<BallEKF_Module> ballEkfModule(new VirtualBallEKF());
+        std::unique_ptr<MotionModule> motionModule(new MotionModule());
+        std::unique_ptr<ControlModule> controlModule(new PID_System());
+        std::unique_ptr<UdpReceiveModule> udpReceiveModule(new CMDServer());
+        std::unique_ptr<TcpReceiveModule> tcpReceiveModule(new ConnectionServer());
+        std::unique_ptr<BallCaptureModule> ballCaptureModule(new BallCaptureModule());
         
         
         // Configs
@@ -73,11 +74,11 @@ int main(int argc, char *argv[]) {
         //udpReceiveModule->run(threadPool);
         //tcpReceiveModule->run(threadPool);
         //ballCaptureModule->run(threadPool);
+
+
+        threadPool.joinAll(); // must have it here, or will cause seg fault, think about the scope issue of the smart pointers
     }
 
-    while(true) {
-        delay(10000);
-    }
     threadPool.joinAll();
     return 0;
 }

@@ -32,7 +32,7 @@ add_compile_options("-Qunused-arguments")
 project(TritonBot)
 
 #set target name
-set(Target TritonBot.exe)
+set(Target TritonBot)
 
 
 #set c++ version

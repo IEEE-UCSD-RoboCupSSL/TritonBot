@@ -72,12 +72,11 @@ VirtualBallEKF::~VirtualBallEKF() {}
 
 
 void VirtualBallEKF::task(ThreadPool& threadPool) {
-    
     B_Log logger;
-    //logger.add_tag("PseudoBallEKF Module");
-    //logger(Info) << "\033[0;32m Thread Started \033[0m";
+    logger.add_tag("PseudoBallEKF Module");
+    logger(Info) << "\033[0;32m Thread Started \033[0m";
     init_subscribers();
-    //logger(Info) << "\033[0;32m Initialized \033[0m";
+    logger(Info) << "\033[0;32m Initialized \033[0m";
 
 
     BallData ball_data;
