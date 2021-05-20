@@ -8,6 +8,8 @@
 #include "Misc/Utility/Common.hpp"
 #include "Config/Config.hpp"
 
+unsigned int ROBOT_ID = 0;
+
 unsigned int THREAD_POOL_SIZE = 30;
 
 unsigned int INIT_DELAY = 1000; // 1 sec
@@ -60,7 +62,7 @@ float PID_TVRV_CORR = 1.0;
 /*  */
 
 
-static void help_print(B_Log& logger) {
+static void help_print(BLogger& logger) {
     std::stringstream ss;
     ss << "\nCommand: \n"
        << "For Virtual Robots on the Simulator: \n"
@@ -78,12 +80,12 @@ static void help_print(B_Log& logger) {
 
 
 bool processArgs(int argc, char *argv[], bool& isTestMode) {
-    B_Log logger;
+    BLogger logger;
     logger.add_tag("CMDArgument Processor");
 
     bool isVirtual = false;
     char option;
-    while ( (option = getopt(argc, argv,":vtd")) != -1 ) {
+    while ( (option = getopt(argc, argv,"i:vtd")) != -1 ) {
         switch(option) {
             case 'v':
                 isVirtual = true;
@@ -92,10 +94,13 @@ bool processArgs(int argc, char *argv[], bool& isTestMode) {
                 isTestMode = true;
                 break;
             case 'd':
-                B_Log::sink->set_filter(severity >= Debug);
+                BLogger::sink->set_filter(severity >= Debug);
+                break;
+            case 'i':
+                ROBOT_ID = std::stoi(optarg);
                 break;
             case '?':
-                B_Log errLogger;
+                BLogger errLogger;
                 errLogger.add_tag("[setting.cpp]");
                 errLogger.log(Error, std::string("Unknown option: ").append(1, (char)optopt));
                 help_print(logger);
@@ -104,6 +109,7 @@ bool processArgs(int argc, char *argv[], bool& isTestMode) {
         }
     }
 
+    logger.log(Info, "\033[0;32m Robot ID: " + repr(ROBOT_ID) + "\033[0m");
     
     if(isTestMode) {
         logger(Info) << "[TestMode]";
@@ -131,7 +137,7 @@ bool processArgs(int argc, char *argv[], bool& isTestMode) {
             VFIRM_IP_PORT = std::stoi( std::string(argv[argc - 1]), nullptr, 10 );
         }
         else {
-            B_Log errLogger;
+            BLogger errLogger;
             errLogger.add_tag("[config.cpp]");
             errLogger.log(Error, "Not enough arguments");
             help_print(logger);
@@ -150,7 +156,7 @@ bool processArgs(int argc, char *argv[], bool& isTestMode) {
 
     }
     else {
-        B_Log errLogger;
+        BLogger errLogger;
         errLogger.add_tag("[setting.cpp]");
         errLogger.log(Error, "Real Robot Mode temporarily not supported");
         help_print(logger);

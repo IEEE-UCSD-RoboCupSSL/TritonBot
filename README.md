@@ -19,7 +19,8 @@ Recommend using CLion, but it's not free. vscode might be a good option too.
 
 if you aren't familiar with using vscode:
 * when using vscode
-    * recommended plug-in:
+     * vscode intellisense could be quite slow sometimes, be patient and don't get panic if you see lots of error squiggles when openning a source file for the first time. (Especially include errors)
+     * recommended plug-in:
         *  c/c++ (microsoft: intellisense, debugging, ...)
         *  Better C++ Syntax
         *  CMake (CMake language support for vscode)

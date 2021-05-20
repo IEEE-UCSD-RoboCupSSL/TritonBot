@@ -28,7 +28,7 @@ class BallCaptureModule : public Module {
         ITPS::NonBlockingPublisher<bool> ballcap_status_pub;
 
         ITPS::NonBlockingPublisher<bool> drib_enable_pub;
-        B_Log logger;
+        BLogger logger;
 
         /*
          *  Author: Haoen(Samuel) Luo

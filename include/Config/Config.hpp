@@ -4,6 +4,7 @@
 const std::size_t UDP_RBUF_SIZE = 1024;
 const std::size_t UDP_WBUF_SIZE = 1024;
 
+extern unsigned int ROBOT_ID;
 
 extern unsigned int THREAD_POOL_SIZE;
 

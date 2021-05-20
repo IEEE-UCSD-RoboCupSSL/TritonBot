@@ -41,7 +41,7 @@ void MotionModule::init_subscribers(void) {
         command_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[motion_module.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
@@ -52,7 +52,7 @@ void MotionModule::init_subscribers(void) {
 
 void MotionModule::task(ThreadPool& threadPool) {
     UNUSED(threadPool);
-    B_Log logger;
+    BLogger logger;
     logger.add_tag("Motion Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
     init_subscribers();

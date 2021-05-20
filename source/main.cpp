@@ -25,9 +25,9 @@ std::ostream& operator<<(std::ostream& os, const arma::vec& v);
 
 int main(int argc, char *argv[]) {
     // Logger Initialization
-    B_Log::static_init();
-    B_Log::set_shorter_format();
-    B_Log::sink->set_filter(severity >= Info);
+    BLogger::staticInit();
+    BLogger::setToShorterFormat();
+    BLogger::sink->set_filter(severity >= Info);
     
     // Process Json configurations
 

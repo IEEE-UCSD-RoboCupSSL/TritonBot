@@ -44,7 +44,7 @@ void ControlModule::init_subscribers(void) {
 
     }
     catch(std::exception& e) {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[control_module.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
@@ -113,7 +113,7 @@ void PID_System::init_subscribers(void) {
         pid_consts_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[ControlModule.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
@@ -123,7 +123,7 @@ void PID_System::init_subscribers(void) {
 
 
 void PID_System::task(ThreadPool& threadPool) {
-    B_Log logger;
+    BLogger logger;
     logger.add_tag("PID_System Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
