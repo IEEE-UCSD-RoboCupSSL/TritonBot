@@ -4,4 +4,5 @@
 class ManualTest {
 public:
     virtual bool test(ThreadPool& threadPool) = 0;
+    virtual ~ManualTest() {}
 };

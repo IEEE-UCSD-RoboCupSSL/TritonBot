@@ -55,7 +55,5 @@ public:
 private:
 
     BallEKF::BallData ball_data;
-    BLogger logger;
-
-
+    B_Log logger;
 };

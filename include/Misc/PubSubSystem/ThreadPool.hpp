@@ -51,11 +51,16 @@ public:
 
     /* total CUMULATIVE number of tasks ever being posted by ThreadPool::execute,
      * which also include those tasks that are already finished
-     * */
+     * */ // Note: threads.size() might not give you what you want, check the doc carefully
     unsigned int num_posted_funcs() {
         return num_tasks;
     }
 
+    void stopIosRun() {
+        ios.stop();
+    }
+
+    /* Note: this will join all threads created at the beginning, not just the tasks */
     void joinAll() {
         threads.join_all();
     }

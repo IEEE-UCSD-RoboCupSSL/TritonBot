@@ -39,7 +39,5 @@ void TestRunner::run(ThreadPool& threadPool) {
 
         std::cout << (result ? "Test Success" : "Test Failed") << std::endl;
     }
-
-    std::cout << "use ctrl + c to exit" << std::endl;
 }
 

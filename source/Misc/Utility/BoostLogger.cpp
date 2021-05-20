@@ -6,10 +6,10 @@ namespace expr = boost::log::expressions;
 
 typedef boost::log::sinks::asynchronous_sink< boost::log::sinks::text_ostream_backend > text_sink;
 
-bool BLogger::statically_init = false;
-boost::shared_ptr< text_sink > BLogger::sink = boost::make_shared< text_sink >();
+bool B_Log::statically_init = false;
+boost::shared_ptr< text_sink > B_Log::sink = boost::make_shared< text_sink >();
 
-void BLogger::static_init() {
+void B_Log::static_init() {
 
     
     // set where to log to
@@ -35,19 +35,19 @@ void BLogger::static_init() {
 
 
 // default constructor: logging to std::clog with default format
-BLogger::BLogger() {
+B_Log::B_Log() {
 
-    if(BLogger::statically_init != true) { 
+    if(B_Log::statically_init != true) { 
         BOOST_LOG_TRIVIAL(error) << "\033[0;31mlogger static initializer has not yet been called\033[0m";
     }
     // construct the logger
-    slog = slog_ptr(new boost::log::sources::severity_logger<SeverityLevel>);
+    slog = slog_ptr(new boost::log::sources::severity_logger<severity_level>);
 
     
 }
     
 
-void BLogger::set_shorter_format() {
+void B_Log::set_shorter_format() {
     sink->set_formatter
     (
         expr::stream
@@ -61,7 +61,7 @@ void BLogger::set_shorter_format() {
 
 }
 
-void BLogger::set_shortest_format() {
+void B_Log::set_shortest_format() {
     sink->set_formatter
     (
         expr::stream
@@ -69,7 +69,7 @@ void BLogger::set_shortest_format() {
     );
 }
 
-void BLogger::set_even_shorter_format() {
+void B_Log::set_even_shorter_format() {
     sink->set_formatter
     (
         expr::stream
@@ -81,7 +81,7 @@ void BLogger::set_even_shorter_format() {
     );
 }
 
-void BLogger::set_default_format() {
+void B_Log::set_default_format() {
         // set default format
     sink->set_formatter
     (
@@ -106,31 +106,31 @@ void BLogger::set_default_format() {
     );
 }
 
-void BLogger::add_tag(std::string tag) {
+void B_Log::add_tag(std::string tag) {
     slog->add_attribute(LOG_TAG(tag));
 }
 
-BLogger& BLogger::operator()(SeverityLevel sev) {
+B_Log& B_Log::operator()(severity_level sev) {
     this->sev = sev;
     return *this;
 }
 
 
-BLogger& operator<<(BLogger& logger, std::string str)
+B_Log& operator<<(B_Log& logger, std::string str)
 {
     BOOST_LOG_SEV(*(logger.slog), logger.sev) << str; 
     logger.sink.get()->flush();
     return logger;
 }
 
-BLogger& operator<<(BLogger& logger, const char* str) {
+B_Log& operator<<(B_Log& logger, const char* str) {
     BOOST_LOG_SEV(*(logger.slog), logger.sev) << std::string(str);
     logger.sink.get()->flush();
     return logger;
 }
 
 
-std::ostream& operator<< (std::ostream& strm, SeverityLevel level)
+std::ostream& operator<< (std::ostream& strm, severity_level level)
 {
     static const char* strings[] =
     {
@@ -155,7 +155,7 @@ std::ostream& operator<< (std::ostream& strm, SeverityLevel level)
 
 
 
-void BLogger::log(SeverityLevel sev, std::string str) {
+void B_Log::log(severity_level sev, std::string str) {
     BOOST_LOG_SEV(*(this->slog), sev) << std::string(str);
     sink.get()->flush();
 }

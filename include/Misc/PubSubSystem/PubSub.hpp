@@ -31,6 +31,14 @@
 #define AVOID_STARVATION_DELAY 1 // unit: microseconds
 
 
+class ChannelAlreadyRegisteredException: public std::exception
+{
+  virtual const char* what() const throw()
+  {
+    return "Channel Already Registered";
+  }
+};
+
 
 // Inter-Thread Publisher-Subscriber System
 namespace ITPS {
@@ -74,9 +82,11 @@ namespace ITPS {
                 this->key = topic_name + "." + msg_name + "." + mode;
                 // std::cout << key << std::endl;
                 
-                // if key doesn'Msg exist
+                // if key doesn't exist
                 if(msg_table.find(key) == msg_table.end()) {
                     msg_table[key] = this;
+                } else {
+                    throw new ChannelAlreadyRegisteredException();
                 }
             }
 
@@ -157,8 +167,15 @@ namespace ITPS {
     class Publisher {
         public:
             Publisher(std::string topic_name, std::string msg_name, std::string mode) {
-                // if two publisher uses the same topic_nam + msg_name + mode, they would share the same msg channel (handled inside MsgChannel Constructor)
-                channel = boost::shared_ptr<ITPS::MsgChannel<Msg>>(new ITPS::MsgChannel<Msg>(topic_name, msg_name, mode));
+                // if two publisher uses the same topic_nam + msg_name + mode, they would share the same msg channel 
+                try {
+                    channel = boost::shared_ptr<ITPS::MsgChannel<Msg>>(
+                        new ITPS::MsgChannel<Msg>(topic_name, msg_name, mode));
+                } catch(ChannelAlreadyRegisteredException e) {
+                    channel = boost::shared_ptr<ITPS::MsgChannel<Msg>>(
+                        ITPS::MsgChannel<Msg>::get_channel(topic_name, msg_name, mode)
+                    );
+                }
             }
             ~Publisher() {}
 
@@ -347,8 +364,32 @@ namespace ITPS {
             boost::shared_ptr<ConsumerProducerQueue<Msg>> msg_queue;
     };
 
+
+
+    template <typename Msg>
+    class NonBlockingPubSubPair {
+        public: 
+            NonBlockingPublisher<Msg>* pub;
+            NonBlockingSubscriber<Msg>* sub;
+
+            NonBlockingPubSubPair(std::string topic_name, std::string msg_name, Msg default_msg) {
+                pub = new NonBlockingPublisher<Msg>(topic_name, msg_name, default_msg);
+                sub = new NonBlockingSubscriber<Msg>(topic_name, msg_name);
+                sub->subscribe();
+            }
+            ~NonBlockingPubSubPair() {
+                delete pub;
+                delete sub;
+            }
+    };
+
+
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
 
 

@@ -40,7 +40,7 @@ void BallCaptureModule::init_subscribers() {
 
     }
     catch (std::exception &e) {
-        BLogger logger;
+        B_Log logger;
         logger.add_tag("[ball_capture_module.cpp]");
         logger.log(Error, std::string(e.what()));
         std::exit(0);

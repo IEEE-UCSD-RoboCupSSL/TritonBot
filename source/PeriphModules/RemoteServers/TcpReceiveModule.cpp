@@ -51,7 +51,7 @@ static void backgnd_task(ITPS::NonBlockingSubscriber<bool>& ballcap_status_sub,
 void ConnectionServer::task(ThreadPool& threadPool) {
     UNUSED(threadPool); // no child thread is needed in a async scheme
 
-    BLogger logger;
+    B_Log logger;
     logger.add_tag("Connection Server Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
@@ -88,7 +88,7 @@ void ConnectionServer::task(ThreadPool& threadPool) {
     }
     catch(std::exception& e)
     {
-        BLogger logger;
+        B_Log logger;
         logger.add_tag("[connection_server_module.cpp]");
         logger.log(Error, e.what());
         safety_enable_pub.publish(false);
@@ -110,7 +110,7 @@ void ConnectionServer::task(ThreadPool& threadPool) {
             asio::read_until(socket, read_buf, "\n"); 
         }
         catch(std::exception& e) {
-            BLogger logger;
+            B_Log logger;
             logger.add_tag("[connection_server_module.cpp]");
             logger.log(Error, e.what());
             safety_enable_pub.publish(false);

@@ -3,7 +3,7 @@
 #include <chrono>
 
 #define DURATION_MILLIS_COUNT(time_point) std::chrono::duration_cast<std::chrono::milliseconds> (time_point).count()
-
+#define CHRONO_NOW std::chrono::steady_clock::now()
 
 
 unsigned int millis(void);

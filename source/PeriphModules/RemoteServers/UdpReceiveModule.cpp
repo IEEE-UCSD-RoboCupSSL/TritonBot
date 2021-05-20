@@ -34,7 +34,7 @@ static Motion::MotionCMD default_cmd() {
 [[noreturn]] void CMDServer::task(ThreadPool& threadPool) {
     UNUSED(threadPool); 
 
-    BLogger logger;
+    B_Log logger;
     logger.add_tag("UDP Receiver Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
@@ -71,7 +71,7 @@ static Motion::MotionCMD default_cmd() {
         sensor_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
-        BLogger logger;
+        B_Log logger;
         logger.add_tag("[UdpReceiveModule.cpp]");
         logger.log(Error, std::string(e.what()));
         std::exit(0);

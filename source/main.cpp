@@ -25,10 +25,9 @@ std::ostream& operator<<(std::ostream& os, const arma::vec& v);
 
 int main(int argc, char *argv[]) {
     // Logger Initialization
-    BLogger::static_init();
-    BLogger::set_shorter_format();
-    BLogger::sink->set_filter(severity >= Info);
-    BLogger logger;
+    B_Log::static_init();
+    B_Log::set_shorter_format();
+    B_Log::sink->set_filter(severity >= Info);
     
     // Process Json configurations
 
@@ -44,16 +43,19 @@ int main(int argc, char *argv[]) {
     if(isTestMode) {
         TestRunner testRunner;
         testRunner.run(threadPool);
+        threadPool.stopIosRun();
     } else {
+        //delay(100);
         // Construct module instances
-        boost::shared_ptr<FirmClientModule> firmClientModule(new VFirmClient());
-        boost::shared_ptr<MotionEKF_Module> motionEkfModule(new VirtualMotionEKF());
-        boost::shared_ptr<BallEKF_Module> ballEkfModule(new VirtualBallEKF());
-        boost::shared_ptr<MotionModule> motionModule(new MotionModule());
-        boost::shared_ptr<ControlModule> controlModule(new PID_System());
-        boost::shared_ptr<UdpReceiveModule> udpReceiveModule(new CMDServer());
-        boost::shared_ptr<TcpReceiveModule> tcpReceiveModule(new ConnectionServer());
-        boost::shared_ptr<BallCaptureModule> ballCaptureModule(new BallCaptureModule());
+        std::shared_ptr<FirmClientModule> firmClientModule(new VFirmClient());
+        std::shared_ptr<MotionEKF_Module> motionEkfModule(new VirtualMotionEKF());
+        std::shared_ptr<BallEKF_Module> ballEkfModule(new VirtualBallEKF());
+        std::shared_ptr<MotionModule> motionModule(new MotionModule());
+        std::shared_ptr<ControlModule> controlModule(new PID_System());
+        std::shared_ptr<UdpReceiveModule> udpReceiveModule(new CMDServer());
+        std::shared_ptr<TcpReceiveModule> tcpReceiveModule(new ConnectionServer());
+        std::shared_ptr<BallCaptureModule> ballCaptureModule(new BallCaptureModule());
+        
         
         // Configs
         PID_System::PID_Constants pid_consts;
@@ -62,22 +64,21 @@ int main(int argc, char *argv[]) {
         ITPS::NonBlockingPublisher<PID_System::PID_Constants> pidConstPub("PID", "Constants", pid_consts);
 
         // Run the servers
-        firmClientModule->run(threadPool);
-        motionEkfModule->run(threadPool);    
+        //firmClientModule->run(threadPool);
+        //motionEkfModule->run(threadPool);    
         ballEkfModule->run(threadPool);
-        motionModule->run(threadPool);
-        controlModule->run(threadPool);
-        udpReceiveModule->run(threadPool);
-        tcpReceiveModule->run(threadPool);
-        // intern_ekf_server_module->run(threadPool);
-        ballCaptureModule->run(threadPool);
+        ///motionModule->run(threadPool);
+        
+        //controlModule->run(threadPool);
+        //udpReceiveModule->run(threadPool);
+        //tcpReceiveModule->run(threadPool);
+        //ballCaptureModule->run(threadPool);
     }
 
-    while(1) { // has delay (good for reducing high CPU usage)
-        // this program should run forever 
+    while(true) {
         delay(10000);
     }
-
+    threadPool.joinAll();
     return 0;
 }
 

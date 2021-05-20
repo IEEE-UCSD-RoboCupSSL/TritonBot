@@ -36,7 +36,7 @@ void MotionEKF_Module::init_subscribers() {
         // sslvison....
     }
     catch(std::exception& e) {
-        BLogger logger;
+        B_Log logger;
         logger.add_tag("[motion_ekf_module.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
@@ -71,7 +71,7 @@ VirtualMotionEKF::~VirtualMotionEKF() = default;
 
 
 [[noreturn]] void VirtualMotionEKF::task(ThreadPool& threadPool){
-    BLogger logger;
+    B_Log logger;
     logger.add_tag("PseudoMotionEKF Module");
 
     logger(Info) << "\033[0;32m Thread Started \033[0m";
@@ -86,12 +86,12 @@ VirtualMotionEKF::~VirtualMotionEKF() = default;
         // firm data is in body(not global) frame!
         vf_data = get_firmware_data();
 
-        if(false){
+        /*
             logger.log(Info, "[virtual_motion_ekf] trans_disp_x_y: (" + std::to_string(vf_data.translational_displacement().x()) + ", " + std::to_string(vf_data.translational_displacement().y()) + ")");
             logger.log(Info, "[virtual_motion_ekf] trans_vel_x_y: (" + std::to_string(vf_data.translational_velocity().x()) + ", " + std::to_string(vf_data.translational_velocity().y()) + ")");
             logger.log(Info, "[virtual_motion_ekf] rotate_disp: (" + std::to_string(vf_data.rotational_displacement()) + ")");
             logger.log(Info, "[virtual_motion_ekf] rotate_vel: (" + std::to_string(vf_data.rotational_velocity()) + ")");
-        }
+        */
 
         m_data.trans_disp = {vf_data.translational_displacement().x(),
                              vf_data.translational_displacement().y()};

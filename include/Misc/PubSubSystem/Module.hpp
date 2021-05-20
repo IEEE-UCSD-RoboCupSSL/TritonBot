@@ -9,6 +9,9 @@
 
 class Module {
     public:
+        Module() {}
+        ~Module() {}
+
 
         virtual void task() {}
         virtual void task(ThreadPool& threadPool) {}
