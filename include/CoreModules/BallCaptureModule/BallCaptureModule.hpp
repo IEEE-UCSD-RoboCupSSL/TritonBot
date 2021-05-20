@@ -14,7 +14,7 @@ class BallCaptureModule : public Module {
         BallCaptureModule();
         virtual ~BallCaptureModule();
 
-    [[noreturn]] void task(ThreadPool& thread_pool) override;
+    [[noreturn]] void task(ThreadPool& threadPool) override;
 
 
     protected:
@@ -28,7 +28,7 @@ class BallCaptureModule : public Module {
         ITPS::NonBlockingPublisher<bool> ballcap_status_pub;
 
         ITPS::NonBlockingPublisher<bool> drib_enable_pub;
-        B_Log logger;
+        BLogger logger;
 
         /*
          *  Author: Haoen(Samuel) Luo

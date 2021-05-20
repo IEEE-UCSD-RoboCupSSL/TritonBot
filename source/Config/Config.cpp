@@ -60,12 +60,14 @@ float PID_TVRV_CORR = 1.0;
 /*  */
 
 
-static void help_print(B_Log& logger) {
+static void help_print(BLogger& logger) {
     std::stringstream ss;
     ss << "\nCommand: \n"
        << "For Virtual Robots on the Simulator: \n"
-       << "\t./TritonBot.exe (-v) <port_base> (<vfirm_ip>) <vfirm_port> \n\n"
-       << "\t\t-v: For controlling virtual robots in the simulator\n"
+       << "\t./TritonBot.exe (-v) (-t) (-d) <port_base> (<vfirm_ip>) <vfirm_port> \n\n"
+       << "\t\t-v: for controlling virtual robots in the simulator\n"
+       << "\t\t-t: test mode"
+       << "\t\t-d: debug mode"
        << "\t\t<port_base>: specify the port base number to host the servers of THIS program on (port_base), (port_base+1), (port_base+2), and (port_base+3) \n"
        << "\t\t<vfirm_ip>: specify the ip address (in string) for the vfirm.exe program that virtualize robot's firmware layer. Default to LocalHost if not specified \n"
        << "\t\t<vfirm_port>: specify the port of the particular vfirm.exe program to connect\n"
@@ -75,28 +77,40 @@ static void help_print(B_Log& logger) {
 }
 
 
-bool process_args(int argc, char *argv[]) {
-    B_Log logger;
+bool processArgs(int argc, char *argv[], bool& isTestMode) {
+    BLogger logger;
     logger.add_tag("CMDArgument Processor");
 
-    bool is_virtual = false;
+    bool isVirtual = false;
     char option;
-    while ( (option = getopt(argc, argv,":v")) != -1 ) {
+    while ( (option = getopt(argc, argv,":vtd")) != -1 ) {
         switch(option) {
             case 'v':
-                is_virtual = true;
+                isVirtual = true;
+                break;
+            case 't':
+                isTestMode = true;
+                break;
+            case 'd':
+                BLogger::sink->set_filter(severity >= Debug);
                 break;
             case '?':
-                B_Log err_logger;
-                err_logger.add_tag("[setting.cpp]");
-                err_logger.log(Error, std::string("Unknown option: ").append(1, (char)optopt));
+                BLogger errLogger;
+                errLogger.add_tag("[setting.cpp]");
+                errLogger.log(Error, std::string("Unknown option: ").append(1, (char)optopt));
                 help_print(logger);
                 std::exit(0);
                 break;
         }
     }
 
-    if(is_virtual) {
+    
+    if(isTestMode) {
+        logger(Info) << "[TestMode]";
+        return isVirtual;
+    } 
+
+    if(isVirtual) {
         if ( optind + 3 == argc ) {
             // <port base>
             TCP_PORT = std::stoi(std::string(argv[argc - 3]), nullptr, 10 );
@@ -117,9 +131,9 @@ bool process_args(int argc, char *argv[]) {
             VFIRM_IP_PORT = std::stoi( std::string(argv[argc - 1]), nullptr, 10 );
         }
         else {
-            B_Log err_logger;
-            err_logger.add_tag("[setting.cpp]");
-            err_logger.log(Error, "Not enough arguments");
+            BLogger errLogger;
+            errLogger.add_tag("[setting.cpp]");
+            errLogger.log(Error, "Not enough arguments");
             help_print(logger);
             std::exit(0);
         }
@@ -136,9 +150,9 @@ bool process_args(int argc, char *argv[]) {
 
     }
     else {
-        B_Log err_logger;
-        err_logger.add_tag("[setting.cpp]");
-        err_logger.log(Error, "Real Robot Mode temporarily not supported");
+        BLogger errLogger;
+        errLogger.add_tag("[setting.cpp]");
+        errLogger.log(Error, "Real Robot Mode temporarily not supported");
         help_print(logger);
         std::exit(0);
         return false;

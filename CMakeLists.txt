@@ -68,15 +68,19 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/proto/)
 
 #set variable to represent source files in the source folders
 # - make sure to rerun cmake everytime a file is added to or remnove from the folders
-aux_source_directory(./source Main_srcs)
+aux_source_directory(source Main_srcs)
 aux_source_directory(source/CoreModules/ControlModule Control_srcs)
 aux_source_directory(source/Misc/Utility Utility_srcs)
 aux_source_directory(source/PeriphModules/FirmClientModule MCInterface_srcs)
 aux_source_directory(source/CoreModules/EKF-Module EKF_srcs)
-aux_source_directory(./source/Config Config_srcs)
+aux_source_directory(source/Config Config_srcs)
 aux_source_directory(source/CoreModules/MotionModule Motion_srcs)
 aux_source_directory(source/PeriphModules/RemoteServers SERV_srcs)
 aux_source_directory(source/CoreModules/BallCaptureModule BCAP_srcs)
+aux_source_directory(source/ManualTest MT_srcs)
+aux_source_directory(source/ManualTest/CoreModuleTests CMT_srcs)
+aux_source_directory(source/ManualTest/PeriphModuleTests PMT_srcs)
+aux_source_directory(source/ManualTest/MiscTests MMT_srcs)
 
 
 
@@ -115,7 +119,8 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 
 #add target to be built
 add_executable(${Target} ${Main_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
-               ${MCInterface_srcs} ${EKF_srcs} ${Config_srcs} ${Motion_srcs} ${SERV_srcs} ${BCAP_srcs})
+               ${MCInterface_srcs} ${EKF_srcs} ${Config_srcs} ${Motion_srcs} ${SERV_srcs} ${BCAP_srcs}
+               ${MT_srcs} ${CMT_srcs} ${PMT_srcs} ${MMT_srcs})
 
 ## need to generate proto sources before compiling everything else
 #add_dependencies(${Target} PROTO_GEN)

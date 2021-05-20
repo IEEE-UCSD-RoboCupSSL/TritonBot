@@ -31,8 +31,9 @@
 #include <boost/thread.hpp> 
 
 
-enum severity_level
+enum SeverityLevel
 {
+    // top to down: increasing severity
     Trace,
     Debug,
     Info,
@@ -43,7 +44,7 @@ enum severity_level
 
 
 #define LOG_TAG(str) "Tag", boost::log::attributes::constant< std::string >(str)
-BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", severity_level);
+BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", SeverityLevel);
 BOOST_LOG_ATTRIBUTE_KEYWORD(line_id, "LineID", unsigned int)
 BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string);
 BOOST_LOG_ATTRIBUTE_KEYWORD(timeline, "Timeline", boost::log::attributes::timer::value_type)
@@ -52,17 +53,17 @@ BOOST_LOG_ATTRIBUTE_KEYWORD(timeline, "Timeline", boost::log::attributes::timer:
 
 
 
-std::ostream& operator<< (std::ostream& strm, severity_level level);
+std::ostream& operator<< (std::ostream& strm, SeverityLevel level);
 
 
-class B_Log {
+class BLogger {
 private:
-    typedef boost::shared_ptr<boost::log::sources::severity_logger<severity_level>> slog_ptr;
+    typedef boost::shared_ptr<boost::log::sources::severity_logger<SeverityLevel>> slog_ptr;
     typedef boost::log::sinks::asynchronous_sink< boost::log::sinks::text_ostream_backend > text_sink;
     
 
 public:
-    severity_level sev = Info;
+    SeverityLevel sev = Info;
     slog_ptr slog;
     static boost::shared_ptr< text_sink > sink; 
     static bool statically_init;
@@ -71,7 +72,7 @@ public:
     static void static_init(); 
 
     // default constructor: logging to std::clog
-    B_Log();
+    BLogger();
 
     void add_tag(std::string tag);
     
@@ -80,13 +81,13 @@ public:
     static void set_shortest_format();
     static void set_default_format();
 
-    B_Log& operator()(severity_level sev);
+    BLogger& operator()(SeverityLevel sev);
 
-    void log(severity_level sev, std::string str);
+    void log(SeverityLevel sev, std::string str);
 
 };
 
-B_Log& operator<<(B_Log& logger, std::string& str);
-B_Log& operator<<(B_Log& logger, const char* str);
+BLogger& operator<<(BLogger& logger, std::string& str);
+BLogger& operator<<(BLogger& logger, const char* str);
 
 #endif

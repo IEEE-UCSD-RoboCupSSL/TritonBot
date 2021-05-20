@@ -18,58 +18,64 @@
 #include "PeriphModules/RemoteServers/UdpReceiveModule.hpp"
 #include "PeriphModules/FirmClientModule/FirmClientModule.hpp"
 //////////////////////////////////////////////////////////
+#include "ManualTest/TestRunner.hpp"
+
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
 
 int main(int argc, char *argv[]) {
     // Logger Initialization
-    B_Log::static_init();
-    B_Log::set_shorter_format();
-    //B_Log::sink->set_filter(severity >= Debug && tag_attr == "lobal Vision Server Module");
-    B_Log::sink->set_filter(severity >= Info);    
-    B_Log logger;
+    BLogger::static_init();
+    BLogger::set_shorter_format();
+    BLogger::sink->set_filter(severity >= Info);
+    BLogger logger;
     
     // Process Json configurations
 
 
     // Process Comandline Arguments
-    bool is_virtual = process_args(argc, argv);
+    bool isTestMode = false;
+    bool isVirtual = processArgs(argc, argv, isTestMode);
 
 
     // Preallocate Threads 
-    ThreadPool thread_pool(THREAD_POOL_SIZE); // pre-allocate # threads in a pool
+    ThreadPool threadPool(THREAD_POOL_SIZE); // pre-allocate # threads in a pool
 
-    // Construct module instances
-    boost::shared_ptr<FirmClientModule> firm_client_module(new VFirmClient());
-    boost::shared_ptr<MotionEKF_Module> motion_ekf_module(new VirtualMotionEKF());
-    boost::shared_ptr<BallEKF_Module> ball_ekf_module(new VirtualBallEKF());
-    boost::shared_ptr<MotionModule> motion_module(new MotionModule());
-    boost::shared_ptr<ControlModule> control_module(new PID_System());
-    boost::shared_ptr<UdpReceiveModule> udp_receive_module(new CMDServer());
-    boost::shared_ptr<TcpReceiveModule> tcp_receive_module(new ConnectionServer());
-    boost::shared_ptr<BallCaptureModule> ball_capture_module(new BallCaptureModule());
-    
-    // Configs
-    PID_System::PID_Constants pid_consts;
-    pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
-    pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
-    ITPS::NonBlockingPublisher<PID_System::PID_Constants> pid_const_pub("PID", "Constants", pid_consts);
+    if(isTestMode) {
+        TestRunner testRunner;
+        testRunner.run(threadPool);
+    } else {
+        // Construct module instances
+        boost::shared_ptr<FirmClientModule> firmClientModule(new VFirmClient());
+        boost::shared_ptr<MotionEKF_Module> motionEkfModule(new VirtualMotionEKF());
+        boost::shared_ptr<BallEKF_Module> ballEkfModule(new VirtualBallEKF());
+        boost::shared_ptr<MotionModule> motionModule(new MotionModule());
+        boost::shared_ptr<ControlModule> controlModule(new PID_System());
+        boost::shared_ptr<UdpReceiveModule> udpReceiveModule(new CMDServer());
+        boost::shared_ptr<TcpReceiveModule> tcpReceiveModule(new ConnectionServer());
+        boost::shared_ptr<BallCaptureModule> ballCaptureModule(new BallCaptureModule());
+        
+        // Configs
+        PID_System::PID_Constants pid_consts;
+        pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
+        pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
+        ITPS::NonBlockingPublisher<PID_System::PID_Constants> pidConstPub("PID", "Constants", pid_consts);
 
-    // Run the servers
-    firm_client_module->run(thread_pool);
-    motion_ekf_module->run(thread_pool);    
-    ball_ekf_module->run(thread_pool);
-    motion_module->run(thread_pool);
-    control_module->run(thread_pool);
-    udp_receive_module->run(thread_pool);
-    tcp_receive_module->run(thread_pool);
-    // intern_ekf_server_module->run(thread_pool);
-    ball_capture_module->run(thread_pool);
-    
+        // Run the servers
+        firmClientModule->run(threadPool);
+        motionEkfModule->run(threadPool);    
+        ballEkfModule->run(threadPool);
+        motionModule->run(threadPool);
+        controlModule->run(threadPool);
+        udpReceiveModule->run(threadPool);
+        tcpReceiveModule->run(threadPool);
+        // intern_ekf_server_module->run(threadPool);
+        ballCaptureModule->run(threadPool);
+    }
 
     while(1) { // has delay (good for reducing high CPU usage)
         // this program should run forever 
-        delay(1000);
+        delay(10000);
     }
 
     return 0;

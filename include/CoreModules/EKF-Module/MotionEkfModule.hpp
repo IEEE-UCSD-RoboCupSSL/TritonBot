@@ -23,7 +23,7 @@ class MotionEKF_Module : public Module {
         virtual ~MotionEKF_Module();
 
         
-        virtual void task(ThreadPool& thread_pool) = 0;
+        virtual void task(ThreadPool& threadPool) = 0;
 
 
     protected:
@@ -56,7 +56,7 @@ public:
 
     void task() override {}
 
-    [[noreturn]] void task(ThreadPool& thread_pool) override;
+    [[noreturn]] void task(ThreadPool& threadPool) override;
 
 private:
     boost::shared_ptr<boost::asio::ip::udp::socket> socket;

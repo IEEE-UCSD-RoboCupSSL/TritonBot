@@ -40,7 +40,7 @@ void BallEKF_Module::init_subscribers() {
         ball_vel_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[ball_ekf_module.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
@@ -71,7 +71,7 @@ VirtualBallEKF::VirtualBallEKF() : BallEKF_Module() {}
 VirtualBallEKF::~VirtualBallEKF() {}
 
 
-void VirtualBallEKF::task(ThreadPool& thread_pool) {
+void VirtualBallEKF::task(ThreadPool& threadPool) {
     logger.add_tag("PseudoBallEKF Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
     init_subscribers();

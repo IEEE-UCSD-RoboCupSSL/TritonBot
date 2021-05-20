@@ -24,7 +24,7 @@ class BallEKF_Module : public Module {
         virtual ~BallEKF_Module();
 
         
-        virtual void task(ThreadPool& thread_pool) = 0;
+        virtual void task(ThreadPool& threadPool) = 0;
 
 
     protected:
@@ -50,12 +50,12 @@ public:
     ~VirtualBallEKF();
 
     void task() {}
-    void task(ThreadPool& thread_pool);
+    void task(ThreadPool& threadPool);
 
 private:
 
     BallEKF::BallData ball_data;
-    B_Log logger;
+    BLogger logger;
 
 
 };

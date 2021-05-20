@@ -48,7 +48,7 @@ extern float PID_TVRV_CORR;
 
 // extern float PID_MAX_ROT_PERC; // maximum allowed rotational velocity in percentage of max vel
 
-bool process_args(int argc, char *argv[]);
+bool processArgs(int argc, char *argv[], bool& isTestMode);
 
 
 

@@ -12,7 +12,7 @@ class InternalVisionModule : public Module {
         virtual ~InternalVisionModule();
 
         
-        virtual void task(ThreadPool& thread_pool) = 0;
+        virtual void task(ThreadPool& threadPool) = 0;
 
 
     protected:

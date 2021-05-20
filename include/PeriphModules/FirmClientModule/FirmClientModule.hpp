@@ -5,7 +5,7 @@
 class FirmClientModule : public Module {
     public:
         
-        virtual void task(ThreadPool& thread_pool) = 0;
+        virtual void task(ThreadPool& threadPool) = 0;
 
         virtual ~FirmClientModule() {}
 };
@@ -13,5 +13,5 @@ class FirmClientModule : public Module {
 class VFirmClient : public FirmClientModule {
 public:
     void task() {}
-    void task(ThreadPool& thread_pool);
+    void task(ThreadPool& threadPool);
 };

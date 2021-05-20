@@ -36,7 +36,7 @@ void MotionEKF_Module::init_subscribers() {
         // sslvison....
     }
     catch(std::exception& e) {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[motion_ekf_module.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
@@ -70,8 +70,8 @@ VirtualMotionEKF::VirtualMotionEKF() : MotionEKF_Module() {}
 VirtualMotionEKF::~VirtualMotionEKF() = default;
 
 
-[[noreturn]] void VirtualMotionEKF::task(ThreadPool& thread_pool){
-    B_Log logger;
+[[noreturn]] void VirtualMotionEKF::task(ThreadPool& threadPool){
+    BLogger logger;
     logger.add_tag("PseudoMotionEKF Module");
 
     logger(Info) << "\033[0;32m Thread Started \033[0m";

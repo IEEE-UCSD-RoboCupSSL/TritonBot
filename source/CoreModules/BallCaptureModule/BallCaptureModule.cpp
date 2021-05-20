@@ -40,7 +40,7 @@ void BallCaptureModule::init_subscribers() {
 
     }
     catch (std::exception &e) {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[ball_capture_module.cpp]");
         logger.log(Error, std::string(e.what()));
         std::exit(0);
@@ -50,8 +50,8 @@ void BallCaptureModule::init_subscribers() {
 
 
 // [[noreturn]] 
-void BallCaptureModule::task(ThreadPool &thread_pool) {
-    UNUSED(thread_pool);
+void BallCaptureModule::task(ThreadPool &threadPool) {
+    UNUSED(threadPool);
     init_subscribers();
     int count = 0;
     int total = 0;

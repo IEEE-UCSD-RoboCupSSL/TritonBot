@@ -28,7 +28,7 @@ class MotionModule : public Module {
         virtual ~MotionModule();
 
         virtual void task() {}
-        virtual void task(ThreadPool& thread_pool);
+        virtual void task(ThreadPool& threadPool);
 
     protected:
         virtual void init_subscribers(void);

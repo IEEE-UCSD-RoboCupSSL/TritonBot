@@ -29,7 +29,7 @@ using namespace boost;
 
 //========================== Local Function Declaration ==============================//
 
-static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger);
+static void init_sensors(asio::ip::tcp::socket& socket, BLogger& logger);
 
 // callback functions
 static void on_socket_connected(asio::ip::tcp::socket& socket, 
@@ -38,7 +38,7 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
                                 ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
                                 ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
                                 ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
-                                B_Log& logger,  
+                                BLogger& logger,  
                                 const system::error_code& error);
 
 static void on_data_received(asio::ip::tcp::socket& socket, 
@@ -47,7 +47,7 @@ static void on_data_received(asio::ip::tcp::socket& socket,
                              ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
                              ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
                              ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
-                             B_Log& logger,  
+                             BLogger& logger,  
                              const system::error_code& error);
 
 static void on_cmd_sent(asio::ip::tcp::socket& socket, 
@@ -56,7 +56,7 @@ static void on_cmd_sent(asio::ip::tcp::socket& socket,
                         ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
                         ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
                         ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
-                        B_Log& logger,  
+                        BLogger& logger,  
                         const system::error_code& error);
 //====================================================================================//
 
@@ -65,10 +65,10 @@ static void on_cmd_sent(asio::ip::tcp::socket& socket,
 
 //====================================================================================//
 /* Main Task to be run on a new thread from the thread pool */
-void VFirmClient::task(ThreadPool& thread_pool) {
-    UNUSED(thread_pool); // no child thread is needed in a async scheme
+void VFirmClient::task(ThreadPool& threadPool) {
+    UNUSED(threadPool); // no child thread is needed in a async scheme
 
-    B_Log logger;
+    BLogger logger;
     logger.add_tag("VFirmClient Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
@@ -92,7 +92,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
         init_sensors_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[vfirm_client.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
@@ -115,7 +115,7 @@ void VFirmClient::task(ThreadPool& thread_pool) {
     }
     catch(std::exception& e)
     {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[vfirm_client.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
@@ -136,10 +136,10 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
                                 ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
                                 ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
                                 ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
-                                B_Log& logger,  
+                                BLogger& logger,  
                                 const system::error_code& error) {
     if(error) {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[vfirm_client.cpp]");
         logger.log(Error, error.message());
         std::exit(0);
@@ -170,10 +170,10 @@ static void on_data_received(asio::ip::tcp::socket& socket,
                              ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
                              ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
                              ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
-                             B_Log& logger,  
+                             BLogger& logger,  
                              const system::error_code& error) {
     if(error) {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[vfirm_client.cpp]");
         logger.log(Error, error.message());
         std::exit(0);
@@ -249,10 +249,10 @@ static void on_cmd_sent(asio::ip::tcp::socket& socket,
                         ITPS::BlockingPublisher<VF_Data>& firm_data_pub, 
                         ITPS::BlockingSubscriber<VF_Commands>& firm_cmd_sub,
                         ITPS::NonBlockingSubscriber<bool>& init_sensors_sub,
-                        B_Log& logger,  
+                        BLogger& logger,  
                         const system::error_code& error) {
     if(error) {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[vfirm_client.cpp]");
         logger.log(Error, error.message());
         std::exit(0);
@@ -273,7 +273,7 @@ static void on_cmd_sent(asio::ip::tcp::socket& socket,
 //====================================================================================//
 
 /* sequence to send a cmd packet through socket to invoke sensor initialization */
-static void init_sensors(asio::ip::tcp::socket& socket, B_Log& logger) {
+static void init_sensors(asio::ip::tcp::socket& socket, BLogger& logger) {
     VF_Commands cmd;
     Vec_2D zero_vec;
     std::string write;

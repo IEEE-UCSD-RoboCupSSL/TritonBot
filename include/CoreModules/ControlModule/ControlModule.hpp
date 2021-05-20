@@ -21,7 +21,7 @@ class ControlModule : public Module {
         virtual ~ControlModule() {}
 
         
-        virtual void task(ThreadPool& thread_pool) = 0;
+        virtual void task(ThreadPool& threadPool) = 0;
 
 
     protected:
@@ -56,7 +56,7 @@ public:
     PID_System();
 
     virtual void task() {}
-    virtual void task(ThreadPool& thread_pool);
+    virtual void task(ThreadPool& threadPool);
 
     virtual void init_subscribers(void);
     struct PID_Constants {

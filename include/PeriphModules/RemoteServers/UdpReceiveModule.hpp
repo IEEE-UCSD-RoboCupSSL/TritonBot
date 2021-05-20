@@ -6,7 +6,7 @@ class UdpReceiveModule : public Module {
     public:
         virtual void task() {}
 
-    [[noreturn]] virtual void task(ThreadPool& thread_pool);
+    [[noreturn]] virtual void task(ThreadPool& threadPool);
 
         virtual ~UdpReceiveModule() {}
 

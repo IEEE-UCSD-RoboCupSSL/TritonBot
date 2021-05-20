@@ -48,10 +48,10 @@ static void backgnd_task(ITPS::NonBlockingSubscriber<bool>& ballcap_status_sub,
 
 
 // Implementation of task to be run on this thread
-void ConnectionServer::task(ThreadPool& thread_pool) {
-    UNUSED(thread_pool); // no child thread is needed in a async scheme
+void ConnectionServer::task(ThreadPool& threadPool) {
+    UNUSED(threadPool); // no child thread is needed in a async scheme
 
-    B_Log logger;
+    BLogger logger;
     logger.add_tag("Connection Server Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
@@ -88,7 +88,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     }
     catch(std::exception& e)
     {
-        B_Log logger;
+        BLogger logger;
         logger.add_tag("[connection_server_module.cpp]");
         logger.log(Error, e.what());
         safety_enable_pub.publish(false);
@@ -99,7 +99,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
     asio::write(socket, asio::buffer("CONNECTION ESTABLISHED\n"));
 
     // enqueue the backgnd task of this module to the thread pool
-    thread_pool.execute(boost::bind(&backgnd_task, boost::ref(ballcap_status_sub), boost::ref(socket)));
+    threadPool.execute(boost::bind(&backgnd_task, boost::ref(ballcap_status_sub), boost::ref(socket)));
 
 
     while(1) { // No delay, blocking-socket-read is used, usually won't use too much CPU resources
@@ -110,7 +110,7 @@ void ConnectionServer::task(ThreadPool& thread_pool) {
             asio::read_until(socket, read_buf, "\n"); 
         }
         catch(std::exception& e) {
-            B_Log logger;
+            BLogger logger;
             logger.add_tag("[connection_server_module.cpp]");
             logger.log(Error, e.what());
             safety_enable_pub.publish(false);
