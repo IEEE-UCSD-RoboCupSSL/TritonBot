@@ -5,15 +5,10 @@
 #include "PubSub.hpp"
 #include "Observer.hpp"
 #include "ThreadPool.hpp"
+#include <functional>
 
 class Module {
     public:
-        Module() {
-
-        }
-        ~Module() {
-
-        }
 
         virtual void task() {}
         virtual void task(ThreadPool& threadPool) {}
@@ -45,6 +40,13 @@ class Module {
             threadPool.execute(boost::bind(&Module::task, this, boost::ref(threadPool)));
         }
         //================================================================================//
+    
+    protected:
+        static void periodic_session(std::function<void()> func, std::chrono::duration<float> period) {
+            auto t = std::chrono::steady_clock::now();
+            func();
+            std::this_thread::sleep_until(t + period);
+        }
 
     private:
         boost::shared_ptr<boost::thread> mthread;

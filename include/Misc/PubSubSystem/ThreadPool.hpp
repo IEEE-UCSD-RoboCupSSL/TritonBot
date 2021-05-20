@@ -56,6 +56,10 @@ public:
         return num_tasks;
     }
 
+    void joinAll() {
+        threads.join_all();
+    }
+
 private:
     boost::thread_group threads;
     boost::asio::io_service ios;
