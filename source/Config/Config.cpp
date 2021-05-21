@@ -15,28 +15,14 @@ unsigned int THREAD_POOL_SIZE = 30;
 unsigned int INIT_DELAY = 1000; // 1 sec
 unsigned int DEFAULT_SUBSCRIBER_TIMEOUT = 3000; // 3 sec
 
-std::string VFIRM_IP_ADDR = "127.0.0.1"; // juts an example default val, will be reset in another code file
-unsigned int VFIRM_IP_PORT = 8888; // juts an example default val, will be reset in another code file
-
-int GRSIM_VISION_PORT = 10020; // juts an example default val, will be reset in another code file
-std::string GRSIM_VISION_IP = "224.5.23.2"; // juts an example default val, will be reset in another code file
-
 /* These values will be different for different robots, hence be reset in another file */
 int TCP_PORT = 6000; // juts an example default val, will be reset in another code file
 int UDP_PORT = 6001; // juts an example default val, will be reset in another code file
 
-unsigned int FIRM_CMD_MQ_SIZE = 1;
-unsigned int FIRM_DATA_MQ_SIZE = 10;
-
-unsigned int FIRM_CMD_SUB_TIMEOUT = 100; // 100 ms
-
 
 unsigned int SAFETY_EN_TIMEOUT = 500; // 500 ms
 
-
-
 unsigned int CTRL_FREQUENCY = 500; // Hz
-
 
 float NS_PID_AMP = 2.5; // for no-slowdown mode, pid const is multiplied by NS_PID_AMP
 
@@ -81,7 +67,7 @@ static void help_print(BLogger& logger) {
 
 bool processArgs(int argc, char *argv[], bool& isTestMode) {
     BLogger logger;
-    logger.add_tag("CMDArgument Processor");
+    logger.addTag("CMDArgument Processor");
 
     bool isVirtual = false;
     char option;
@@ -101,7 +87,7 @@ bool processArgs(int argc, char *argv[], bool& isTestMode) {
                 break;
             case '?':
                 BLogger errLogger;
-                errLogger.add_tag("[setting.cpp]");
+                errLogger.addTag("[setting.cpp]");
                 errLogger.log(Error, std::string("Unknown option: ").append(1, (char)optopt));
                 help_print(logger);
                 std::exit(0);
@@ -117,28 +103,14 @@ bool processArgs(int argc, char *argv[], bool& isTestMode) {
     } 
 
     if(isVirtual) {
-        if ( optind + 3 == argc ) {
+        if ( optind == argc - 1 ) {
             // <port base>
-            TCP_PORT = std::stoi(std::string(argv[argc - 3]), nullptr, 10 );
+            TCP_PORT = std::stoi(std::string(argv[argc - 1]));
             UDP_PORT = TCP_PORT + 1;
-
-            // <vfirm ip>
-            VFIRM_IP_ADDR = std::string(argv[argc - 2]);
-
-            // <vfirm port>
-            VFIRM_IP_PORT = std::stoi( std::string(argv[argc - 1]), nullptr, 10 );
-        }
-        else if (optind + 2 == argc) {
-            // <port base>
-            TCP_PORT = std::stoi(std::string(argv[argc - 2]), nullptr, 10 );
-            UDP_PORT = TCP_PORT + 1;
-
-            // <vfirm port>
-            VFIRM_IP_PORT = std::stoi( std::string(argv[argc - 1]), nullptr, 10 );
         }
         else {
             BLogger errLogger;
-            errLogger.add_tag("[config.cpp]");
+            errLogger.addTag("[config.cpp]");
             errLogger.log(Error, "Not enough arguments");
             help_print(logger);
             std::exit(0);
@@ -146,18 +118,15 @@ bool processArgs(int argc, char *argv[], bool& isTestMode) {
 
         std::stringstream ss;
         ss << "\nThis program listens on LocalHost \n"
-           << "\tTCP Port   : " + repr(TCP_PORT) + "\n"
-           << "\tUDP Port      : " + repr(UDP_PORT) + "\n"
-           << "Connecting to the Virtual Robot on grSim claimed by vfirm.exe listening on: \n"
-           << "\t" + VFIRM_IP_ADDR + " " + repr(VFIRM_IP_PORT)
-           << std::endl;
+           << "\tTCP Port: " + repr(TCP_PORT) + "\n"
+           << "\tUDP Port: " + repr(UDP_PORT) << std::endl;
         logger.log(Info, ss.str());
         return true;
 
     }
     else {
         BLogger errLogger;
-        errLogger.add_tag("[setting.cpp]");
+        errLogger.addTag("[setting.cpp]");
         errLogger.log(Error, "Real Robot Mode temporarily not supported");
         help_print(logger);
         std::exit(0);

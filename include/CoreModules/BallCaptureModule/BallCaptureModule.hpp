@@ -21,13 +21,13 @@ class BallCaptureModule : public Module {
         virtual void init_subscribers();
 
     private:
-        ITPS::NonBlockingSubscriber<bool> enable_sub;
-        ITPS::NonBlockingSubscriber<BallEKF::BallData> ball_data_sub;
-        ITPS::NonBlockingSubscriber<MotionEKF::MotionData> bot_data_sub;
-        ITPS::NonBlockingPublisher< Motion::MotionCMD > command_pub;
-        ITPS::NonBlockingPublisher<bool> ballcap_status_pub;
+        ITPS::FieldSubscriber<bool> enable_sub;
+        ITPS::FieldSubscriber<BallEKF::BallData> ball_data_sub;
+        ITPS::FieldSubscriber<MotionEKF::MotionData> bot_data_sub;
+        ITPS::FieldPublisher< Motion::MotionCMD > command_pub;
+        ITPS::FieldPublisher<bool> ballcap_status_pub;
 
-        ITPS::NonBlockingPublisher<bool> drib_enable_pub;
+        ITPS::FieldPublisher<bool> drib_enable_pub;
         BLogger logger;
 
         /*

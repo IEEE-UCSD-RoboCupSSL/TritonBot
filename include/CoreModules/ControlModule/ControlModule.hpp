@@ -38,14 +38,14 @@ class ControlModule : public Module {
         bool get_no_slowdown(void);
 
     private:
-        ITPS::NonBlockingSubscriber<bool> enable_signal_sub;
-        ITPS::NonBlockingSubscriber< MotionEKF::MotionData > sensor_sub;
-        ITPS::NonBlockingSubscriber<bool> dribbler_signal_sub;
-        ITPS::NonBlockingSubscriber< arma::vec > kicker_setpoint_sub;
-        ITPS::NonBlockingSubscriber< SetPoint<arma::vec> > trans_setpoint_sub;
-        ITPS::NonBlockingSubscriber< SetPoint<float> > rotat_setpoint_sub;
-        ITPS::BlockingPublisher< VF_Commands > output_pub; 
-        ITPS::NonBlockingSubscriber<bool> no_slowdown_sub;     
+        ITPS::FieldSubscriber<bool> enable_signal_sub;
+        ITPS::FieldSubscriber< MotionEKF::MotionData > sensor_sub;
+        ITPS::FieldSubscriber<bool> dribbler_signal_sub;
+        ITPS::FieldSubscriber< arma::vec > kicker_setpoint_sub;
+        ITPS::FieldSubscriber< SetPoint<arma::vec> > trans_setpoint_sub;
+        ITPS::FieldSubscriber< SetPoint<float> > rotat_setpoint_sub;
+        ITPS::MQPublisher< VF_Commands > output_pub; 
+        ITPS::FieldSubscriber<bool> no_slowdown_sub;     
         
 };
 
@@ -68,6 +68,6 @@ public:
     };
 
 private:
-    ITPS::NonBlockingSubscriber<PID_Constants> pid_consts_sub;
+    ITPS::FieldSubscriber<PID_Constants> pid_consts_sub;
 
 };

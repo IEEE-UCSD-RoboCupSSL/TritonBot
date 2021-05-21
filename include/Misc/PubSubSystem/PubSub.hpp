@@ -186,10 +186,10 @@ namespace ITPS {
     };
 
     template <typename Msg>
-    class NonBlockingPublisher : public Publisher<Msg> {
+    class FieldPublisher : public Publisher<Msg> {
         public:
 
-            NonBlockingPublisher(std::string topic_name, std::string msg_name, Msg default_msg) 
+            FieldPublisher(std::string topic_name, std::string msg_name, Msg default_msg) 
                 : Publisher<Msg>(topic_name, msg_name, "NB") {
                 this->channel->set_msg(default_msg); // this avoids dealing with nullpointer exception 
                                                // if the msg type is not primitive when subscriber 
@@ -204,9 +204,9 @@ namespace ITPS {
 
 
     template <typename Msg>
-    class BlockingPublisher : public Publisher<Msg> {
+    class MQPublisher : public Publisher<Msg> {
         public:
-            BlockingPublisher(std::string topic_name, std::string msg_name) 
+            MQPublisher(std::string topic_name, std::string msg_name) 
                 : Publisher<Msg>(topic_name, msg_name, "B") {}
 
             void publish(Msg message) {
@@ -278,9 +278,9 @@ namespace ITPS {
 
 
     template <typename Msg>
-    class NonBlockingSubscriber : public Subscriber<Msg> {
+    class FieldSubscriber : public Subscriber<Msg> {
         public:
-            NonBlockingSubscriber(std::string topic_name, std::string msg_name) 
+            FieldSubscriber(std::string topic_name, std::string msg_name) 
                 : Subscriber<Msg>(topic_name, msg_name, "NB") {}
 
 
@@ -316,10 +316,10 @@ namespace ITPS {
 
 
     template <typename Msg>
-    class BlockingSubscriber : public Subscriber<Msg> {
+    class MQSubscriber : public Subscriber<Msg> {
         public:
             //with message queue of size 1
-            BlockingSubscriber(std::string topic_name, std::string msg_name) 
+            MQSubscriber(std::string topic_name, std::string msg_name) 
                 : Subscriber<Msg>(topic_name, msg_name, "B") {
                 msg_queue = boost::shared_ptr<ConsumerProducerQueue<Msg>>(
                     new ConsumerProducerQueue<Msg>(1) 
@@ -327,7 +327,7 @@ namespace ITPS {
             } 
     
             //with message queue of size queue_size
-            BlockingSubscriber(std::string topic_name, std::string msg_name, unsigned int queue_size) 
+            MQSubscriber(std::string topic_name, std::string msg_name, unsigned int queue_size) 
                 : Subscriber<Msg>(topic_name, msg_name, "B") {
                 msg_queue = boost::shared_ptr<ConsumerProducerQueue<Msg>>(
                     new ConsumerProducerQueue<Msg>(queue_size) 
@@ -367,17 +367,17 @@ namespace ITPS {
 
 
     template <typename Msg>
-    class NonBlockingPubSubPair {
+    class FieldPubSubPair {
         public: 
-            NonBlockingPublisher<Msg>* pub;
-            NonBlockingSubscriber<Msg>* sub;
+            FieldPublisher<Msg>* pub;
+            FieldSubscriber<Msg>* sub;
 
-            NonBlockingPubSubPair(std::string topic_name, std::string msg_name, Msg default_msg) {
-                pub = new NonBlockingPublisher<Msg>(topic_name, msg_name, default_msg);
-                sub = new NonBlockingSubscriber<Msg>(topic_name, msg_name);
+            FieldPubSubPair(std::string topic_name, std::string msg_name, Msg default_msg) {
+                pub = new FieldPublisher<Msg>(topic_name, msg_name, default_msg);
+                sub = new FieldSubscriber<Msg>(topic_name, msg_name);
                 sub->subscribe();
             }
-            ~NonBlockingPubSubPair() {
+            ~FieldPubSubPair() {
                 delete pub;
                 delete sub;
             }

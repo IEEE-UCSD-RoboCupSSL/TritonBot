@@ -21,11 +21,11 @@ static Motion::MotionCMD default_cmd() {
 BallCaptureModule::BallCaptureModule() : enable_sub("CMD Server", "EnableAutoCap"),
                                          ball_data_sub("BallEKF", "BallData"),
                                          bot_data_sub("MotionEKF", "MotionData"),
-                                         command_pub("Ball Capture Module", "MotionCMD", default_cmd()),
-                                         ballcap_status_pub("Ball Capture Module", "isDribbled", false),
+                                         command_pub("From:BallCaptureModule", "MotionCMD", default_cmd()),
+                                         ballcap_status_pub("From:BallCaptureModule", "isDribbled", false),
                                          drib_enable_pub("BallCapture", "EnableDribbler", false),
                                          logger() {
-    logger.add_tag("BallCapture Module");
+    logger.addTag("BallCapture Module");
 }
 
 BallCaptureModule::~BallCaptureModule() = default;
@@ -41,7 +41,7 @@ void BallCaptureModule::init_subscribers() {
     }
     catch (std::exception &e) {
         BLogger logger;
-        logger.add_tag("[ball_capture_module.cpp]");
+        logger.addTag("[ball_capture_module.cpp]");
         logger.log(Error, std::string(e.what()));
         std::exit(0);
     }

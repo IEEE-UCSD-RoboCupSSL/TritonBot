@@ -4,13 +4,6 @@
 
 class UdpReceiveModule : public Module {
     public:
-        virtual void task() {}
-
-    [[noreturn]] virtual void task(ThreadPool& threadPool);
-
-        virtual ~UdpReceiveModule() {}
-
-
+        virtual void task(ThreadPool& threadPool);
 };
 
-using CMDServer = UdpReceiveModule;

@@ -11,24 +11,13 @@ extern unsigned int THREAD_POOL_SIZE;
 extern unsigned int INIT_DELAY;
 extern unsigned int DEFAULT_SUBSCRIBER_TIMEOUT;
 
-extern std::string VFIRM_IP_ADDR;
-extern unsigned int VFIRM_IP_PORT;
 
 extern int TCP_PORT;
 extern int UDP_PORT;
 
-extern int GRSIM_VISION_PORT;
-extern std::string GRSIM_VISION_IP; 
-
-extern unsigned int FIRM_CMD_MQ_SIZE;
-extern unsigned int FIRM_DATA_MQ_SIZE;
-
-extern unsigned int FIRM_CMD_SUB_TIMEOUT;
 
 extern unsigned int SAFETY_EN_TIMEOUT;
-
 extern unsigned int CTRL_FREQUENCY;
-
 
 extern float NS_PID_AMP;
 

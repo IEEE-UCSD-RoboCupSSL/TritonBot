@@ -34,9 +34,9 @@ class BallEKF_Module : public Module {
         arma::vec get_ball_loc();
         arma::vec get_ball_vel();
 
-        ITPS::NonBlockingPublisher<BallEKF_Module::BallData> ball_data_pub;
-        ITPS::NonBlockingSubscriber<arma::vec> ball_loc_sub; //("GVision Server", "BallPos(BodyFrame)"); 
-        ITPS::NonBlockingSubscriber<arma::vec> ball_vel_sub; //("GVision Server", "BallVel(BodyFrame)");
+        ITPS::FieldPublisher<BallEKF_Module::BallData> ball_data_pub;
+        ITPS::FieldSubscriber<arma::vec> ball_loc_sub; //("GVision Server", "BallPos(BodyFrame)"); 
+        ITPS::FieldSubscriber<arma::vec> ball_vel_sub; //("GVision Server", "BallVel(BodyFrame)");
         
 };
 

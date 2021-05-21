@@ -16,7 +16,6 @@
 #include "CoreModules/BallCaptureModule/BallCaptureModule.hpp"
 #include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
 #include "PeriphModules/RemoteServers/UdpReceiveModule.hpp"
-#include "PeriphModules/FirmClientModule/FirmClientModule.hpp"
 //////////////////////////////////////////////////////////
 #include "ManualTest/TestRunner.hpp"
 
@@ -48,13 +47,12 @@ int main(int argc, char *argv[]) {
 
         // Note: these smart pointer will be freed when exiting this else block (might cause seg fault if not dealt properly, java is so awesome)
         // Construct module instances
-        std::unique_ptr<FirmClientModule> firmClientModule(new VFirmClient());
         std::unique_ptr<MotionEKF_Module> motionEkfModule(new VirtualMotionEKF());
         std::unique_ptr<BallEKF_Module> ballEkfModule(new VirtualBallEKF());
         std::unique_ptr<MotionModule> motionModule(new MotionModule());
         std::unique_ptr<ControlModule> controlModule(new PID_System());
-        std::unique_ptr<UdpReceiveModule> udpReceiveModule(new CMDServer());
-        std::unique_ptr<TcpReceiveModule> tcpReceiveModule(new ConnectionServer());
+        std::unique_ptr<UdpReceiveModule> udpReceiveModule(new UdpReceiveModule());
+        std::unique_ptr<TcpReceiveModule> tcpReceiveModule(new TcpReceiveModule());
         std::unique_ptr<BallCaptureModule> ballCaptureModule(new BallCaptureModule());
         
         
@@ -62,7 +60,7 @@ int main(int argc, char *argv[]) {
         PID_System::PID_Constants pid_consts;
         pid_consts.RD_Kp = PID_RD_KP;   pid_consts.RD_Ki = PID_RD_KI;   pid_consts.RD_Kd = PID_RD_KD;
         pid_consts.TD_Kp = PID_TD_KP;   pid_consts.TD_Ki = PID_TD_KI;   pid_consts.TD_Kd = PID_TD_KD;
-        ITPS::NonBlockingPublisher<PID_System::PID_Constants> pidConstPub("PID", "Constants", pid_consts);
+        ITPS::FieldPublisher<PID_System::PID_Constants> pidConstPub("PID", "Constants", pid_consts);
 
         // Run the servers
         //firmClientModule->run(threadPool);

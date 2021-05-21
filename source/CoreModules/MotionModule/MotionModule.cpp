@@ -25,7 +25,7 @@ static CTRL::SetPoint<float> default_rot_sp() {
 MotionModule::MotionModule() : trans_setpoint_pub("AI CMD", "Trans", default_trans_sp()), 
                                rotat_setpoint_pub("AI CMD", "Rotat", default_rot_sp()),
                                sensor_sub("MotionEKF", "MotionData"), // NonBlocking Mode
-                               robot_origin_w_sub("ConnectionInit", "RobotOrigin(WorldFrame)"), // NonBlocking Mode
+                               robot_origin_w_sub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)"), // NonBlocking Mode
                                command_sub("CMD Server", "MotionCMD"), // NonBlocking Mode because this module needs to keep the loop running 
                                                                        // non-blocking to calculate transformation matrix that changes along
                                                                        // the orientation of a moving robot
@@ -42,7 +42,7 @@ void MotionModule::init_subscribers(void) {
     }
     catch(std::exception& e) {
         BLogger logger;
-        logger.add_tag("[motion_module.cpp]");
+        logger.addTag("[motion_module.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
     }
@@ -53,7 +53,7 @@ void MotionModule::init_subscribers(void) {
 void MotionModule::task(ThreadPool& threadPool) {
     UNUSED(threadPool);
     BLogger logger;
-    logger.add_tag("Motion Module");
+    logger.addTag("Motion Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
     init_subscribers();
     logger(Info) << "\033[0;32m Initialized \033[0m";

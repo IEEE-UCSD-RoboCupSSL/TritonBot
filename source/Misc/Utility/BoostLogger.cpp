@@ -15,7 +15,7 @@ void BLogger::staticInit() {
     // set where to log to
     sink->locked_backend()->add_stream(boost::shared_ptr<std::ostream>(&std::cout, boost::null_deleter()));
     // set default format
-    set_default_format();
+    setToDefaultFormat();
 
     // default filter level
     sink->set_filter(severity >= Info);
@@ -61,7 +61,7 @@ void BLogger::setToShorterFormat() {
 
 }
 
-void BLogger::set_shortest_format() {
+void BLogger::setToShortestFormat() {
     sink->set_formatter
     (
         expr::stream
@@ -69,7 +69,7 @@ void BLogger::set_shortest_format() {
     );
 }
 
-void BLogger::set_even_shorter_format() {
+void BLogger::setToEvenShorterFormat() {
     sink->set_formatter
     (
         expr::stream
@@ -81,7 +81,7 @@ void BLogger::set_even_shorter_format() {
     );
 }
 
-void BLogger::set_default_format() {
+void BLogger::setToDefaultFormat() {
         // set default format
     sink->set_formatter
     (
@@ -106,7 +106,7 @@ void BLogger::set_default_format() {
     );
 }
 
-void BLogger::add_tag(std::string tag) {
+void BLogger::addTag(std::string tag) {
     slog->add_attribute(LOG_TAG(tag));
 }
 

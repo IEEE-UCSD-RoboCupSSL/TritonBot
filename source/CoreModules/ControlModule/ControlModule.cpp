@@ -9,7 +9,7 @@
 #include "CoreModules/EKF-Module/MotionEkfModule.hpp"
 #include <armadillo>
 
-ControlModule::ControlModule(void) : enable_signal_sub("AI Connection", "SafetyEnable"), 
+ControlModule::ControlModule(void) : enable_signal_sub("From:TcpReceiveModule", "SafetyEnable"), 
                                      sensor_sub("MotionEKF", "MotionData"), 
                                      dribbler_signal_sub("BallCapture", "EnableDribbler"),
                                      kicker_setpoint_sub("Kicker", "KickingSetPoint"), 
@@ -45,7 +45,7 @@ void ControlModule::init_subscribers(void) {
     }
     catch(std::exception& e) {
         BLogger logger;
-        logger.add_tag("[control_module.cpp]");
+        logger.addTag("[control_module.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
     }
@@ -114,7 +114,7 @@ void PID_System::init_subscribers(void) {
     }
     catch(std::exception& e) {
         BLogger logger;
-        logger.add_tag("[ControlModule.cpp]");
+        logger.addTag("[ControlModule.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
     }
@@ -124,7 +124,7 @@ void PID_System::init_subscribers(void) {
 
 void PID_System::task(ThreadPool& threadPool) {
     BLogger logger;
-    logger.add_tag("PID_System Module");
+    logger.addTag("PID_System Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
     init_subscribers();

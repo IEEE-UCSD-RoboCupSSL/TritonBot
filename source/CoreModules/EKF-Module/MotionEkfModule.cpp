@@ -23,7 +23,7 @@ static MotionEKF::MotionData default_md() {
 } 
 
 MotionEKF_Module::MotionEKF_Module() : motion_data_pub("MotionEKF", "MotionData", default_md()),
-                        firm_data_sub("FirmClient", "InternalSensorData", FIRM_DATA_MQ_SIZE) //construct with blocking mode
+                        firm_data_sub("FirmClient", "InternalSensorData") // DELETE-ME //construct with blocking mode
                         // ssl_data_sub("CMDListener", "GlobalSSLVisionData") // construct with nonblocking mode
 {}
 
@@ -37,7 +37,7 @@ void MotionEKF_Module::init_subscribers() {
     }
     catch(std::exception& e) {
         BLogger logger;
-        logger.add_tag("[motion_ekf_module.cpp]");
+        logger.addTag("[motion_ekf_module.cpp]");
         logger.log(Error, e.what());
         std::exit(0);
     }
@@ -72,7 +72,7 @@ VirtualMotionEKF::~VirtualMotionEKF() = default;
 
 [[noreturn]] void VirtualMotionEKF::task(ThreadPool& threadPool){
     BLogger logger;
-    logger.add_tag("PseudoMotionEKF Module");
+    logger.addTag("PseudoMotionEKF Module");
 
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 

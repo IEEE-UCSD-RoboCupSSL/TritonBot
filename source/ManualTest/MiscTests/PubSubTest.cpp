@@ -13,7 +13,7 @@ using namespace ITPS;
 
 bool PubSubTest::test(ThreadPool& threadPool) {
     
-    NonBlockingPubSubPair<int> psPair("PubSubTest", "xxx", 0);
+    FieldPubSubPair<int> psPair("PubSubTest", "xxx", 0);
 
     std::cout << "PubSubTest..." << std::endl;
 

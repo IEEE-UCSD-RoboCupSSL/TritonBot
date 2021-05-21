@@ -1,77 +1,76 @@
 #include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
-
 #include <string>
 #include <thread>
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
-
 #include "Misc/PubSubSystem/ThreadPool.hpp"
 #include "Misc/Utility/Systime.hpp"
 #include "Misc/Utility/BoostLogger.hpp"
 #include "Misc/Utility/Common.hpp"
 #include "Config/Config.hpp"
 #include "ProtoGenerated/RemoteAPI.pb.h"
+#include "Config/ModuleFrequencies.hpp"
 
 using namespace boost;
 
 boost::mutex mu;
 
 
-static void backgnd_task(ITPS::NonBlockingSubscriber<bool>& ballcap_status_sub, 
+static void backgndTask(ITPS::FieldSubscriber<bool>& ballcapStatusSub, 
                          asio::ip::tcp::socket& socket) {
-    bool prev_ballcap_status = true; // deliberately set it true to have a extra socket send at the begining
-    while(1) { // has delay (good for reducing high CPU usage)
+    bool prevBallCapStatus = true; // deliberately set it true to have a extra socket send at the begining
+    auto period = TO_PERIOD(TCP_RECEIVE_FREQUENCY);
+    while(true) { 
+        auto t = CHRONO_NOW;
 
-        delay(500); // this delay is important now because EKF is not yet implemented, 
-                    // pseudo ekf doesn't handle the issue of botLoc & ballLoc data being received at different frequency 
-
-        std::string send_str;
-        bool ballcap_status;
-        ballcap_status = ballcap_status_sub.latest_msg(); 
-        if(ballcap_status != prev_ballcap_status) {
-            if(ballcap_status) {
-                send_str = "BallOnHold";
+        std::string sendStr;
+        bool ballcapStatus;
+        ballcapStatus = ballcapStatusSub.latest_msg(); 
+        if(ballcapStatus != prevBallCapStatus) {
+            if(ballcapStatus) {
+                sendStr = "BallOnHold";
             }
             else {
-                send_str = "BallOffHold";
+                sendStr = "BallOffHold";
             }
             mu.lock();
-            asio::write(socket, asio::buffer(send_str + "\n"));
+            asio::write(socket, asio::buffer(sendStr + "\n"));
             mu.unlock();
         }
-        prev_ballcap_status = ballcap_status;
-        
-    }
+        prevBallCapStatus = ballcapStatus;
 
+        std::this_thread::sleep_until(t + period);   
+    }
 }
 
 
 // Implementation of task to be run on this thread
-void ConnectionServer::task(ThreadPool& threadPool) {
-    UNUSED(threadPool); // no child thread is needed in a async scheme
-
+void TcpReceiveModule::task(ThreadPool& threadPool) {
     BLogger logger;
-    logger.add_tag("Connection Server Module");
+    logger.addTag("Connection Server Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
 
-    int field_length = 0;
-    int field_width = 0;
-    int goal_depth = 0;
-    int goal_width = 0;
+    int fieldLength = 0;
+    int fieldWidth = 0;
+    int goalDepth = 0;
+    int goalWidth = 0;
 
-    asio::io_service io_service;
-    asio::ip::tcp::endpoint endpoint_to_listen(asio::ip::tcp::v4(), TCP_PORT);
-    asio::ip::tcp::acceptor acceptor(io_service, endpoint_to_listen);
-    asio::ip::tcp::socket socket(io_service);
+    asio::io_service ios;
+    asio::ip::tcp::endpoint endpoint(asio::ip::tcp::v4(), TCP_PORT);
+    asio::ip::tcp::acceptor acceptor(ios, endpoint);
+    asio::ip::tcp::socket socket(ios);
     asio::streambuf read_buf;
     std::string write_buf;
 
-    ITPS::NonBlockingPublisher<bool> safety_enable_pub("AI Connection", "SafetyEnable", true); // To-do: change it back to false after testing
-    ITPS::NonBlockingPublisher< arma::vec > robot_origin_w_pub("ConnectionInit", "RobotOrigin(WorldFrame)", zero_vec_2d());
-    ITPS::NonBlockingPublisher<bool> init_sensors_pub("vfirm-client", "re/init sensors", false);
-    ITPS::NonBlockingSubscriber<bool> ballcap_status_sub("Ball Capture Module", "isDribbled");
+
+
+    ITPS::FieldPublisher<bool> safetyEnablePub("From:TcpReceiveModule", "SafetyEnable", false); 
+    ITPS::FieldPublisher< arma::vec > robotOriginInWorldPub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)", zero_vec_2d());
+    ITPS::FieldPublisher<bool> initSensorsCmdPub("From:TcpReceiveModule", "re/init sensors", false);
+    
+    ITPS::FieldSubscriber<bool> ballcapStatusSub("From:BallCaptureModule", "isDribbled");
 
     
 
@@ -79,19 +78,19 @@ void ConnectionServer::task(ThreadPool& threadPool) {
 
 
     logger.log(Info, "Server Started on Port Number:" + repr(TCP_PORT)
-                    + ", Awaiting Remote AI Connection...");
+                    + ", Awaiting Remote From:TcpReceiveModule...");
 
     try 
     {
-        ballcap_status_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        ballcapStatusSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         acceptor.accept(socket); // blocks until getting a connection request and accept the connection
     }
     catch(std::exception& e)
     {
         BLogger logger;
-        logger.add_tag("[connection_server_module.cpp]");
+        logger.addTag("[connection_server_module.cpp]");
         logger.log(Error, e.what());
-        safety_enable_pub.publish(false);
+        safetyEnablePub.publish(false);
         std::exit(0);
     }
 
@@ -99,21 +98,21 @@ void ConnectionServer::task(ThreadPool& threadPool) {
     asio::write(socket, asio::buffer("CONNECTION ESTABLISHED\n"));
 
     // enqueue the backgnd task of this module to the thread pool
-    threadPool.execute(boost::bind(&backgnd_task, boost::ref(ballcap_status_sub), boost::ref(socket)));
+    threadPool.execute(boost::bind(&backgndTask, boost::ref(ballcapStatusSub), boost::ref(socket)));
 
 
-    while(1) { // No delay, blocking-socket-read is used, usually won't use too much CPU resources
+    while(true) { // No delay, blocking-socket-read is used, usually won't use too much CPU resources
         // get first line seperated string from the receiving buffer
-        std::istream input_stream(&read_buf);
+        std::istream inputStream(&read_buf);
 
         try {
             asio::read_until(socket, read_buf, "\n"); 
         }
         catch(std::exception& e) {
             BLogger logger;
-            logger.add_tag("[connection_server_module.cpp]");
+            logger.addTag("[TcpReceiveModule.cpp]");
             logger.log(Error, e.what());
-            safety_enable_pub.publish(false);
+            safetyEnablePub.publish(false);
 
             // To-do: handle disconnect
             while(1) { // has delay (good for reducing high CPU usage)
@@ -123,13 +122,13 @@ void ConnectionServer::task(ThreadPool& threadPool) {
     
         // Tokenize the received input
         std::vector<std::string> tokens;
-        std::string tmp_str;
-        while(input_stream >> tmp_str) 
+        std::string tmpStr;
+        while(inputStream >> tmpStr) 
         { 
-            tokens.push_back(tmp_str); 
+            tokens.push_back(tmpStr); 
         }   
 
-        std::string rtn_str;
+        std::string rtnStr;
 
         // Processing CommandLines
         if(tokens.size() > 0) {
@@ -138,28 +137,28 @@ void ConnectionServer::task(ThreadPool& threadPool) {
             // Format: init [x] [y]     where (x,y) is the origin of the robot in the world coordinates
             if(tokens[0] == "init") {
                 if(tokens.size() != 3) {
-                    rtn_str = "Invalid Arguments";
+                    rtnStr = "Invalid Arguments";
                 }
                 else {
                     arma::vec origin = {std::stod(tokens[1]), std::stod(tokens[2])};
-                    init_sensors_pub.publish(true); // Initialize Sensors
-                    robot_origin_w_pub.publish(origin); // Update Robot's origin point represented in the world frame of reference
-                    rtn_str = "Initialized";
-                    safety_enable_pub.publish(true);
+                    initSensorsCmdPub.publish(true); // Initialize Sensors
+                    robotOriginInWorldPub.publish(origin); // Update Robot's origin point represented in the world frame of reference
+                    rtnStr = "Initialized";
+                    safetyEnablePub.publish(true);
                 }
             }
 
-            else if(tokens[0] == "anything") {
-                rtn_str = "bazinga";
-            }
+//            else if(tokens[0] == "anything") {
+//                rtnStr = "lmao";
+//            }
 
             else { // invalid command 
-                rtn_str = "Invalid Command Received From Remote Side";
+                rtnStr = "Invalid Command Received From Remote Side";
             }
         }
 
         mu.lock();
-        asio::write(socket, asio::buffer(rtn_str + "\n"));
+        asio::write(socket, asio::buffer(rtnStr + "\n"));
         mu.unlock();
     }
  

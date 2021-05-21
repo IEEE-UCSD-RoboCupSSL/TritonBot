@@ -34,8 +34,8 @@ class MotionEKF_Module : public Module {
         void publish_motion_data(MotionData data);
 
     private:
-        ITPS::NonBlockingPublisher<MotionEKF_Module::MotionData> motion_data_pub;
-        ITPS::BlockingSubscriber<VF_Data> firm_data_sub; /* internal sensor data, which should be
+        ITPS::FieldPublisher<MotionEKF_Module::MotionData> motion_data_pub;
+        ITPS::MQSubscriber<VF_Data> firm_data_sub; /* internal sensor data, which should be
                                                   * sampled faster than the ssl vision data
                                                   */ 
         // ITPS::Subscriber<SSL_VisionData>  (trivial mode) .... To-do 

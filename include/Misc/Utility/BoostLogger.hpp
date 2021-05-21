@@ -73,12 +73,12 @@ public:
     // default constructor: logging to std::clog
     BLogger();
 
-    void add_tag(std::string tag);
+    void addTag(std::string tag);
     
     static void setToShorterFormat();
-    static void set_even_shorter_format();
-    static void set_shortest_format();
-    static void set_default_format();
+    static void setToEvenShorterFormat();
+    static void setToShortestFormat();
+    static void setToDefaultFormat();
 
     BLogger& operator()(SeverityLevel sev);
 

@@ -31,16 +31,16 @@ static Motion::MotionCMD default_cmd() {
 }
 
 // Implementation of task to be run on this thread
-[[noreturn]] void CMDServer::task(ThreadPool& threadPool) {
+void UdpReceiveModule::task(ThreadPool& threadPool) {
     UNUSED(threadPool); 
 
     BLogger logger;
-    logger.add_tag("UDP Receiver Module");
+    logger.addTag("UDP Receiver Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
-    io_service io_service;
+    io_service ios;
     udp::endpoint ep_listen(udp::v4(), UDP_PORT);
-    udp::socket socket(io_service, ep_listen);
+    udp::socket socket(ios, ep_listen);
 
     size_t num_received;
     std::string packet_received;
@@ -50,20 +50,20 @@ static Motion::MotionCMD default_cmd() {
     /*** Publisher Setup ***/
 
     // Note: will convert received worldframe data to body frame in which bot position is relative to the bot origin
-    ITPS::NonBlockingPublisher<arma::vec> trans_disp_pub("GVision Server", "BotPos(BodyFrame)", zero_vec_2d());
-    ITPS::NonBlockingPublisher<arma::vec> trans_vel_pub("GVision Server", "BotVel(BodyFrame)", zero_vec_2d());
-    ITPS::NonBlockingPublisher<float> rot_disp_pub("GVision Server", "BotAng(BodyFrame)", 0.00);
-    ITPS::NonBlockingPublisher<float> rot_vel_pub("GVision Server", "BotAngVel(BodyFrame)", 0.00);
-    ITPS::NonBlockingPublisher<arma::vec> ball_loc_pub("GVision Server", "BallPos(BodyFrame)", zero_vec_2d());
-    ITPS::NonBlockingPublisher<arma::vec> ball_vel_pub("GVision Server", "BallVel(BodyFrame)", zero_vec_2d());
-    ITPS::NonBlockingPublisher< Motion::MotionCMD > m_cmd_pub("CMD Server", "MotionCMD", default_cmd());
-    ITPS::NonBlockingPublisher< bool > en_autocap_pub("CMD Server", "EnableAutoCap", false);
-    ITPS::NonBlockingPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
+    ITPS::FieldPublisher<arma::vec> trans_disp_pub("GVision Server", "BotPos(BodyFrame)", zero_vec_2d());
+    ITPS::FieldPublisher<arma::vec> trans_vel_pub("GVision Server", "BotVel(BodyFrame)", zero_vec_2d());
+    ITPS::FieldPublisher<float> rot_disp_pub("GVision Server", "BotAng(BodyFrame)", 0.00);
+    ITPS::FieldPublisher<float> rot_vel_pub("GVision Server", "BotAngVel(BodyFrame)", 0.00);
+    ITPS::FieldPublisher<arma::vec> ball_loc_pub("GVision Server", "BallPos(BodyFrame)", zero_vec_2d());
+    ITPS::FieldPublisher<arma::vec> ball_vel_pub("GVision Server", "BallVel(BodyFrame)", zero_vec_2d());
+    ITPS::FieldPublisher< Motion::MotionCMD > m_cmd_pub("CMD Server", "MotionCMD", default_cmd());
+    ITPS::FieldPublisher< bool > en_autocap_pub("CMD Server", "EnableAutoCap", false);
+    ITPS::FieldPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
 
     /*** Subscriber setup ***/
-    ITPS::NonBlockingSubscriber<arma::vec> robot_origin_w_sub("ConnectionInit", "RobotOrigin(WorldFrame)");
-    ITPS::NonBlockingSubscriber<MotionEKF::MotionData> sensor_sub("MotionEKF", "MotionData");
-    ITPS::NonBlockingSubscriber< Motion::MotionCMD > capture_cmd_sub("Ball Capture Module", "MotionCMD");
+    ITPS::FieldSubscriber<arma::vec> robot_origin_w_sub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
+    ITPS::FieldSubscriber<MotionEKF::MotionData> sensor_sub("MotionEKF", "MotionData");
+    ITPS::FieldSubscriber< Motion::MotionCMD > capture_cmd_sub("From:BallCaptureModule", "MotionCMD");
 
     try {
         capture_cmd_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
@@ -72,7 +72,7 @@ static Motion::MotionCMD default_cmd() {
     }
     catch(std::exception& e) {
         BLogger logger;
-        logger.add_tag("[UdpReceiveModule.cpp]");
+        logger.addTag("[UdpReceiveModule.cpp]");
         logger.log(Error, std::string(e.what()));
         std::exit(0);
     }
