@@ -4,26 +4,13 @@
 #include <armadillo>
 #include "ProtoGenerated/vFirmware_API.pb.h"
 #include "CoreModules/ControlModule/ControlModule.hpp"
+#include "CoreModules/DataCmdTypes.hpp"
+
+
+
 
 class MotionModule : public Module {
     public:
-        // Controller controls one of the following physics variables 
-        enum CTRL_Mode {TDRD = 0, //TDRD: translational displacement & rotational displacement (at the same time)
-                        TDRV = 1, //TDRV: translational displacement & rotational velocity (at the same time)
-                        TVRD = 2, //TVRD: translational velocity & rotational displacement (at the same time)
-                        TVRV = 3, //TVRV: translational velocity & rotational velocity (at the same time)  
-                        NSTDRD = 4, // No slowdown TDRD 
-                        NSTDRV = 5  // No slowdown TDRV
-                        };
-        enum ReferenceFrame {WorldFrame = 0, BodyFrame = 1};
-
-        struct MotionCMD {
-            arma::vec setpoint3d; // <x, y, \theta> where \theta is the orientation angle 
-            CTRL_Mode mode;
-            ReferenceFrame refFrame;
-        };
-
-
         MotionModule();
         virtual ~MotionModule();
 
@@ -33,7 +20,7 @@ class MotionModule : public Module {
     protected:
         virtual void init_subscribers(void);
 
-        virtual void move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame setpoint_ref_frame = WorldFrame); // default: setpoint frame is world frame
+        virtual void move(arma::vec setpoint_3d, CtrlMode mode, ReferenceFrame setpoint_ref_frame = WorldFrame); // default: setpoint frame is world frame
 
 
 
@@ -41,15 +28,15 @@ class MotionModule : public Module {
         arma::vec bodyframe_origin_w = {0, 0, 0}; // this is a world frame coordinate(w/ angle), which is used to calculate info about body frame
         CTRL::SetPoint<float> rotat_setpoint;
         CTRL::SetPoint<arma::vec> trans_setpoint;
-        ITPS::FieldSubscriber< MotionEKF::BotData > sensor_sub;
-        ITPS::FieldSubscriber< arma::vec > robot_origin_w_sub; // robot's origin point (disp(0,0)) with respect to the worldframe (i.e. camera frame)
+        ITPS::FieldSubscriber< BotData > sensor_sub;
+        ITPS::FieldSubscriber< arma::vec > robot_origin_w_sub; // robot's origin point (pos(0,0)) with respect to the worldframe (i.e. camera frame)
         ITPS::FieldSubscriber< MotionCMD > command_sub;
         ITPS::FieldPublisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub;
         ITPS::FieldPublisher<CTRL::SetPoint<float>> rotat_setpoint_pub;
         ITPS::FieldPublisher<bool> no_slowdown_pub; // work-around for no slowdown modes
-        
-
-
 };
 
 using Motion = MotionModule;
+
+
+

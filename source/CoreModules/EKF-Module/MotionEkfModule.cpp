@@ -12,8 +12,8 @@ using namespace boost;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-static MotionEKF::BotData default_md() {
-    MotionEKF::BotData rtn;
+static BotData default_md() {
+    BotData rtn;
     arma::vec zero_vec = {0, 0};
     rtn.pos = zero_vec;
     rtn.vel = zero_vec;
@@ -80,7 +80,7 @@ VirtualMotionEKF::~VirtualMotionEKF() = default;
     logger(Info) << "\033[0;32m Initialized \033[0m";
 
     VF_Data vf_data;
-    MotionEKF::BotData m_data;
+    BotData m_data;
 
     while(true) { // has delay (good for reducing high CPU usage)
         // firm data is in body(not global) frame!

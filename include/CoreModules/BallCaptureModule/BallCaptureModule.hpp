@@ -2,7 +2,7 @@
 
 #include "Misc/PubSubSystem/Module.hpp"
 #include <armadillo>
-#include "CoreModules/MotionModule/MotionModule.hpp"
+#include "CoreModules/DataCmdTypes.hpp"
 #include "CoreModules/EKF-Module/BallEkfModule.hpp"
 #include "CoreModules/EKF-Module/MotionEkfModule.hpp"
 #include "Misc/Utility/Common.hpp"
@@ -22,9 +22,9 @@ class BallCaptureModule : public Module {
 
     private:
         ITPS::FieldSubscriber<bool> enable_sub;
-        ITPS::FieldSubscriber<BallEKF::BallData> ball_data_sub;
-        ITPS::FieldSubscriber<MotionEKF::BotData> bot_data_sub;
-        ITPS::FieldPublisher< Motion::MotionCMD > command_pub;
+        ITPS::FieldSubscriber<BallData> ball_data_sub;
+        ITPS::FieldSubscriber<BotData> bot_data_sub;
+        ITPS::FieldPublisher< MotionCMD > command_pub;
         ITPS::FieldPublisher<bool> ballcap_status_pub;
 
         ITPS::FieldPublisher<bool> drib_enable_pub;
@@ -40,9 +40,9 @@ class BallCaptureModule : public Module {
          *
          *  @Note to developer: The dribbler is about 80 units wide and about 100 units away from the center of the robot.
          */
-        bool check_ball_captured_V(arma::vec ball_pos, MotionEKF_Module::BotData latest_motion_data);
+        bool check_ball_captured_V(arma::vec ball_pos, BotData latest_motion_data);
 
-        bool check_close_enough(arma::vec ball_pos, MotionEKF_Module::BotData latest_motion_data);
+        bool check_close_enough(arma::vec ball_pos, BotData latest_motion_data);
 
         double calc_angle(double delta_y, double delta_x);
         

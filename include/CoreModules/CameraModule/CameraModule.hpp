@@ -1,5 +1,6 @@
 #pragma once
 #include "Misc/PubSubSystem/Module.hpp"
+#include "CoreModules/DataCmdTypes.hpp"
 #include <armadillo>
 
 

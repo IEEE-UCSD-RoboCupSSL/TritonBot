@@ -71,7 +71,7 @@ void MotionModule::task(ThreadPool& threadPool) {
 
 
 
-void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame setpoint_ref_frame) { // default: setpoint frame is world frame
+void MotionModule::move(arma::vec setpoint_3d, CtrlMode mode, ReferenceFrame setpoint_ref_frame) { // default: setpoint frame is world frame
     switch(mode) {
         case TDRD: trans_setpoint.type = CTRL::displacement;
                    rotat_setpoint.type = CTRL::displacement;

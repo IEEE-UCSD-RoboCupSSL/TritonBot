@@ -71,7 +71,7 @@ CTRL::SetPoint<float> ControlModule::get_rotat_setpoint(void) {
     return rotat_setpoint_sub.latest_msg();
 }
 
-MotionEKF::BotData ControlModule::get_ekf_feedbacks(void) {
+BotData ControlModule::get_ekf_feedbacks(void) {
     return sensor_sub.latest_msg();
 }
 
@@ -130,7 +130,7 @@ void PID_System::task(ThreadPool& threadPool) {
     init_subscribers();
     logger(Info) << "\033[0;32m Initialized \033[0m";
 
-    MotionEKF::BotData feedback;
+    BotData feedback;
     arma::vec kicker_setpoint;
     bool dribbler_set_on;
     CTRL::SetPoint<arma::vec> trans_setpoint;

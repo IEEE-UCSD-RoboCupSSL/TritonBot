@@ -69,6 +69,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/proto/)
 #set variable to represent source files in the source folders
 # - make sure to rerun cmake everytime a file is added to or remnove from the folders
 aux_source_directory(source Main_srcs)
+aux_source_directory(source/CoreModules Core_srcs)
 aux_source_directory(source/CoreModules/ControlModule Control_srcs)
 aux_source_directory(source/Misc/Utility Utility_srcs)
 aux_source_directory(source/PeriphModules/MCU_Client MCInterface_srcs)
@@ -120,7 +121,7 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 #add target to be built
 add_executable(${Target} ${Main_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
                ${MCInterface_srcs} ${EKF_srcs} ${Config_srcs} ${Motion_srcs} ${SERV_srcs} ${BCAP_srcs}
-               ${MT_srcs} ${CMT_srcs} ${PMT_srcs} ${MMT_srcs})
+               ${MT_srcs} ${CMT_srcs} ${PMT_srcs} ${MMT_srcs} ${Core_srcs})
 
 ## need to generate proto sources before compiling everything else
 #add_dependencies(${Target} PROTO_GEN)

@@ -8,14 +8,6 @@
 #define AUTOCAP_DECISION_THRESHOLD 80
 #define DRIBBLER_ENABLE_DIS 300.0
 
-// Note: rotational data are all in world frame
-static Motion::MotionCMD defaultCmd() {
-    Motion::MotionCMD dft_cmd;
-    dft_cmd.setpoint3d = {0, 0, 0};
-    dft_cmd.mode = Motion::CTRL_Mode::TVRV;
-    dft_cmd.refFrame = Motion::ReferenceFrame::BodyFrame;
-    return dft_cmd;
-}
 
 
 BallCaptureModule::BallCaptureModule() : enable_sub("From:UdpReceiveModule", "EnableAutoCap"),
@@ -76,8 +68,8 @@ void BallCaptureModule::task(ThreadPool &threadPool) {
 
         bool averageResult = false;
 
-        arma::vec ball_pos = ball_data_sub.latest_msg().disp;
-        MotionEKF_Module::BotData latest_motion_data = bot_data_sub.latest_msg();
+        arma::vec ball_pos = ball_data_sub.latest_msg().pos;
+        BotData latest_motion_data = bot_data_sub.latest_msg();
 
         if (check_close_enough(ball_pos, latest_motion_data)) {
             drib_enable_pub.publish(true);
@@ -108,7 +100,7 @@ void BallCaptureModule::task(ThreadPool &threadPool) {
         if (enable_sub.latest_msg()) {
 
             // if(false){
-            //     logger.log(Info, "[ball capture] dribble status: " + std::to_string(check_ball_captured_V(ball_data_sub.latest_msg().disp, bot_data_sub.latest_msg())));
+            //     logger.log(Info, "[ball capture] dribble status: " + std::to_string(check_ball_captured_V(ball_data_sub.latest_msg().pos, bot_data_sub.latest_msg())));
             //     delay(100);
             // }
 
@@ -117,17 +109,17 @@ void BallCaptureModule::task(ThreadPool &threadPool) {
             double delta_y = ball_pos(1) - latest_motion_data.pos(1);
             double angle = calc_angle(delta_y, delta_x);
 
-            Motion::MotionCMD command;
+            MotionCMD command;
 
 
             if (!averageResult) {
-                command.mode = Motion::CTRL_Mode::TDRD;
-                command.refFrame = Motion::ReferenceFrame::BodyFrame;
+                command.mode = CtrlMode::TDRD;
+                command.refFrame = ReferenceFrame::BodyFrame;
                 command.setpoint3d = {ball_pos(0), ball_pos(1), angle + latest_motion_data.ang};
                 command_pub.publish(command);
             } else {
-                command.mode = Motion::CTRL_Mode::TVRD;
-                command.refFrame = Motion::ReferenceFrame::BodyFrame;
+                command.mode = CtrlMode::TVRD;
+                command.refFrame = ReferenceFrame::BodyFrame;
                 command.setpoint3d = {0, 5.00, angle + latest_motion_data.ang};
                 command_pub.publish(command);
             }
@@ -144,7 +136,7 @@ void BallCaptureModule::task(ThreadPool &threadPool) {
 
 }
 
-bool BallCaptureModule::check_close_enough(arma::vec ball_pos, MotionEKF_Module::BotData latest_motion_data) {
+bool BallCaptureModule::check_close_enough(arma::vec ball_pos, BotData latest_motion_data) {
     double const PI = 3.1415926;
     double const X_TRESHOLD = 200.0;
     double const Y_TRESHOLD = 200.0;
@@ -162,7 +154,7 @@ bool BallCaptureModule::check_close_enough(arma::vec ball_pos, MotionEKF_Module:
     return false;
 }
 
-bool BallCaptureModule::check_ball_captured_V(arma::vec ball_pos, MotionEKF_Module::BotData latest_motion_data) {
+bool BallCaptureModule::check_ball_captured_V(arma::vec ball_pos, BotData latest_motion_data) {
     double const PI = 3.1415926;
     double const X_TRESHOLD = 80.0;
     double const Y_TRESHOLD = 20.0;

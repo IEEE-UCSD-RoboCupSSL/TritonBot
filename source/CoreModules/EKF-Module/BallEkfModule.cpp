@@ -18,9 +18,9 @@ using namespace boost::asio::ip;
 
 
 /*   */
-static BallEKF::BallData dft_bd() {
-    BallEKF::BallData rtn;
-    rtn.disp = zeroVec2d();
+static BallData dft_bd() {
+    BallData rtn;
+    rtn.pos = zeroVec2d();
     rtn.vel = zeroVec2d();
     return rtn;
 } 
@@ -84,10 +84,10 @@ void VirtualBallEKF::task(ThreadPool& threadPool) {
     
 
     while(true) { // has delay (good for reducing high CPU usage)
-        ball_data.disp = get_ball_loc();
+        ball_data.pos = get_ball_loc();
         ball_data.vel = get_ball_vel();
 
-        // logger.log(Info, "<" + repr(ball_data.disp(0)) + ", " + repr(ball_data.disp(1)) + ">");
+        // logger.log(Info, "<" + repr(ball_data.pos(0)) + ", " + repr(ball_data.pos(1)) + ">");
         publish_ball_data(ball_data);
 
         delay(1);

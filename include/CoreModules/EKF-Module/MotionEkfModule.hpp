@@ -2,21 +2,14 @@
 #include "Misc/PubSubSystem/Module.hpp"
 #include <armadillo>
 #include "ProtoGenerated/vFirmware_API.pb.h"
+#include "CoreModules/DataCmdTypes.hpp"
+
 
 
 /*  */
 
 class MotionEKF_Module : public Module {
     public:
-
-        /* Motion frame: when facing yellow gate from blue gate, it is the positive x direction. The positive y direction
-         * is the positive x direction rotated counter-clockwise by 90 degree */
-        struct BotData {
-            arma::vec pos;
-            arma::vec vel;
-            float ang;   
-            float angVel; 
-        };
 
         MotionEKF_Module();
         virtual ~MotionEKF_Module();
@@ -33,7 +26,7 @@ class MotionEKF_Module : public Module {
         void publish_motion_data(BotData data);
 
     private:
-        ITPS::FieldPublisher<MotionEKF_Module::BotData> motion_data_pub;
+        ITPS::FieldPublisher<BotData> motion_data_pub;
         ITPS::MQSubscriber<VF_Data> firm_data_sub; /* internal sensor data, which should be
                                                   * sampled faster than the ssl vision data
                                                   */ 
@@ -64,7 +57,7 @@ private:
     boost::asio::io_service io_service;
 
     arma::vec prev_disp = {0, 0};
-    MotionEKF::BotData motion_data;
+    BotData motion_data;
 
 
 };

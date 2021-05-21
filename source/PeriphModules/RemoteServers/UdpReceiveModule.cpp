@@ -23,14 +23,6 @@ using namespace boost::asio::ip;
 
 static arma::vec transform(arma::vec, float, arma::vec);
 
-static Motion::MotionCMD defaultCmd() {
-    Motion::MotionCMD dftCmd;
-    dftCmd.setpoint3d = {0, 0, 0};
-    dftCmd.mode = Motion::CTRL_Mode::TVRV;
-    dftCmd.refFrame = Motion::ReferenceFrame::BodyFrame;
-    return dftCmd;
-}
-
 // Implementation of task to be run on this thread
 void UdpReceiveModule::task(ThreadPool& threadPool) {
     UNUSED(threadPool); 
@@ -57,14 +49,14 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     ITPS::FieldPublisher<float> botAngVelPub("From:UdpReceiveModule", "BotAngVel(WorldFrame)", 0.00);
     ITPS::FieldPublisher<arma::vec> ballPosPub("From:UdpReceiveModule", "BallPos(WorldFrame)", zeroVec2d());
     ITPS::FieldPublisher<arma::vec> ballVelPub("From:UdpReceiveModule", "BallVel(WorldFrame)", zeroVec2d());
-    ITPS::FieldPublisher< Motion::MotionCMD > motionCmdPub("From:UdpReceiveModule", "MotionCommand", defaultCmd());
+    ITPS::FieldPublisher< MotionCMD > motionCmdPub("From:UdpReceiveModule", "MotionCommand", defaultCmd());
     ITPS::FieldPublisher< bool > enAutoCapPub("From:UdpReceiveModule", "EnableAutoCap", false);
     ITPS::FieldPublisher<arma::vec> kickerSetPointPub("From:UdpReceiveModule", "KickingSetPoint", zeroVec2d());
 
     /*** Subscriber setup ***/
     ITPS::FieldSubscriber<arma::vec> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
-    ITPS::FieldSubscriber<MotionEKF::BotData> botProcessedDataSub("MotionEKF", "BotProcessedData");
-    ITPS::FieldSubscriber< Motion::MotionCMD > ballCapMotionCmdSub("From:BallCaptureModule", "MotionCommand");
+    ITPS::FieldSubscriber<BotData> botProcessedDataSub("MotionEKF", "BotProcessedData");
+    ITPS::FieldSubscriber< MotionCMD > ballCapMotionCmdSub("From:BallCaptureModule", "MotionCommand");
 
     try {
         ballCapMotionCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
@@ -84,7 +76,7 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     UDPData udpData;
 
 
-    Motion::MotionCMD mCmd;
+    MotionCMD mCmd;
     arma::vec kickVec2d = {0, 0};
     arma::vec botPos, botVel, ballPos, ballVel;
     float botAng, botAngVel;
@@ -125,19 +117,19 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
                 // Listening to remote motion commands
                 enAutoCapPub.publish(false);
                 switch((int)udpData.commanddata().mode()) {
-                    case 0: mCmd.mode = Motion::CTRL_Mode::TDRD; break;
-                    case 1: mCmd.mode = Motion::CTRL_Mode::TDRV; break;
-                    case 2: mCmd.mode = Motion::CTRL_Mode::TVRD; break;
-                    case 3: mCmd.mode = Motion::CTRL_Mode::TVRV; break;
-                    case 4: mCmd.mode = Motion::CTRL_Mode::NSTDRD; break;
-                    case 5: mCmd.mode = Motion::CTRL_Mode::NSTDRV; break;
-                    default: mCmd.mode = Motion::CTRL_Mode::TVRV;
+                    case 0: mCmd.mode = CtrlMode::TDRD; break;
+                    case 1: mCmd.mode = CtrlMode::TDRV; break;
+                    case 2: mCmd.mode = CtrlMode::TVRD; break;
+                    case 3: mCmd.mode = CtrlMode::TVRV; break;
+                    case 4: mCmd.mode = CtrlMode::NSTDRD; break;
+                    case 5: mCmd.mode = CtrlMode::NSTDRV; break;
+                    default: mCmd.mode = CtrlMode::TVRV;
                 }
                 if(udpData.commanddata().is_world_frame()) {
-                    mCmd.refFrame = Motion::WorldFrame;
+                    mCmd.refFrame = ReferenceFrame::WorldFrame;
                 }
                 else {
-                    mCmd.refFrame = Motion::BodyFrame;
+                    mCmd.refFrame = ReferenceFrame::BodyFrame;
                 }
                 mCmd.setpoint3d = {udpData.commanddata().motion_set_point().x(),
                                     udpData.commanddata().motion_set_point().y(),
