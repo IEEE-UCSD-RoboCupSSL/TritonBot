@@ -24,7 +24,7 @@ class BallCaptureModule : public Module {
         ITPS::FieldSubscriber<bool> enable_sub;
         ITPS::FieldSubscriber<BallData> ball_data_sub;
         ITPS::FieldSubscriber<BotData> bot_data_sub;
-        ITPS::FieldPublisher< MotionCMD > command_pub;
+        ITPS::FieldPublisher< MotionCommand > command_pub;
         ITPS::FieldPublisher<bool> ballcap_status_pub;
 
         ITPS::FieldPublisher<bool> drib_enable_pub;

@@ -7,3 +7,4 @@
 /* Module Frequencies */
 #define TCP_RECEIVE_FREQUENCY 10 //Hz 
 #define UDP_RECEIVE_FREQUENCY 500 //Hz
+#define COMMAND_PROCESSOR_FREQUENCY 500 // Hz

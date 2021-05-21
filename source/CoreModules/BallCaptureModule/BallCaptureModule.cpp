@@ -109,7 +109,7 @@ void BallCaptureModule::task(ThreadPool &threadPool) {
             double delta_y = ball_pos(1) - latest_motion_data.pos(1);
             double angle = calc_angle(delta_y, delta_x);
 
-            MotionCMD command;
+            MotionCommand command;
 
 
             if (!averageResult) {

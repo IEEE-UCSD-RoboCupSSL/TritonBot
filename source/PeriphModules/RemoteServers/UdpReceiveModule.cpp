@@ -41,34 +41,18 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
 
 
     /*** Publisher Setup ***/
-
-    // Note: will convert received worldframe data to body frame in which bot position is relative to the bot origin
     ITPS::FieldPublisher<arma::vec> botPosPub("From:UdpReceiveModule", "BotPos(WorldFrame)", zeroVec2d());
     ITPS::FieldPublisher<arma::vec> botVelPub("From:UdpReceiveModule", "BotVel(WorldFrame)", zeroVec2d());
     ITPS::FieldPublisher<float> botAngPub("From:UdpReceiveModule", "BotAng(WorldFrame)", 0.00);
     ITPS::FieldPublisher<float> botAngVelPub("From:UdpReceiveModule", "BotAngVel(WorldFrame)", 0.00);
     ITPS::FieldPublisher<arma::vec> ballPosPub("From:UdpReceiveModule", "BallPos(WorldFrame)", zeroVec2d());
     ITPS::FieldPublisher<arma::vec> ballVelPub("From:UdpReceiveModule", "BallVel(WorldFrame)", zeroVec2d());
-    ITPS::FieldPublisher< MotionCMD > motionCmdPub("From:UdpReceiveModule", "MotionCommand", defaultCmd());
+    ITPS::FieldPublisher< MotionCommand > motionCmdPub("From:UdpReceiveModule", "MotionCommand", defaultCmd());
     ITPS::FieldPublisher< bool > enAutoCapPub("From:UdpReceiveModule", "EnableAutoCap", false);
     ITPS::FieldPublisher<arma::vec> kickerSetPointPub("From:UdpReceiveModule", "KickingSetPoint", zeroVec2d());
 
-    /*** Subscriber setup ***/
-    ITPS::FieldSubscriber<arma::vec> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
-    ITPS::FieldSubscriber<BotData> botDataSub("MotionEKF", "BotProcessedData");
-    ITPS::FieldSubscriber< MotionCMD > ballCapMotionCmdSub("From:BallCaptureModule", "MotionCommand");
 
-    try {
-        ballCapMotionCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        robotOriginInWorldSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        botDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-    }
-    catch(std::exception& e) {
-        BLogger logger;
-        logger.addTag("[UdpReceiveModule.cpp]");
-        logger.log(Error, std::string(e.what()));
-        std::exit(0);
-    }
+
 
     logger.log(Info, "UDP Receiver Started on Port Number:" + repr(UDP_PORT)
                 + ", Listening to Remote AI Commands... ");
@@ -76,7 +60,7 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     UDPData udpData;
 
 
-    MotionCMD mCmd;
+    MotionCommand mCmd;
     arma::vec kickVec2d = {0, 0};
     arma::vec botPos, botVel, ballPos, ballVel;
     float botAng, botAngVel;

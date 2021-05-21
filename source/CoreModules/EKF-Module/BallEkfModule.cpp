@@ -27,8 +27,8 @@ static BallData dft_bd() {
 
 
 BallEKF_Module::BallEKF_Module() : ball_data_pub("BallEKF", "BallData", dft_bd()),
-                                   ball_loc_sub("From:UdpReceiveModule", "BallPos(BodyFrame)"),
-                                   ball_vel_sub("From:UdpReceiveModule", "BallVel(BodyFrame)")
+                                   ball_loc_sub("From:UdpReceiveModule", "BallPos(WorldFrame)"),
+                                   ball_vel_sub("From:UdpReceiveModule", "BallVel(WorldFrame)")
 {}
 
 BallEKF_Module::~BallEKF_Module() {} 

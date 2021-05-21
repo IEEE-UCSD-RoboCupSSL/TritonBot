@@ -12,7 +12,7 @@ enum CtrlMode {TDRD = 0, //TDRD: translational displacement & rotational displac
                 };
 enum ReferenceFrame {WorldFrame = 0, BodyFrame = 1};
 
-struct MotionCMD {
+struct MotionCommand {
     arma::vec setpoint3d; // <x, y, \theta> where \theta is the orientation angle 
     CtrlMode mode;
     ReferenceFrame refFrame;
@@ -21,19 +21,20 @@ struct MotionCMD {
 
 /* Motion frame: when facing yellow gate from blue gate, it is the positive x direction. The positive y direction
     * is the positive x direction rotated counter-clockwise by 90 degree */
-struct BotData {
+struct BotData {  // internally processed robot motion data represented in BodyFrame
     arma::vec pos;
     arma::vec vel;
     float ang;   
     float angVel; 
+    ReferenceFrame frame;
 };
 
-struct BallData {
+struct BallData { // internally processed ball data represented in this robot's BodyFrame, i.e. position relative to robot's initial origin
     arma::vec pos; // Location of ball relative to center of the field in ball frame.
     arma::vec vel;  // Velocity of ball in ball frame
 };
 
-MotionCMD defaultCmd();
+MotionCommand defaultCmd();
 BotData defaultBotData();
 BallData defaultBallData();
 

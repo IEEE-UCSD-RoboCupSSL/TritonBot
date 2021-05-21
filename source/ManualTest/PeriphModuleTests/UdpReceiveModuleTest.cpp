@@ -28,13 +28,13 @@ bool UdpReceiveModuleTest::test(ThreadPool& threadPool) {
     // ITPS::FieldSubscriber<float> botAngVelSub("From:UdpReceiveModule", "BotAngVel(WorldFrame)");
     ITPS::FieldSubscriber<arma::vec> ballPosSub("From:UdpReceiveModule", "BallPos(WorldFrame)");
     // ITPS::FieldSubscriber<arma::vec> ballVelSub("From:UdpReceiveModule", "BallVel(WorldFrame)");
-    // ITPS::FieldSubscriber< MotionCMD > motionCmdSub("From:UdpReceiveModule", "MotionCommand");
+    // ITPS::FieldSubscriber< MotionCommand > motionCmdSub("From:UdpReceiveModule", "MotionCommand");
     // ITPS::FieldSubscriber< bool > enAutoCapSub("From:UdpReceiveModule", "EnableAutoCap");
     // ITPS::FieldSubscriber<arma::vec> kickerSetPointSub("From:UdpReceiveModule", "KickingSetPoint");
 
     ITPS::FieldPublisher<arma::vec> robotOriginInWorldPub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)", zeroVec2d());
     ITPS::FieldPublisher<BotData> botProcessedDataPub("MotionEKF", "BotProcessedData", defaultBotData());
-    ITPS::FieldPublisher< MotionCMD > ballCapMotionCmdPub("From:BallCaptureModule", "MotionCommand", defaultCmd());
+    ITPS::FieldPublisher< MotionCommand > ballCapMotionCmdPub("From:BallCaptureModule", "MotionCommand", defaultCmd());
 
     try {
         botPosSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);

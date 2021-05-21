@@ -30,7 +30,7 @@ class MotionModule : public Module {
         CTRL::SetPoint<arma::vec> trans_setpoint;
         ITPS::FieldSubscriber< BotData > sensor_sub;
         ITPS::FieldSubscriber< arma::vec > robot_origin_w_sub; // robot's origin point (pos(0,0)) with respect to the worldframe (i.e. camera frame)
-        ITPS::FieldSubscriber< MotionCMD > command_sub;
+        ITPS::FieldSubscriber< MotionCommand > command_sub;
         ITPS::FieldPublisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub;
         ITPS::FieldPublisher<CTRL::SetPoint<float>> rotat_setpoint_pub;
         ITPS::FieldPublisher<bool> no_slowdown_pub; // work-around for no slowdown modes

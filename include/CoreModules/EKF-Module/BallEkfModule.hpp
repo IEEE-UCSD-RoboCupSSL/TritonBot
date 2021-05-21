@@ -22,8 +22,8 @@ class BallEKF_Module : public Module {
         arma::vec get_ball_vel();
 
         ITPS::FieldPublisher<BallData> ball_data_pub;
-        ITPS::FieldSubscriber<arma::vec> ball_loc_sub; //("From:UdpReceiveModule", "BallPos(BodyFrame)"); 
-        ITPS::FieldSubscriber<arma::vec> ball_vel_sub; //("From:UdpReceiveModule", "BallVel(BodyFrame)");
+        ITPS::FieldSubscriber<arma::vec> ball_loc_sub; //("From:UdpReceiveModule", "BallPos(WorldFrame)"); 
+        ITPS::FieldSubscriber<arma::vec> ball_vel_sub; //("From:UdpReceiveModule", "BallVel(WorldFrame)");
         
 };
 
