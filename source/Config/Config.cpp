@@ -75,9 +75,11 @@ bool processArgs(int argc, char *argv[], bool& isTestMode) {
         switch(option) {
             case 'v':
                 isVirtual = true;
+                logger(Info) << "[VirtualMode] enabled";
                 break;
             case 't':
                 isTestMode = true;
+                logger(Info) << "[TestMode] enabled";
                 break;
             case 'd':
                 BLogger::sink->set_filter(severity >= Debug);
@@ -97,21 +99,18 @@ bool processArgs(int argc, char *argv[], bool& isTestMode) {
 
     logger.log(Info, "\033[0;32m Robot ID: " + repr(ROBOT_ID) + "\033[0m");
     
-    if(isTestMode) {
-        logger(Info) << "[TestMode]";
-        return isVirtual;
-    } 
 
     if(isVirtual) {
-        if ( optind == argc - 1 ) {
+        if (optind == argc - 1) {
             // <port base>
             TCP_PORT = std::stoi(std::string(argv[argc - 1]));
             UDP_PORT = TCP_PORT + 1;
-        }
-        else {
+        } else if(optind == argc) {
+            UDP_PORT = TCP_PORT + 1;     
+        } else {
             BLogger errLogger;
             errLogger.addTag("[config.cpp]");
-            errLogger.log(Error, "Not enough arguments");
+            errLogger.log(Error, "Too many arguments");
             help_print(logger);
             std::exit(0);
         }
