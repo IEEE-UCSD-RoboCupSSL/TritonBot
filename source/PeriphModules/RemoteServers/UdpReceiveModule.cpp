@@ -55,13 +55,13 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
 
     /*** Subscriber setup ***/
     ITPS::FieldSubscriber<arma::vec> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
-    ITPS::FieldSubscriber<BotData> botProcessedDataSub("MotionEKF", "BotProcessedData");
+    ITPS::FieldSubscriber<BotData> botDataSub("MotionEKF", "BotProcessedData");
     ITPS::FieldSubscriber< MotionCMD > ballCapMotionCmdSub("From:BallCaptureModule", "MotionCommand");
 
     try {
         ballCapMotionCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         robotOriginInWorldSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        botProcessedDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        botDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
         BLogger logger;
@@ -99,7 +99,7 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
 
             // reference frame transformation math
             arma::vec botOrigin = robotOriginInWorldSub.latest_msg();
-            float botOrien = botProcessedDataSub.latest_msg().ang;
+            float botOrien = botDataSub.latest_msg().ang;
             botPos = transform(botOrigin, botOrien, botPos);
             botVel = transform(botOrigin, botOrien, botVel);
             ballPos = transform(botOrigin, botOrien, ballPos);

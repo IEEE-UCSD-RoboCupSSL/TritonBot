@@ -88,7 +88,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
     catch(std::exception& e)
     {
         BLogger logger;
-        logger.addTag("[connection_server_module.cpp]");
+        logger.addTag("[TcpReceiveModule.cpp]");
         logger.log(Error, e.what());
         safetyEnablePub.publish(false);
         std::exit(0);

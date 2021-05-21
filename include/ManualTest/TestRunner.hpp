@@ -8,6 +8,7 @@
 #include "ManualTest/MiscTests/PeriodicThreadTest.hpp"
 #include "ManualTest/MiscTests/PubSubTest.hpp"
 #include "ManualTest/PeriphModuleTests/TcpReceiveModuleTest.hpp"
+#include "ManualTest/PeriphModuleTests/UdpReceiveModuleTest.hpp"
 
 
 class TestRunner {
@@ -16,6 +17,7 @@ public:
         tests_map["periodic-thread"] = new PeriodicThreadTest();
         tests_map["pubsub"] = new PubSubTest();
         tests_map["tcp-receive"] = new TcpReceiveModuleTest();
+        tests_map["udp-receive"] = new UdpReceiveModuleTest();
     }
     ~TestRunner() {
         for(auto it = tests_map.begin(); it != tests_map.end(); it++) {

@@ -31,13 +31,13 @@
 #define AVOID_STARVATION_DELAY 1 // unit: microseconds
 
 
-class ChannelAlreadyRegisteredException: public std::exception
-{
-  virtual const char* what() const throw()
-  {
-    return "Channel Already Registered";
-  }
-};
+// class ChannelAlreadyRegisteredException: public std::exception
+// {
+//   virtual const char* what() const throw()
+//   {
+//     return "Channel Already Registered";
+//   }
+// };
 
 
 // Inter-Thread Publisher-Subscriber System
@@ -86,7 +86,7 @@ namespace ITPS {
                 if(msg_table.find(key) == msg_table.end()) {
                     msg_table[key] = this;
                 } else {
-                    throw new ChannelAlreadyRegisteredException();
+                    throw "ChannelAlreadyRegisteredException";
                 }
             }
 
@@ -171,10 +171,12 @@ namespace ITPS {
                 try {
                     channel = boost::shared_ptr<ITPS::MsgChannel<Msg>>(
                         new ITPS::MsgChannel<Msg>(topic_name, msg_name, mode));
-                } catch(ChannelAlreadyRegisteredException e) {
-                    channel = boost::shared_ptr<ITPS::MsgChannel<Msg>>(
-                        ITPS::MsgChannel<Msg>::get_channel(topic_name, msg_name, mode)
-                    );
+                } catch(const char* e) {
+                    if(std::string(e) == "ChannelAlreadyRegisteredException") {
+                        channel = boost::shared_ptr<ITPS::MsgChannel<Msg>>(
+                            ITPS::MsgChannel<Msg>::get_channel(topic_name, msg_name, mode)
+                        );
+                    }
                 }
             }
             ~Publisher() {}

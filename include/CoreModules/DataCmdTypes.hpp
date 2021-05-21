@@ -34,5 +34,7 @@ struct BallData {
 };
 
 MotionCMD defaultCmd();
+BotData defaultBotData();
+BallData defaultBallData();
 
 
