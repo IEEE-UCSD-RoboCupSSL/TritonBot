@@ -11,12 +11,11 @@ class MotionEKF_Module : public Module {
 
         /* Motion frame: when facing yellow gate from blue gate, it is the positive x direction. The positive y direction
          * is the positive x direction rotated counter-clockwise by 90 degree */
-        struct MotionData {
-            arma::vec trans_disp;
-            arma::vec trans_vel;
-            float rotat_disp;   // By default this value is 0 for blue team robots since they are facing the yellow gate.
-                                // Reversely, this value is 180 for yellow team since they are facing the blue gate.
-            float rotat_vel; 
+        struct BotData {
+            arma::vec pos;
+            arma::vec vel;
+            float ang;   
+            float angVel; 
         };
 
         MotionEKF_Module();
@@ -31,10 +30,10 @@ class MotionEKF_Module : public Module {
 
         // To-do SSL_VisionData get_.....
         VF_Data get_firmware_data();
-        void publish_motion_data(MotionData data);
+        void publish_motion_data(BotData data);
 
     private:
-        ITPS::FieldPublisher<MotionEKF_Module::MotionData> motion_data_pub;
+        ITPS::FieldPublisher<MotionEKF_Module::BotData> motion_data_pub;
         ITPS::MQSubscriber<VF_Data> firm_data_sub; /* internal sensor data, which should be
                                                   * sampled faster than the ssl vision data
                                                   */ 
@@ -65,7 +64,7 @@ private:
     boost::asio::io_service io_service;
 
     arma::vec prev_disp = {0, 0};
-    MotionEKF::MotionData motion_data;
+    MotionEKF::BotData motion_data;
 
 
 };

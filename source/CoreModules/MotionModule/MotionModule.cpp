@@ -24,9 +24,9 @@ static CTRL::SetPoint<float> default_rot_sp() {
 
 MotionModule::MotionModule() : trans_setpoint_pub("AI CMD", "Trans", default_trans_sp()), 
                                rotat_setpoint_pub("AI CMD", "Rotat", default_rot_sp()),
-                               sensor_sub("MotionEKF", "MotionData"), // NonBlocking Mode
+                               sensor_sub("MotionEKF", "BotProcessedData"), // NonBlocking Mode
                                robot_origin_w_sub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)"), // NonBlocking Mode
-                               command_sub("CMD Server", "MotionCMD"), // NonBlocking Mode because this module needs to keep the loop running 
+                               command_sub("From:UdpReceiveModule", "MotionCommand"), // NonBlocking Mode because this module needs to keep the loop running 
                                                                        // non-blocking to calculate transformation matrix that changes along
                                                                        // the orientation of a moving robot
                                no_slowdown_pub("AI CMD", "NoSlowdown", false)
@@ -62,7 +62,7 @@ void MotionModule::task(ThreadPool& threadPool) {
     
     while(1) { // has delay (good for reducing high CPU usage)
         auto cmd = command_sub.latest_msg();
-        move(cmd.setpoint_3d, cmd.mode, cmd.ref_frame);       
+        move(cmd.setpoint3d, cmd.mode, cmd.refFrame);       
 
         delay(1); 
     }
@@ -102,7 +102,7 @@ void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame se
         if(mode == TDRD || mode == TDRV || mode == NSTDRD || mode == NSTDRV) { // Position Control : Homo-transform a homgeneous POINT
         
             arma::vec bot_origin = robot_origin_w_sub.latest_msg();
-            double bot_orien = sensor_sub.latest_msg().rotat_disp;
+            double bot_orien = sensor_sub.latest_msg().ang;
 
             /* The math trick here is we define body frame to be (bot_origin_x, bot_origin_y, bot_orien)
              * in which bot_origin_x/y are static, while bot_orien changes along with the moving robot.
@@ -132,7 +132,7 @@ void MotionModule::move(arma::vec setpoint_3d, CTRL_Mode mode, ReferenceFrame se
         }
         else { // (Trans) Velocity Control : Homo-transform a homgeneous VECTOR
             arma::vec zero_vec = {0, 0};
-            double bot_orien = sensor_sub.latest_msg().rotat_disp;
+            double bot_orien = sensor_sub.latest_msg().ang;
             arma::mat A = wtb_homo_transform(zero_vec, bot_orien);
 
             arma::vec setpoint_w = {trans_setpoint.value(0), trans_setpoint.value(1), 0}; // homogeneous vector end with a 0

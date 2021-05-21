@@ -10,9 +10,9 @@
 #include <armadillo>
 
 ControlModule::ControlModule(void) : enable_signal_sub("From:TcpReceiveModule", "SafetyEnable"), 
-                                     sensor_sub("MotionEKF", "MotionData"), 
+                                     sensor_sub("MotionEKF", "BotProcessedData"), 
                                      dribbler_signal_sub("BallCapture", "EnableDribbler"),
-                                     kicker_setpoint_sub("Kicker", "KickingSetPoint"), 
+                                     kicker_setpoint_sub("From:UdpReceiveModule", "KickingSetPoint"), 
                                      trans_setpoint_sub("AI CMD", "Trans"), 
                                      rotat_setpoint_sub("AI CMD", "Rotat"), 
                                      output_pub("FirmClient", "Commands"),
@@ -71,7 +71,7 @@ CTRL::SetPoint<float> ControlModule::get_rotat_setpoint(void) {
     return rotat_setpoint_sub.latest_msg();
 }
 
-MotionEKF::MotionData ControlModule::get_ekf_feedbacks(void) {
+MotionEKF::BotData ControlModule::get_ekf_feedbacks(void) {
     return sensor_sub.latest_msg();
 }
 
@@ -130,7 +130,7 @@ void PID_System::task(ThreadPool& threadPool) {
     init_subscribers();
     logger(Info) << "\033[0;32m Initialized \033[0m";
 
-    MotionEKF::MotionData feedback;
+    MotionEKF::BotData feedback;
     arma::vec kicker_setpoint;
     bool dribbler_set_on;
     CTRL::SetPoint<arma::vec> trans_setpoint;
@@ -188,8 +188,8 @@ void PID_System::task(ThreadPool& threadPool) {
             // PID calculations : Error = SetPoint - CurrPoint = ExpectedValue - ActualValue
             // Rotation Controller
             if(rotat_setpoint.type == displacement) {
-                angle_err = rotat_setpoint.value - feedback.rotat_disp; // Expected Value - Actual Value
-                if(std::signbit(rotat_setpoint.value) != std::signbit(feedback.rotat_disp)) {
+                angle_err = rotat_setpoint.value - feedback.ang; // Expected Value - Actual Value
+                if(std::signbit(rotat_setpoint.value) != std::signbit(feedback.ang)) {
                     // having opposite sign means one is in the 0 ~ 180 region and the other is in 0 ~ -180
                     float alt_error = angle_err > 0 ? (angle_err - 360) : (360 + angle_err);
                     // find the direction with the shortest angle_err value
@@ -213,7 +213,7 @@ void PID_System::task(ThreadPool& threadPool) {
             // Translation Movement Controller
             if(trans_setpoint.type == displacement) {
 
-                trans_disp_out = trans_disp_pid.calculate(trans_setpoint.value - feedback.trans_disp );
+                trans_disp_out = trans_disp_pid.calculate(trans_setpoint.value - feedback.pos );
 
                 // correct deviation due to rotation momentum
                 if(rotat_setpoint.type == displacement) {

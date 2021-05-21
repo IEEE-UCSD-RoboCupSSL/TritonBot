@@ -20,15 +20,15 @@ using namespace boost::asio::ip;
 /*   */
 static BallEKF::BallData dft_bd() {
     BallEKF::BallData rtn;
-    rtn.disp = zero_vec_2d();
-    rtn.vel = zero_vec_2d();
+    rtn.disp = zeroVec2d();
+    rtn.vel = zeroVec2d();
     return rtn;
 } 
 
 
 BallEKF_Module::BallEKF_Module() : ball_data_pub("BallEKF", "BallData", dft_bd()),
-                                   ball_loc_sub("GVision Server", "BallPos(BodyFrame)"),
-                                   ball_vel_sub("GVision Server", "BallVel(BodyFrame)")
+                                   ball_loc_sub("From:UdpReceiveModule", "BallPos(BodyFrame)"),
+                                   ball_vel_sub("From:UdpReceiveModule", "BallVel(BodyFrame)")
 {}
 
 BallEKF_Module::~BallEKF_Module() {} 

@@ -28,7 +28,7 @@ class ControlModule : public Module {
         VF_Commands halt_cmd;
         virtual void init_subscribers(void);
         bool get_enable_signal(void);
-        virtual MotionEKF::MotionData get_ekf_feedbacks(void);
+        virtual MotionEKF::BotData get_ekf_feedbacks(void);
         arma::vec get_kicker_setpoint(void);
         bool get_dribbler_signal(void);       
         SetPoint<arma::vec> get_trans_setpoint(void);
@@ -39,7 +39,7 @@ class ControlModule : public Module {
 
     private:
         ITPS::FieldSubscriber<bool> enable_signal_sub;
-        ITPS::FieldSubscriber< MotionEKF::MotionData > sensor_sub;
+        ITPS::FieldSubscriber< MotionEKF::BotData > sensor_sub;
         ITPS::FieldSubscriber<bool> dribbler_signal_sub;
         ITPS::FieldSubscriber< arma::vec > kicker_setpoint_sub;
         ITPS::FieldSubscriber< SetPoint<arma::vec> > trans_setpoint_sub;

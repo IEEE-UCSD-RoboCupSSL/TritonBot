@@ -67,7 +67,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
 
 
     ITPS::FieldPublisher<bool> safetyEnablePub("From:TcpReceiveModule", "SafetyEnable", false); 
-    ITPS::FieldPublisher< arma::vec > robotOriginInWorldPub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)", zero_vec_2d());
+    ITPS::FieldPublisher< arma::vec > robotOriginInWorldPub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)", zeroVec2d());
     ITPS::FieldPublisher<bool> initSensorsCmdPub("From:TcpReceiveModule", "re/init sensors", false);
     
     ITPS::FieldSubscriber<bool> ballcapStatusSub("From:BallCaptureModule", "isDribbled");

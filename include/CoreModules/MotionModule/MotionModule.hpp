@@ -18,9 +18,9 @@ class MotionModule : public Module {
         enum ReferenceFrame {WorldFrame = 0, BodyFrame = 1};
 
         struct MotionCMD {
-            arma::vec setpoint_3d; // <x, y, \theta> where \theta is the orientation angle 
+            arma::vec setpoint3d; // <x, y, \theta> where \theta is the orientation angle 
             CTRL_Mode mode;
-            ReferenceFrame ref_frame;
+            ReferenceFrame refFrame;
         };
 
 
@@ -41,7 +41,7 @@ class MotionModule : public Module {
         arma::vec bodyframe_origin_w = {0, 0, 0}; // this is a world frame coordinate(w/ angle), which is used to calculate info about body frame
         CTRL::SetPoint<float> rotat_setpoint;
         CTRL::SetPoint<arma::vec> trans_setpoint;
-        ITPS::FieldSubscriber< MotionEKF::MotionData > sensor_sub;
+        ITPS::FieldSubscriber< MotionEKF::BotData > sensor_sub;
         ITPS::FieldSubscriber< arma::vec > robot_origin_w_sub; // robot's origin point (disp(0,0)) with respect to the worldframe (i.e. camera frame)
         ITPS::FieldSubscriber< MotionCMD > command_sub;
         ITPS::FieldPublisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub;

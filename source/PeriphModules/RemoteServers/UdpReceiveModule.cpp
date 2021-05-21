@@ -15,6 +15,7 @@
 #include "Misc/PubSubSystem/ThreadPool.hpp"
 #include "Config/Config.hpp"
 #include "ProtoGenerated/RemoteAPI.pb.h"
+#include "Config/ModuleFrequencies.hpp"
 
 using namespace boost;
 using namespace boost::asio;
@@ -22,12 +23,12 @@ using namespace boost::asio::ip;
 
 static arma::vec transform(arma::vec, float, arma::vec);
 
-static Motion::MotionCMD default_cmd() {
-    Motion::MotionCMD dft_cmd;
-    dft_cmd.setpoint_3d = {0, 0, 0};
-    dft_cmd.mode = Motion::CTRL_Mode::TVRV;
-    dft_cmd.ref_frame = Motion::ReferenceFrame::BodyFrame;
-    return dft_cmd;
+static Motion::MotionCMD defaultCmd() {
+    Motion::MotionCMD dftCmd;
+    dftCmd.setpoint3d = {0, 0, 0};
+    dftCmd.mode = Motion::CTRL_Mode::TVRV;
+    dftCmd.refFrame = Motion::ReferenceFrame::BodyFrame;
+    return dftCmd;
 }
 
 // Implementation of task to be run on this thread
@@ -39,36 +40,36 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
     io_service ios;
-    udp::endpoint ep_listen(udp::v4(), UDP_PORT);
-    udp::socket socket(ios, ep_listen);
+    udp::endpoint ep(udp::v4(), UDP_PORT);
+    udp::socket socket(ios, ep);
 
-    size_t num_received;
-    std::string packet_received;
-    boost::array<char, UDP_RBUF_SIZE> receive_buffer;
+    size_t numReceived;
+    std::string packetReceived;
+    boost::array<char, UDP_RBUF_SIZE> receiveBuffer;
 
 
     /*** Publisher Setup ***/
 
     // Note: will convert received worldframe data to body frame in which bot position is relative to the bot origin
-    ITPS::FieldPublisher<arma::vec> trans_disp_pub("GVision Server", "BotPos(BodyFrame)", zero_vec_2d());
-    ITPS::FieldPublisher<arma::vec> trans_vel_pub("GVision Server", "BotVel(BodyFrame)", zero_vec_2d());
-    ITPS::FieldPublisher<float> rot_disp_pub("GVision Server", "BotAng(BodyFrame)", 0.00);
-    ITPS::FieldPublisher<float> rot_vel_pub("GVision Server", "BotAngVel(BodyFrame)", 0.00);
-    ITPS::FieldPublisher<arma::vec> ball_loc_pub("GVision Server", "BallPos(BodyFrame)", zero_vec_2d());
-    ITPS::FieldPublisher<arma::vec> ball_vel_pub("GVision Server", "BallVel(BodyFrame)", zero_vec_2d());
-    ITPS::FieldPublisher< Motion::MotionCMD > m_cmd_pub("CMD Server", "MotionCMD", default_cmd());
-    ITPS::FieldPublisher< bool > en_autocap_pub("CMD Server", "EnableAutoCap", false);
-    ITPS::FieldPublisher<arma::vec> kicker_pub("Kicker", "KickingSetPoint", zero_vec_2d());
+    ITPS::FieldPublisher<arma::vec> botPosPub("From:UdpReceiveModule", "BotPos(WorldFrame)", zeroVec2d());
+    ITPS::FieldPublisher<arma::vec> botVelPub("From:UdpReceiveModule", "BotVel(WorldFrame)", zeroVec2d());
+    ITPS::FieldPublisher<float> botAngPub("From:UdpReceiveModule", "BotAng(WorldFrame)", 0.00);
+    ITPS::FieldPublisher<float> botAngVelPub("From:UdpReceiveModule", "BotAngVel(WorldFrame)", 0.00);
+    ITPS::FieldPublisher<arma::vec> ballPosPub("From:UdpReceiveModule", "BallPos(WorldFrame)", zeroVec2d());
+    ITPS::FieldPublisher<arma::vec> ballVelPub("From:UdpReceiveModule", "BallVel(WorldFrame)", zeroVec2d());
+    ITPS::FieldPublisher< Motion::MotionCMD > motionCmdPub("From:UdpReceiveModule", "MotionCommand", defaultCmd());
+    ITPS::FieldPublisher< bool > enAutoCapPub("From:UdpReceiveModule", "EnableAutoCap", false);
+    ITPS::FieldPublisher<arma::vec> kickerSetPointPub("From:UdpReceiveModule", "KickingSetPoint", zeroVec2d());
 
     /*** Subscriber setup ***/
-    ITPS::FieldSubscriber<arma::vec> robot_origin_w_sub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
-    ITPS::FieldSubscriber<MotionEKF::MotionData> sensor_sub("MotionEKF", "MotionData");
-    ITPS::FieldSubscriber< Motion::MotionCMD > capture_cmd_sub("From:BallCaptureModule", "MotionCMD");
+    ITPS::FieldSubscriber<arma::vec> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
+    ITPS::FieldSubscriber<MotionEKF::BotData> botProcessedDataSub("MotionEKF", "BotProcessedData");
+    ITPS::FieldSubscriber< Motion::MotionCMD > ballCapMotionCmdSub("From:BallCaptureModule", "MotionCommand");
 
     try {
-        capture_cmd_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        robot_origin_w_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        sensor_sub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        ballCapMotionCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        robotOriginInWorldSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        botProcessedDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
         BLogger logger;
@@ -83,83 +84,76 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     UDPData udpData;
 
 
-    Motion::MotionCMD m_cmd;
-    arma::vec kick_vec2d = {0, 0};
-    arma::vec trans_disp, trans_vel, ball_loc, ball_vel;
-    float rot_disp, rot_vel;
+    Motion::MotionCMD mCmd;
+    arma::vec kickVec2d = {0, 0};
+    arma::vec botPos, botVel, ballPos, ballVel;
+    float botAng, botAngVel;
 
-    while(1) { // has delay (good for reducing high CPU usage)
-        num_received = socket.receive_from(asio::buffer(receive_buffer), ep_listen);
-        packet_received = std::string(receive_buffer.begin(), receive_buffer.begin() + num_received);
-        // logger.log(Info, packet_received);
-        udpData.ParseFromString(packet_received);
+    while(true) {
+        periodic_session([&](){
+            numReceived = socket.receive_from(asio::buffer(receiveBuffer), ep);
+            packetReceived = std::string(receiveBuffer.begin(), receiveBuffer.begin() + numReceived);
+            // logger.log(Info, packetReceived);
+            udpData.ParseFromString(packetReceived);
 
-        // logger.log(Debug, udpData.commanddata().DebugString());
+            // logger.log(Debug, udpData.commanddata().DebugString());
 
-        trans_disp = {udpData.visiondata().bot_pos().x(), udpData.visiondata().bot_pos().y()}; // not transformed yet
-        trans_vel = {udpData.visiondata().bot_vel().x(), udpData.visiondata().bot_vel().y()}; // not transformed yet
-        rot_disp = udpData.visiondata().bot_ang(); // angular data no need to transform
-        rot_vel = udpData.visiondata().bot_ang_vel(); // angular data no need to transform
-        ball_loc = {udpData.visiondata().ball_pos().x(), udpData.visiondata().ball_pos().y()}; // not transformed yet
-        ball_vel = {udpData.visiondata().ball_vel().x(), udpData.visiondata().ball_vel().y()}; // not transformed yet
+            botPos = {udpData.visiondata().bot_pos().x(), udpData.visiondata().bot_pos().y()}; // not transformed yet
+            botVel = {udpData.visiondata().bot_vel().x(), udpData.visiondata().bot_vel().y()}; // not transformed yet
+            botAng = udpData.visiondata().bot_ang(); // angular data no need to transform
+            botAngVel = udpData.visiondata().bot_ang_vel(); // angular data no need to transform
+            ballPos = {udpData.visiondata().ball_pos().x(), udpData.visiondata().ball_pos().y()}; // not transformed yet
+            ballVel = {udpData.visiondata().ball_vel().x(), udpData.visiondata().ball_vel().y()}; // not transformed yet
 
-        // reference frame transformation math
-        arma::vec bot_origin = robot_origin_w_sub.latest_msg();
-        float bot_orien = sensor_sub.latest_msg().rotat_disp;
-        trans_disp = transform(bot_origin, bot_orien, trans_disp);
-        trans_vel = transform(bot_origin, bot_orien, trans_vel);
-        ball_loc = transform(bot_origin, bot_orien, ball_loc);
-        ball_vel = transform(bot_origin, bot_orien, ball_vel);
+            // reference frame transformation math
+            arma::vec botOrigin = robotOriginInWorldSub.latest_msg();
+            float botOrien = botProcessedDataSub.latest_msg().ang;
+            botPos = transform(botOrigin, botOrien, botPos);
+            botVel = transform(botOrigin, botOrien, botVel);
+            ballPos = transform(botOrigin, botOrien, ballPos);
+            ballVel = transform(botOrigin, botOrien, ballVel);
 
-        // These are all body frames
-        trans_disp_pub.publish(trans_disp);
-        trans_vel_pub.publish(trans_vel);
-        rot_disp_pub.publish(rot_disp);
-        rot_vel_pub.publish(rot_vel);
-        ball_loc_pub.publish(ball_loc);
-        ball_vel_pub.publish(ball_vel);
+            // These are all body frames
+            botPosPub.publish(botPos);
+            botVelPub.publish(botVel);
+            botAngPub.publish(botAng);
+            botAngVelPub.publish(botAngVel);
+            ballPosPub.publish(ballPos);
+            ballVelPub.publish(ballVel);
 
-        if(!udpData.commanddata().enable_ball_auto_capture()) {
-            // Listening to remote motion commands
-            en_autocap_pub.publish(false);
-            switch((int)udpData.commanddata().mode()) {
-                case 0: m_cmd.mode = Motion::CTRL_Mode::TDRD; break;
-                case 1: m_cmd.mode = Motion::CTRL_Mode::TDRV; break;
-                case 2: m_cmd.mode = Motion::CTRL_Mode::TVRD; break;
-                case 3: m_cmd.mode = Motion::CTRL_Mode::TVRV; break;
-                case 4: m_cmd.mode = Motion::CTRL_Mode::NSTDRD; break;
-                case 5: m_cmd.mode = Motion::CTRL_Mode::NSTDRV; break;
-                default: m_cmd.mode = Motion::CTRL_Mode::TVRV;
-            }
-            if(udpData.commanddata().is_world_frame()) {
-                m_cmd.ref_frame = Motion::WorldFrame;
+            if(!udpData.commanddata().enable_ball_auto_capture()) {
+                // Listening to remote motion commands
+                enAutoCapPub.publish(false);
+                switch((int)udpData.commanddata().mode()) {
+                    case 0: mCmd.mode = Motion::CTRL_Mode::TDRD; break;
+                    case 1: mCmd.mode = Motion::CTRL_Mode::TDRV; break;
+                    case 2: mCmd.mode = Motion::CTRL_Mode::TVRD; break;
+                    case 3: mCmd.mode = Motion::CTRL_Mode::TVRV; break;
+                    case 4: mCmd.mode = Motion::CTRL_Mode::NSTDRD; break;
+                    case 5: mCmd.mode = Motion::CTRL_Mode::NSTDRV; break;
+                    default: mCmd.mode = Motion::CTRL_Mode::TVRV;
+                }
+                if(udpData.commanddata().is_world_frame()) {
+                    mCmd.refFrame = Motion::WorldFrame;
+                }
+                else {
+                    mCmd.refFrame = Motion::BodyFrame;
+                }
+                mCmd.setpoint3d = {udpData.commanddata().motion_set_point().x(),
+                                    udpData.commanddata().motion_set_point().y(),
+                                    udpData.commanddata().motion_set_point().z()};
+                motionCmdPub.publish(mCmd);
+
+                kickVec2d = {udpData.commanddata().kicker_set_point().x(), udpData.commanddata().kicker_set_point().y()};
+                kickerSetPointPub.publish(kickVec2d);
             }
             else {
-                m_cmd.ref_frame = Motion::BodyFrame;
+                // Listening to internal AutoCapture module's commands
+                enAutoCapPub.publish(true);
+                mCmd = ballCapMotionCmdSub.latest_msg();
+                motionCmdPub.publish(mCmd);
             }
-            m_cmd.setpoint_3d = {udpData.commanddata().motion_set_point().x(),
-                                 udpData.commanddata().motion_set_point().y(),
-                                 udpData.commanddata().motion_set_point().z()};
-            m_cmd_pub.publish(m_cmd);
-
-            kick_vec2d = {udpData.commanddata().kicker_set_point().x(), udpData.commanddata().kicker_set_point().y()};
-            kicker_pub.publish(kick_vec2d);
-
-
-        }
-        else {
-            // Listening to internal AutoCapture module's commands
-            en_autocap_pub.publish(true);
-            m_cmd = capture_cmd_sub.latest_msg();
-            m_cmd_pub.publish(m_cmd);
-
-            // kick_vec2d = {udpData.commanddata().kicker_set_point().x(), udpData.commanddata().kicker_set_point().y()};
-            // kicker_pub.publish(kick_vec2d);
-
-        }
-
-        delay(1);
-
+        }, TO_PERIOD(UDP_RECEIVE_FREQUENCY));
     }
 }
 

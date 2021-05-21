@@ -65,4 +65,4 @@ arma::mat rotation_matrix_2D(double angle_degree);
 arma::mat change_basis_matrix_2D(arma::vec vx, arma::vec vy) ;
 arma::mat wtb_homo_transform(arma::vec robot_position_w, double robot_orient_w);
 
-arma::vec zero_vec_2d(void);
+arma::vec zeroVec2d(void);
