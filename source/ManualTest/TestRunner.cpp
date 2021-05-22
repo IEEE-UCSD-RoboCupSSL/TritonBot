@@ -5,14 +5,14 @@
 
 
 ManualTest* TestRunner::findTest(std::string testName) {
-    auto iter = tests_map.find(testName);
-    if(iter == tests_map.end()) return nullptr;
+    auto iter = testsMap.find(testName);
+    if(iter == testsMap.end()) return nullptr;
     else return iter->second;
 }
 
 
 void TestRunner::printAllAvailableTests() {
-    for(auto it = tests_map.begin(); it != tests_map.end(); it++) {
+    for(auto it = testsMap.begin(); it != testsMap.end(); it++) {
         std::cout << "- " << it->first << std::endl;
     }
 }
@@ -27,8 +27,8 @@ void TestRunner::run(ThreadPool& threadPool) {
 
     // run the tcp module first in order to accept connection from TritonSoccerAI.java
     auto bcPubPtr = new ITPS::FieldPublisher<bool>("From:BallCaptureModule", "isDribbled", false); 
-    std::unique_ptr<TcpReceiveModule> tcpReceiveModule(new TcpReceiveModule());
-    tcpReceiveModule->run(threadPool);
+    TcpReceiveModule tcpReceiveModule;
+    tcpReceiveModule.run(threadPool);
 
     delay(2000);
 

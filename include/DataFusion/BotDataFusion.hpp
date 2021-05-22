@@ -7,7 +7,7 @@ public:
 };
 
 
-class VirtualBotDataFusion : BotDataFusion {
+class VirtualBotDataFusion : public BotDataFusion {
 public:
     BotData calc(BotData sslVisionBotData, McuSensorData);
 };

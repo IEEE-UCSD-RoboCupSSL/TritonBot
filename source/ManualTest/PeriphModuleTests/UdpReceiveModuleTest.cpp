@@ -11,10 +11,10 @@
 #include "Config/Config.hpp"
 
 bool UdpReceiveModuleTest::test(ThreadPool& threadPool) {
-    std::unique_ptr<UdpReceiveModule> udpReceiveModule(new UdpReceiveModule());
+    UdpReceiveModule udpReceiveModule;
     
     // Run the modules
-    udpReceiveModule->run(threadPool);
+    udpReceiveModule.run(threadPool);
 
     // Mock
     ITPS::FieldSubscriber<Command> receivedCommandSub("From:UdpReceiveModule", "Command");

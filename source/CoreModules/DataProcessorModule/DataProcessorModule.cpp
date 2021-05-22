@@ -36,7 +36,6 @@ BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec botOrigin, fl
 
 void DataProcessorModule::task(ThreadPool& threadPool) {
     /*** Subscriber setup ***/
-    ITPS::FieldSubscriber<Command> receivedCommandSub("From:UdpReceiveModule", "Command");
     ITPS::FieldSubscriber<SslVisionData> receivedSslVisionDataSub("From:UdpReceiveModule", "SslVision:BotData&BallData(WorldFrame)");
     ITPS::FieldSubscriber<arma::vec> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
     ITPS::FieldSubscriber<McuSensorData> mcuSensorDataSub("From:McuClientModule", "McuSensorData(BodyFrame)");
@@ -48,14 +47,14 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
     
 
     try {
-        receivedCommandSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         receivedSslVisionDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         mcuSensorDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         cameraDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        robotOriginInWorldSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
         BLogger logger;
-        logger.addTag("[CommandProcessorModule.cpp]");
+        logger.addTag("[DataProcessorModule.cpp]");
         logger.log(Error, std::string(e.what()));
         std::exit(0);
     }

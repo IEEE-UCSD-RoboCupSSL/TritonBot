@@ -11,6 +11,9 @@
 
 void CommandProcessorModule::task(ThreadPool& threadPool) {
 
+    // ITPS::FieldSubscriber<Command> receivedCommandSub("From:UdpReceiveModule", "Command");
+    
+
 
     /*** Subscriber setup ***/
     ITPS::FieldSubscriber< MotionCommand > motionCmdSub("From:UdpReceiveModule", "MotionCommand");

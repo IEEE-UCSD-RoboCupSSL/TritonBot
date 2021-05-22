@@ -7,7 +7,7 @@ public:
 };
 
 
-class VirtualBallDataFusion : BallDataFusion {
+class VirtualBallDataFusion : public BallDataFusion {
 public:
     BallData calc(BallData sslVisionBallData, CameraData cameraData);
 };

@@ -10,21 +10,22 @@
 #include "ManualTest/PeriphModuleTests/TcpReceiveModuleTest.hpp"
 #include "ManualTest/PeriphModuleTests/UdpReceiveModuleTest.hpp"
 #include "ManualTest/CoreModuleTests/ConversionTest.hpp"
-
+#include "ManualTest/CoreModuleTests/DataProcessorModuleTest.hpp"
 
 
 
 class TestRunner {
 public:
     TestRunner() {
-        tests_map["periodic-thread"] = new PeriodicThreadTest();
-        tests_map["pubsub"] = new PubSubTest();
-        tests_map["tcp-receive"] = new TcpReceiveModuleTest();
-        tests_map["udp-receive"] = new UdpReceiveModuleTest();
-        tests_map["conversion"] = new ConversionTest();
+        testsMap["periodic-thread"] = new PeriodicThreadTest();
+        testsMap["pubsub"] = new PubSubTest();
+        testsMap["tcp-receive"] = new TcpReceiveModuleTest();
+        testsMap["udp-receive"] = new UdpReceiveModuleTest();
+        testsMap["conversion"] = new ConversionTest();
+        testsMap["data-processor"] = new DataProcessorModuleTest();
     }
     ~TestRunner() {
-        for(auto it = tests_map.begin(); it != tests_map.end(); it++) {
+        for(auto it = testsMap.begin(); it != testsMap.end(); it++) {
             delete it->second;
         }
     }
@@ -32,7 +33,7 @@ public:
 
 protected:
     ManualTest* findTest(std::string testName);
-    std::unordered_map<std::string, ManualTest*> tests_map;  
+    std::unordered_map<std::string, ManualTest*> testsMap;  
 
 private:
     void printAllAvailableTests();
