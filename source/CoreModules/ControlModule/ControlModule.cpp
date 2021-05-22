@@ -4,7 +4,7 @@
 #include "Misc/Utility/Common.hpp"
 #include "Misc/PubSubSystem/ThreadPool.hpp"
 #include "ProtoGenerated/vFirmware_API.pb.h"
-#include "Misc/Utility/Systime.hpp"
+#include "Misc/Utility/ClockUtil.hpp"
 #include "CoreModules/ControlModule/PidImplementation.hpp"
 #include "CoreModules/EKF-Module/MotionEkfModule.hpp"
 #include <armadillo>

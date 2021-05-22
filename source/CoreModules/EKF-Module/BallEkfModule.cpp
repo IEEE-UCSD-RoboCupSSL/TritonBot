@@ -9,7 +9,7 @@
 #include "ProtoGenerated/messages_robocup_ssl_detection.pb.h"
 #include "ProtoGenerated/messages_robocup_ssl_geometry.pb.h"
 #include "Misc/Utility/Common.hpp"
-#include "Misc/Utility/Systime.hpp"
+#include "Misc/Utility/ClockUtil.hpp"
 
 
 using namespace boost;

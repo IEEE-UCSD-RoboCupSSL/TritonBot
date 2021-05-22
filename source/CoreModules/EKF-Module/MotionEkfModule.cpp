@@ -6,7 +6,7 @@
 #include "ProtoGenerated/vFirmware_API.pb.h"
 #include "Misc/Utility/BoostLogger.hpp"
 #include "Config/Config.hpp"
-#include "Misc/Utility/Systime.hpp"
+#include "Misc/Utility/ClockUtil.hpp"
 
 using namespace boost;
 using namespace boost::asio;

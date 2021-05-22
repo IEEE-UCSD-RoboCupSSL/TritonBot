@@ -5,7 +5,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
 #include "Misc/PubSubSystem/ThreadPool.hpp"
-#include "Misc/Utility/Systime.hpp"
+#include "Misc/Utility/ClockUtil.hpp"
 #include "Misc/Utility/BoostLogger.hpp"
 #include "Misc/Utility/Common.hpp"
 #include "Config/Config.hpp"

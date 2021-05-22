@@ -1,14 +1,18 @@
 #include <thread>
 #include <chrono>
-#include "Misc/Utility/Systime.hpp"
+#include "Misc/Utility/ClockUtil.hpp"
+
+// #define CLOCK_SOURCE high_resolution_clock
+#define CLOCK_SOURCE steady_clock
+
 
 unsigned int millis(void) {
-    auto t = std::chrono::high_resolution_clock::now();
+    auto t = std::chrono::CLOCK_SOURCE::now();
     return (unsigned int)(double(t.time_since_epoch().count()) / 1000000.00f);
 }
 
 unsigned int micros(void) {
-    auto t = std::chrono::high_resolution_clock::now();
+    auto t = std::chrono::CLOCK_SOURCE::now();
     return (unsigned int)(double(t.time_since_epoch().count()) / 1000.00f);
 }
 

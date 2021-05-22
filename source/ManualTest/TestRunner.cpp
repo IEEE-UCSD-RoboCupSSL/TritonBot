@@ -1,5 +1,6 @@
 #include "ManualTest/TestRunner.hpp"
 #include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
+#include "Misc/Utility/ClockUtil.hpp"
 
 
 
@@ -25,9 +26,11 @@ void TestRunner::run(ThreadPool& threadPool) {
     ManualTest *testObject;
 
     // run the tcp module first in order to accept connection from TritonSoccerAI.java
-    ITPS::FieldPublisher<bool> placeHolder("From:BallCaptureModule", "isDribbled", false); 
+    auto bcPubPtr = new ITPS::FieldPublisher<bool>("From:BallCaptureModule", "isDribbled", false); 
     std::unique_ptr<TcpReceiveModule> tcpReceiveModule(new TcpReceiveModule());
     tcpReceiveModule->run(threadPool);
+
+    delay(2000);
 
     while(true) {
         std::cout << "Available Tests:" << std::endl;
@@ -39,12 +42,17 @@ void TestRunner::run(ThreadPool& threadPool) {
 
         testObject = findTest(testName);
         if(testObject == nullptr) {
+            std::cout << "Invalid TestName" << std::endl;
             result = false;
         } else {
+            testObject->ballcapStatusPubMock = bcPubPtr;
             result = testObject->test(threadPool);
         }
 
         std::cout << (result ? "Test Success" : "Test Failed") << "\n" << std::endl;
     }
+
+    delete bcPubPtr;
+    exit(0);
 }
 
