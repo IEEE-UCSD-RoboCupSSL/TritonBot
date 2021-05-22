@@ -77,7 +77,7 @@ BotData ControlModule::get_ekf_feedbacks(void) {
 
 // From WorldFrame(absolute zero degree direction) to BodyFrame(direction the kicker/dribbler points at) coordinates
 arma::mat ControlModule::headless_transform(double robot_orient) {
-    arma::mat rot = rotation_matrix_2D(robot_orient);
+    arma::mat rot = rotationMatrix2D(robot_orient);
     arma::vec unit_vec_x = {1, 0};
     arma::vec unit_vec_y = {0, 1};
     arma::vec Uxy = rot * unit_vec_x;
@@ -222,7 +222,7 @@ void PID_System::task(ThreadPool& threadPool) {
                 else {
                     corr_angle = -rotat_vel_out * PID_TDRV_CORR;
                 }
-                trans_disp_out = rotation_matrix_2D(corr_angle) * trans_disp_out; // correct direction by rotation matrix
+                trans_disp_out = rotationMatrix2D(corr_angle) * trans_disp_out; // correct direction by rotation matrix
 
             }
             else {
@@ -237,7 +237,7 @@ void PID_System::task(ThreadPool& threadPool) {
                 else {
                     corr_angle = -rotat_vel_out * PID_TVRV_CORR;
                 }
-                trans_vel_out = rotation_matrix_2D(corr_angle) * trans_vel_out; // correct direction by rotation matrix
+                trans_vel_out = rotationMatrix2D(corr_angle) * trans_vel_out; // correct direction by rotation matrix
 
             }
 

@@ -9,6 +9,7 @@
 #include "ManualTest/MiscTests/PubSubTest.hpp"
 #include "ManualTest/PeriphModuleTests/TcpReceiveModuleTest.hpp"
 #include "ManualTest/PeriphModuleTests/UdpReceiveModuleTest.hpp"
+#include "ManualTest/CoreModuleTests/ConversionTest.hpp"
 
 
 class TestRunner {
@@ -18,6 +19,7 @@ public:
         tests_map["pubsub"] = new PubSubTest();
         tests_map["tcp-receive"] = new TcpReceiveModuleTest();
         tests_map["udp-receive"] = new UdpReceiveModuleTest();
+        tests_map["conversion"] = new ConversionTest();
     }
     ~TestRunner() {
         for(auto it = tests_map.begin(); it != tests_map.end(); it++) {

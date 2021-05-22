@@ -112,7 +112,7 @@ void MotionModule::move(arma::vec setpoint_3d, CtrlMode mode, ReferenceFrame set
 
             /* a not-so-obvious simplification was done by 
                 * using bot_origin as the bot curr location */
-            arma::mat A = wtb_homo_transform(bot_origin, bot_orien); // world to body homogeneous transformation
+            arma::mat A = WorldtoBodyHomoTransMat(bot_origin, bot_orien); // world to body homogeneous transformation
 
             // setpoint with respect to world reference frame
             arma::vec setpoint_w = {trans_setpoint.value(0), trans_setpoint.value(1), 1}; // homogeneous point end with a 1 (vector end with a 0)
@@ -133,7 +133,7 @@ void MotionModule::move(arma::vec setpoint_3d, CtrlMode mode, ReferenceFrame set
         else { // (Trans) Velocity Control : Homo-transform a homgeneous VECTOR
             arma::vec zero_vec = {0, 0};
             double bot_orien = sensor_sub.latest_msg().ang;
-            arma::mat A = wtb_homo_transform(zero_vec, bot_orien);
+            arma::mat A = WorldtoBodyHomoTransMat(zero_vec, bot_orien);
 
             arma::vec setpoint_w = {trans_setpoint.value(0), trans_setpoint.value(1), 0}; // homogeneous vector end with a 0
 

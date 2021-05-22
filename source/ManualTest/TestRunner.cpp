@@ -44,7 +44,7 @@ void TestRunner::run(ThreadPool& threadPool) {
             result = testObject->test(threadPool);
         }
 
-        std::cout << (result ? "Test Success" : "Test Failed") << std::endl;
+        std::cout << (result ? "Test Success" : "Test Failed") << "\n" << std::endl;
     }
 }
 

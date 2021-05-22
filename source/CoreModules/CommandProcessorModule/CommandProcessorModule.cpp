@@ -9,15 +9,26 @@ void CommandProcessorModule::task(ThreadPool& threadPool) {
 
 
     /*** Subscriber setup ***/
+    ITPS::FieldSubscriber< MotionCommand > motionCmdSub("From:UdpReceiveModule", "MotionCommand");
+    ITPS::FieldSubscriber< bool > enAutoCapSub("From:UdpReceiveModule", "EnableAutoCap");
+    ITPS::FieldSubscriber<arma::vec> kickerSetPointSub("From:UdpReceiveModule", "KickingSetPoint");
+    ITPS::FieldSubscriber<BotData> receivedBotDataSub("From:UdpReceiveModule", "BotData(WorldFrame)");
+    ITPS::FieldSubscriber<BallData> receivedBallDataSub("From:UdpReceiveModule", "BallData(WorldFrame)");
     ITPS::FieldSubscriber<arma::vec> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
     ITPS::FieldSubscriber<BotData> botDataSub("MotionEKF", "BotProcessedData");
     ITPS::FieldSubscriber< MotionCommand > ballCapMotionCmdSub("From:BallCaptureModule", "MotionCommand");
+
 
 
     try {
         ballCapMotionCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         robotOriginInWorldSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         botDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        motionCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        enAutoCapSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        kickerSetPointSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        receivedBallDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        receivedBotDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
         BLogger logger;
@@ -61,18 +72,6 @@ if(!udpData.commanddata().enable_ball_auto_capture()) {
             ballPos = transform(botOrigin, botOrien, ballPos);
             ballVel = transform(botOrigin, botOrien, ballVel);
 
-// for explaination of the math, check motion_module.cpp
-static arma::vec transform(arma::vec origin, float orien, arma::vec point2d) {
-    arma::mat A = wtb_homo_transform(origin, orien); // world to body homogeneous transformation
-    arma::vec p_homo_w = {point2d(0), point2d(1), 1}; // homogeneous point end with a 1 (vector end with a 0)
-    arma::vec p_homo_b = A * p_homo_w; // apply transformation to get the same point represented in the body frame
-    // if division factor is approx. eq to zero
-    if(std::fabs(p_homo_b(2)) < 0.000001) {
-        p_homo_b(2) = 0.000001;
-    }
-    // update setpoint to the setpoint in robot's perspective (cartesean coordinate)
-    arma::vec p_cart_b = {p_homo_b(0)/p_homo_b(2), p_homo_b(1)/p_homo_b(2)}; // the division is to divide the scaling factor, according to rules of homogeneous coord systems
-    return p_cart_b;
-}
+
 
 */

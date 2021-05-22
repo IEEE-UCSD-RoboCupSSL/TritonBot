@@ -22,7 +22,7 @@ void map2(arma::vec& value, range_t from, range_t to) {
     }
 }
 
-arma::mat rotation_matrix_2D(double angle_degree) {
+arma::mat rotationMatrix2D(double angle_degree) {
     double x = to_radian(angle_degree);
     arma::mat rot = {{cos(x), -sin(x)},
                {sin(x),  cos(x)}};
@@ -31,7 +31,7 @@ arma::mat rotation_matrix_2D(double angle_degree) {
 
 // return mat that transforms from: 
 //     standard basis [(1,0), (0,1)] ===> basis [\vec{vx}, \vec{vy}]relative to std basis
-arma::mat change_basis_matrix_2D(arma::vec vx, arma::vec vy) {
+arma::mat changeBasisMatrix2D(arma::vec vx, arma::vec vy) {
     arma::mat P_inv = {{vx(0), vy(0)},
                  {vx(1), vy(1)}};
     return inv(P_inv);
@@ -45,7 +45,7 @@ arma::mat change_basis_matrix_2D(arma::vec vx, arma::vec vy) {
  * robot_position_w : robot's 2d location on the field with respect to the world reference frame (or a.k.a Camera Frame) 
  * robot_orien_w    : robot's orientation with respect to the world reference frame
  * */
-arma::mat wtb_homo_transform(arma::vec robot_position_w, double robot_orien_w) { 
+arma::mat WorldtoBodyHomoTransMat(arma::vec robot_position_w, double robot_orien_w) { 
     /* World frame to body frame transformation 3x3 matrix A for 2D vector, one extra dimension is demanded by homogenous transform
      * 
      * In homogenouse coordinates: a 2d position is written as <x, y, 1>^T, and a2d vector is written as <x, y, 0>^T, written in colunme vectors
@@ -79,7 +79,7 @@ arma::mat wtb_homo_transform(arma::vec robot_position_w, double robot_orien_w) {
      */
 
     // get rotation matrix from robot's orientation
-    arma::mat rot = rotation_matrix_2D(robot_orien_w);
+    arma::mat rot = rotationMatrix2D(robot_orien_w);
     
     // these are regular vector, not homo vec, will convert them mannually in matrix construction
     arma::vec unit_vec_x = {1, 0};
