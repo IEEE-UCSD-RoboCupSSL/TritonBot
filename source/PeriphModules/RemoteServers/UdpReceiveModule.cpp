@@ -42,15 +42,9 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
 
 
     /*** Publisher Setup ***/
-    // for received commands
-    ITPS::FieldPublisher< MotionCommand > motionCmdPub("From:UdpReceiveModule", "MotionCommand", defaultCmd());
-    ITPS::FieldPublisher< bool > enAutoCapPub("From:UdpReceiveModule", "EnableAutoCap", false);
-    ITPS::FieldPublisher<arma::vec> kickerSetPointPub("From:UdpReceiveModule", "KickingSetPoint", zeroVec2d());
-
-    // for received data
-    ITPS::FieldPublisher<BotData> receivedBotDataPub("From:UdpReceiveModule", "BotData(WorldFrame)", defaultBotData());
-    ITPS::FieldPublisher<BallData> receivedBallDataPub("From:UdpReceiveModule", "BallData(WorldFrame)", defaultBallData());
-
+    ITPS::FieldPublisher<Command> receivedCommandPub("From:UdpReceiveModule", "Command", defaultCommand());
+    ITPS::FieldPublisher<SslVisionData> receivedSslVisionDataPub("From:UdpReceiveModule", "SslVision:BotData&BallData(WorldFrame)", defaultSslVisionData());
+    
 
     logger.log(Info, "UDP Receiver Started on Port Number:" + repr(UDP_PORT)
                 + ", Listening to Remote AI Commands... ");
@@ -63,6 +57,10 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     MotionCommand mCmd;
     arma::vec kickVec2d = {0, 0};
 
+    Command cmd;
+    SslVisionData data;
+
+
     while(true) {
         periodic_session([&](){
             numReceived = socket.receive_from(asio::buffer(receiveBuffer), ep);
@@ -72,7 +70,7 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
 
             // logger.log(Debug, udpData.commanddata().DebugString());
             
-            /* publish received data */
+            /* pack received data */
             botData.pos = {udpData.visiondata().bot_pos().x(), udpData.visiondata().bot_pos().y()}; // not transformed yet
             botData.vel = {udpData.visiondata().bot_vel().x(), udpData.visiondata().bot_vel().y()}; // not transformed yet
             botData.ang = udpData.visiondata().bot_ang(); // angular data no need to transform
@@ -83,12 +81,12 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
             ballData.vel = {udpData.visiondata().ball_vel().x(), udpData.visiondata().ball_vel().y()}; // not transformed yet
             ballData.frame = ReferenceFrame::WorldFrame;
 
-            receivedBotDataPub.publish(botData);
-            receivedBallDataPub.publish(ballData);
+            data.botData = botData;
+            data.ballData = ballData;
 
 
-            /* publish received commands */
-            enAutoCapPub.publish(udpData.commanddata().enable_ball_auto_capture());
+            /* pack received commands */
+            cmd.enAutoCap = udpData.commanddata().enable_ball_auto_capture();
             switch((int)udpData.commanddata().mode()) {
                 case 0: mCmd.mode = CtrlMode::TDRD; break;
                 case 1: mCmd.mode = CtrlMode::TDRV; break;
@@ -107,10 +105,14 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
             mCmd.setpoint3d = {udpData.commanddata().motion_set_point().x(),
                                 udpData.commanddata().motion_set_point().y(),
                                 udpData.commanddata().motion_set_point().z()};
-            motionCmdPub.publish(mCmd);
+            cmd.motionCommand = mCmd;
 
             kickVec2d = {udpData.commanddata().kicker_set_point().x(), udpData.commanddata().kicker_set_point().y()};
-            kickerSetPointPub.publish(kickVec2d);
+            cmd.kickerSetPoint = kickVec2d;
+
+            /* publish */
+            receivedSslVisionDataPub.publish(data);
+            receivedCommandPub.publish(cmd);
  
         }, TO_PERIOD(UDP_RECEIVE_FREQUENCY));
     }

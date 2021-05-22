@@ -1,5 +1,5 @@
 #include "ManualTest/CoreModuleTests/ConversionTest.hpp"
-#include "CoreModules/CommandProcessorModule/Conversion.hpp"
+#include "CoreModules/Conversion.hpp"
 
 bool ConversionTest::test(ThreadPool& threadPool) {
     
@@ -10,7 +10,7 @@ bool ConversionTest::test(ThreadPool& threadPool) {
     data.ang = -128.0f;
     arma::vec testPoint = {29.5f, 6.3f};
 
-    auto resultA = transformWorldToBodyFrame(data, testPoint);
+    auto resultA = transformWorldToBodyFrame(data.pos, data.ang, testPoint);
     auto resultB = DEPRECATED_transformWorldToBodyFrame(data.pos, data.ang, testPoint); 
 
     std::cout << resultA << std::endl;

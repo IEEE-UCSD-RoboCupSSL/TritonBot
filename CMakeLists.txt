@@ -83,6 +83,8 @@ aux_source_directory(source/ManualTest/CoreModuleTests CMT_srcs)
 aux_source_directory(source/ManualTest/PeriphModuleTests PMT_srcs)
 aux_source_directory(source/ManualTest/MiscTests MMT_srcs)
 aux_source_directory(source/CoreModules/CommandProcessorModule CP_srcs)
+aux_source_directory(source/CoreModules/DataProcessorModule DP_srcs)
+aux_source_directory(source/DataFusion DF_srcs)
 
 
 
@@ -122,7 +124,7 @@ file(GLOB PROTO_SRC "${CMAKE_CURRENT_SOURCE_DIR}/proto/ProtoGenerated/*.pb.cc")
 #add target to be built
 add_executable(${Target} ${Main_srcs} ${Control_srcs} ${Utility_srcs} ${PROTO_PRIVATE_INC} ${PROTO_SRC}
                ${MCInterface_srcs} ${EKF_srcs} ${Config_srcs} ${Motion_srcs} ${SERV_srcs} ${BCAP_srcs}
-               ${MT_srcs} ${CMT_srcs} ${PMT_srcs} ${MMT_srcs} ${Core_srcs} ${CP_srcs})
+               ${MT_srcs} ${CMT_srcs} ${PMT_srcs} ${MMT_srcs} ${Core_srcs} ${CP_srcs} ${DP_srcs} ${DF_srcs})
 
 ## need to generate proto sources before compiling everything else
 #add_dependencies(${Target} PROTO_GEN)

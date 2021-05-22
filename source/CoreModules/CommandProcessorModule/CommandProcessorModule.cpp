@@ -4,6 +4,10 @@
 #include "Misc/Utility/BoostLogger.hpp"
 #include "Misc/Utility/Common.hpp"
 #include "Config/Config.hpp"
+#include "CoreModules/Conversion.hpp"
+
+
+
 
 void CommandProcessorModule::task(ThreadPool& threadPool) {
 
@@ -12,8 +16,6 @@ void CommandProcessorModule::task(ThreadPool& threadPool) {
     ITPS::FieldSubscriber< MotionCommand > motionCmdSub("From:UdpReceiveModule", "MotionCommand");
     ITPS::FieldSubscriber< bool > enAutoCapSub("From:UdpReceiveModule", "EnableAutoCap");
     ITPS::FieldSubscriber<arma::vec> kickerSetPointSub("From:UdpReceiveModule", "KickingSetPoint");
-    ITPS::FieldSubscriber<BotData> receivedBotDataSub("From:UdpReceiveModule", "BotData(WorldFrame)");
-    ITPS::FieldSubscriber<BallData> receivedBallDataSub("From:UdpReceiveModule", "BallData(WorldFrame)");
     ITPS::FieldSubscriber<arma::vec> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
     ITPS::FieldSubscriber<BotData> botDataSub("MotionEKF", "BotProcessedData");
     ITPS::FieldSubscriber< MotionCommand > ballCapMotionCmdSub("From:BallCaptureModule", "MotionCommand");
@@ -27,8 +29,6 @@ void CommandProcessorModule::task(ThreadPool& threadPool) {
         motionCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         enAutoCapSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         kickerSetPointSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        receivedBallDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        receivedBotDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
         BLogger logger;
@@ -40,14 +40,18 @@ void CommandProcessorModule::task(ThreadPool& threadPool) {
 
 
 
-
-
     while(true) {
-        periodic_session([](){
+        periodic_session([&](){
+
+            
+
 
         }, TO_PERIOD(COMMAND_PROCESSOR_FREQUENCY));
     }
 }
+
+
+
 
 /* 
 

@@ -1,17 +1,13 @@
-#include "CoreModules/CommandProcessorModule/Conversion.hpp"
-#include "Misc/Utility/BoostLogger.hpp"
+#include "CoreModules/Conversion.hpp"
 
 
 
-arma::vec transformWorldToBodyFrame(BotData botDataInWorldFrame, arma::vec pointToTransform) {
-    if(botDataInWorldFrame.frame != ReferenceFrame::WorldFrame) {
-        BLogger logger;
-        logger(Warning) << "[Conversion.cpp] bot data is not in worldframe";
-    }
+arma::vec transformWorldToBodyFrame(arma::vec robotOriginInWorld, float robotAng, arma::vec pointToTransform) {
+
     auto v1 = -pointToTransform;
-    auto v2 = botDataInWorldFrame.pos;
+    auto v2 = robotOriginInWorld;
     auto vt = -(v1 + v2);
-    return rotationMatrix2D(-botDataInWorldFrame.ang) * vt;
+    return rotationMatrix2D(-robotAng) * vt;
 }
 
 

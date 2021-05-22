@@ -13,7 +13,7 @@
 BallCaptureModule::BallCaptureModule() : enable_sub("From:UdpReceiveModule", "EnableAutoCap"),
                                          ball_data_sub("BallEKF", "BallData"),
                                          bot_data_sub("MotionEKF", "BotProcessedData"),
-                                         command_pub("From:BallCaptureModule", "MotionCommand", defaultCmd()),
+                                         command_pub("From:BallCaptureModule", "MotionCommand", defaultMotionCommand()),
                                          ballcap_status_pub("From:BallCaptureModule", "isDribbled", false),
                                          drib_enable_pub("BallCapture", "EnableDribbler", false),
                                          logger() {

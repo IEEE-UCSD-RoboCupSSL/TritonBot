@@ -11,15 +11,21 @@ enum CtrlMode {TDRD = 0, //TDRD: translational displacement & rotational displac
                 NSTDRV = 5  // No slowdown TDRV
                 };
 
-/* WorldFrame: global(player perspective) coordinate representation with the center of the field 
+/* IMPORTANT!!!
+ * WorldFrame: global(player perspective) coordinate representation with the center of the field 
  *             being (0, 0), x axis on the horizontal width line of the field, 
  *             and y axis on the vertical length line of the field. The positive y axis points
  *             at the opponent goal.
  * 
- * BodyFrame: local coordinate representation with the robot geometry center 
+ * BodyFrame: local coordinate representation with the INITIAL robot geometry center 
  *            being (0, 0), x axis on the robot's horizontal, y axis on the vertical.
  *            The positive y axis of BodyFrame points at the front of the robot at which
- *            the dribbler is.    
+ *            the dribbler is. Note that point (0, 0) in BodyFrame refers to the static
+ *            location of the robot when first initialized, which is DIFFERENT(!!!) than the 
+ *            common notion of BodyFrame's (0, 0) which conventionally defined as the
+ *            robot's center that moves as robot moves. The reason for choosing static
+ *            origin is for avoiding the complications involved in having a moving coordinate
+ *            system especially when dealing with a small displacement segment.   
  * 
  * Note: reference frame is only meaningful for vector representation of 
  *       a robot's position/velocity. The angle orientation of the robot
@@ -33,6 +39,12 @@ struct MotionCommand {
     arma::vec setpoint3d; // <x, y, theta> where theta is the orientation angle 
     CtrlMode mode;
     ReferenceFrame frame;
+};
+
+struct Command {
+    MotionCommand motionCommand;
+    bool enAutoCap;
+    arma::vec kickerSetPoint;
 };
 
 
@@ -59,8 +71,30 @@ struct BallData {
     ReferenceFrame frame;
 };
 
-MotionCommand defaultCmd();
+
+struct SslVisionData {
+    BotData botData;
+    BallData ballData;
+};
+
+struct McuSensorData {
+    BotData botData;
+    // ...
+};
+
+struct CameraData {
+    BallData ballData;
+    bool isBallInFov;
+    // ...
+};
+
+
+
+MotionCommand defaultMotionCommand();
+Command defaultCommand();
 BotData defaultBotData();
 BallData defaultBallData();
-
+SslVisionData defaultSslVisionData();
+McuSensorData defaultMcuSensorData();
+CameraData defaultCameraData();
 
