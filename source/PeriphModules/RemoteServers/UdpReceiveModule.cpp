@@ -16,6 +16,7 @@
 #include "Config/Config.hpp"
 #include "ProtoGenerated/RemoteAPI.pb.h"
 #include "Config/ModuleFrequencies.hpp"
+#include "CoreModules/DataCmdTypes.hpp"
 
 using namespace boost;
 using namespace boost::asio;
@@ -41,17 +42,14 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
 
 
     /*** Publisher Setup ***/
-    ITPS::FieldPublisher<arma::vec> botPosPub("From:UdpReceiveModule", "BotPos(WorldFrame)", zeroVec2d());
-    ITPS::FieldPublisher<arma::vec> botVelPub("From:UdpReceiveModule", "BotVel(WorldFrame)", zeroVec2d());
-    ITPS::FieldPublisher<float> botAngPub("From:UdpReceiveModule", "BotAng(WorldFrame)", 0.00);
-    ITPS::FieldPublisher<float> botAngVelPub("From:UdpReceiveModule", "BotAngVel(WorldFrame)", 0.00);
-    ITPS::FieldPublisher<arma::vec> ballPosPub("From:UdpReceiveModule", "BallPos(WorldFrame)", zeroVec2d());
-    ITPS::FieldPublisher<arma::vec> ballVelPub("From:UdpReceiveModule", "BallVel(WorldFrame)", zeroVec2d());
+    // for received commands
     ITPS::FieldPublisher< MotionCommand > motionCmdPub("From:UdpReceiveModule", "MotionCommand", defaultCmd());
     ITPS::FieldPublisher< bool > enAutoCapPub("From:UdpReceiveModule", "EnableAutoCap", false);
     ITPS::FieldPublisher<arma::vec> kickerSetPointPub("From:UdpReceiveModule", "KickingSetPoint", zeroVec2d());
 
-
+    // for received data
+    ITPS::FieldPublisher<BotData> receivedBotDataPub("From:UdpReceiveModule", "BotData(WorldFrame)", defaultBotData());
+    ITPS::FieldPublisher<BallData> receivedBallDataPub("From:UdpReceiveModule", "BallData(WorldFrame)", defaultBallData());
 
 
     logger.log(Info, "UDP Receiver Started on Port Number:" + repr(UDP_PORT)
@@ -60,10 +58,10 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     UDPData udpData;
 
 
+    BotData botData;
+    BallData ballData;
     MotionCommand mCmd;
     arma::vec kickVec2d = {0, 0};
-    arma::vec botPos, botVel, ballPos, ballVel;
-    float botAng, botAngVel;
 
     while(true) {
         periodic_session([&](){
@@ -73,77 +71,49 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
             udpData.ParseFromString(packetReceived);
 
             // logger.log(Debug, udpData.commanddata().DebugString());
+            
+            /* publish received data */
+            botData.pos = {udpData.visiondata().bot_pos().x(), udpData.visiondata().bot_pos().y()}; // not transformed yet
+            botData.vel = {udpData.visiondata().bot_vel().x(), udpData.visiondata().bot_vel().y()}; // not transformed yet
+            botData.ang = udpData.visiondata().bot_ang(); // angular data no need to transform
+            botData.angVel = udpData.visiondata().bot_ang_vel(); // angular data no need to transform
+            botData.frame = ReferenceFrame::WorldFrame;
 
-            botPos = {udpData.visiondata().bot_pos().x(), udpData.visiondata().bot_pos().y()}; // not transformed yet
-            botVel = {udpData.visiondata().bot_vel().x(), udpData.visiondata().bot_vel().y()}; // not transformed yet
-            botAng = udpData.visiondata().bot_ang(); // angular data no need to transform
-            botAngVel = udpData.visiondata().bot_ang_vel(); // angular data no need to transform
-            ballPos = {udpData.visiondata().ball_pos().x(), udpData.visiondata().ball_pos().y()}; // not transformed yet
-            ballVel = {udpData.visiondata().ball_vel().x(), udpData.visiondata().ball_vel().y()}; // not transformed yet
+            ballData.pos = {udpData.visiondata().ball_pos().x(), udpData.visiondata().ball_pos().y()}; // not transformed yet
+            ballData.vel = {udpData.visiondata().ball_vel().x(), udpData.visiondata().ball_vel().y()}; // not transformed yet
+            ballData.frame = ReferenceFrame::WorldFrame;
 
-            // reference frame transformation math
-            arma::vec botOrigin = robotOriginInWorldSub.latest_msg();
-            float botOrien = botDataSub.latest_msg().ang;
-            botPos = transform(botOrigin, botOrien, botPos);
-            botVel = transform(botOrigin, botOrien, botVel);
-            ballPos = transform(botOrigin, botOrien, ballPos);
-            ballVel = transform(botOrigin, botOrien, ballVel);
+            receivedBotDataPub.publish(botData);
+            receivedBallDataPub.publish(ballData);
 
-            // These are all body frames
-            botPosPub.publish(botPos);
-            botVelPub.publish(botVel);
-            botAngPub.publish(botAng);
-            botAngVelPub.publish(botAngVel);
-            ballPosPub.publish(ballPos);
-            ballVelPub.publish(ballVel);
 
-            if(!udpData.commanddata().enable_ball_auto_capture()) {
-                // Listening to remote motion commands
-                enAutoCapPub.publish(false);
-                switch((int)udpData.commanddata().mode()) {
-                    case 0: mCmd.mode = CtrlMode::TDRD; break;
-                    case 1: mCmd.mode = CtrlMode::TDRV; break;
-                    case 2: mCmd.mode = CtrlMode::TVRD; break;
-                    case 3: mCmd.mode = CtrlMode::TVRV; break;
-                    case 4: mCmd.mode = CtrlMode::NSTDRD; break;
-                    case 5: mCmd.mode = CtrlMode::NSTDRV; break;
-                    default: mCmd.mode = CtrlMode::TVRV;
-                }
-                if(udpData.commanddata().is_world_frame()) {
-                    mCmd.refFrame = ReferenceFrame::WorldFrame;
-                }
-                else {
-                    mCmd.refFrame = ReferenceFrame::BodyFrame;
-                }
-                mCmd.setpoint3d = {udpData.commanddata().motion_set_point().x(),
-                                    udpData.commanddata().motion_set_point().y(),
-                                    udpData.commanddata().motion_set_point().z()};
-                motionCmdPub.publish(mCmd);
-
-                kickVec2d = {udpData.commanddata().kicker_set_point().x(), udpData.commanddata().kicker_set_point().y()};
-                kickerSetPointPub.publish(kickVec2d);
+            /* publish received commands */
+            enAutoCapPub.publish(udpData.commanddata().enable_ball_auto_capture());
+            switch((int)udpData.commanddata().mode()) {
+                case 0: mCmd.mode = CtrlMode::TDRD; break;
+                case 1: mCmd.mode = CtrlMode::TDRV; break;
+                case 2: mCmd.mode = CtrlMode::TVRD; break;
+                case 3: mCmd.mode = CtrlMode::TVRV; break;
+                case 4: mCmd.mode = CtrlMode::NSTDRD; break;
+                case 5: mCmd.mode = CtrlMode::NSTDRV; break;
+                default: mCmd.mode = CtrlMode::TVRV;
+            }
+            if(udpData.commanddata().is_world_frame()) {
+                mCmd.frame = ReferenceFrame::WorldFrame;
             }
             else {
-                // Listening to internal AutoCapture module's commands
-                enAutoCapPub.publish(true);
-                mCmd = ballCapMotionCmdSub.latest_msg();
-                motionCmdPub.publish(mCmd);
+                mCmd.frame = ReferenceFrame::BodyFrame;
             }
+            mCmd.setpoint3d = {udpData.commanddata().motion_set_point().x(),
+                                udpData.commanddata().motion_set_point().y(),
+                                udpData.commanddata().motion_set_point().z()};
+            motionCmdPub.publish(mCmd);
+
+            kickVec2d = {udpData.commanddata().kicker_set_point().x(), udpData.commanddata().kicker_set_point().y()};
+            kickerSetPointPub.publish(kickVec2d);
+ 
         }, TO_PERIOD(UDP_RECEIVE_FREQUENCY));
     }
 }
 
-// for explaination of the math, check motion_module.cpp
-static arma::vec transform(arma::vec origin, float orien, arma::vec point2d) {
-    arma::mat A = wtb_homo_transform(origin, orien); // world to body homogeneous transformation
-    arma::vec p_homo_w = {point2d(0), point2d(1), 1}; // homogeneous point end with a 1 (vector end with a 0)
-    arma::vec p_homo_b = A * p_homo_w; // apply transformation to get the same point represented in the body frame
-    // if division factor is approx. eq to zero
-    if(std::fabs(p_homo_b(2)) < 0.000001) {
-        p_homo_b(2) = 0.000001;
-    }
-    // update setpoint to the setpoint in robot's perspective (cartesean coordinate)
-    arma::vec p_cart_b = {p_homo_b(0)/p_homo_b(2), p_homo_b(1)/p_homo_b(2)}; // the division is to divide the scaling factor, according to rules of homogeneous coord systems
-    return p_cart_b;
-}
 

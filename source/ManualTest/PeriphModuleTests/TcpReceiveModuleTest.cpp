@@ -9,7 +9,8 @@
 
 bool TcpReceiveModuleTest::test(ThreadPool& threadPool) {
     
-    std::unique_ptr<TcpReceiveModule> tcpReceiveModule(new TcpReceiveModule());
+    /* TCP receive module already ran by TestRunner */
+
 
     // Mock
     ITPS::FieldPublisher<bool> ballcapStatusPub("From:BallCaptureModule", "isDribbled", false);
@@ -24,8 +25,6 @@ bool TcpReceiveModuleTest::test(ThreadPool& threadPool) {
     });
 
 
-    // Run the module
-    tcpReceiveModule->run(threadPool);
 
     threadPool.joinAll();
     return true;

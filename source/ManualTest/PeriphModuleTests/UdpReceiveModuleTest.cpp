@@ -11,45 +11,80 @@
 #include "Config/Config.hpp"
 
 bool UdpReceiveModuleTest::test(ThreadPool& threadPool) {
-    std::unique_ptr<TcpReceiveModule> tcpReceiveModule(new TcpReceiveModule()); // need to connect first
     std::unique_ptr<UdpReceiveModule> udpReceiveModule(new UdpReceiveModule());
-
-    // Mock
-    ITPS::FieldPublisher<bool> ballcapStatusPub("From:BallCaptureModule", "isDribbled", false);
     
     // Run the modules
-    tcpReceiveModule->run(threadPool);
     udpReceiveModule->run(threadPool);
 
     // Mock
-    ITPS::FieldSubscriber<arma::vec> botPosSub("From:UdpReceiveModule", "BotPos(WorldFrame)");
-    // ITPS::FieldSubscriber<arma::vec> botVelSub("From:UdpReceiveModule", "BotVel(WorldFrame)");
-    // ITPS::FieldSubscriber<float> botAngSub("From:UdpReceiveModule", "BotAng(WorldFrame)");
-    // ITPS::FieldSubscriber<float> botAngVelSub("From:UdpReceiveModule", "BotAngVel(WorldFrame)");
-    ITPS::FieldSubscriber<arma::vec> ballPosSub("From:UdpReceiveModule", "BallPos(WorldFrame)");
-    // ITPS::FieldSubscriber<arma::vec> ballVelSub("From:UdpReceiveModule", "BallVel(WorldFrame)");
-    // ITPS::FieldSubscriber< MotionCommand > motionCmdSub("From:UdpReceiveModule", "MotionCommand");
-    // ITPS::FieldSubscriber< bool > enAutoCapSub("From:UdpReceiveModule", "EnableAutoCap");
-    // ITPS::FieldSubscriber<arma::vec> kickerSetPointSub("From:UdpReceiveModule", "KickingSetPoint");
+    ITPS::FieldSubscriber< MotionCommand > motionCmdSub("From:UdpReceiveModule", "MotionCommand");
+    ITPS::FieldSubscriber< bool > enAutoCapSub("From:UdpReceiveModule", "EnableAutoCap");
+    ITPS::FieldSubscriber<arma::vec> kickerSetPointSub("From:UdpReceiveModule", "KickingSetPoint");
 
-    ITPS::FieldPublisher<arma::vec> robotOriginInWorldPub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)", zeroVec2d());
-    ITPS::FieldPublisher<BotData> botProcessedDataPub("MotionEKF", "BotProcessedData", defaultBotData());
-    ITPS::FieldPublisher< MotionCommand > ballCapMotionCmdPub("From:BallCaptureModule", "MotionCommand", defaultCmd());
+
+    ITPS::FieldSubscriber<BotData> receivedBotDataSub("From:UdpReceiveModule", "BotData(WorldFrame)");
+    ITPS::FieldSubscriber<BallData> receivedBallDataSub("From:UdpReceiveModule", "BallData(WorldFrame)");
+
 
     try {
-        botPosSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        ballPosSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        motionCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        enAutoCapSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        kickerSetPointSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+
+        receivedBallDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        receivedBotDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     } catch(std::exception& e) {}
 
-    delay(5000);
+    delay(std::chrono::milliseconds(1500));
+
+    int modeIdx = 0;
+    std::cout << "Enter 0 to print data: bot-pos | bot-vel | bot-ang | bot-angvel" << std::endl;
+    std::cout << "Enter 1 to print data: ball-pos | ball-vel" << std::endl;
+    std::cout << "Enter 2 to print cmd: motion-cmd" << std::endl;
+    std::cout << "Enter 3 to print cmd: en-auto-cap | kicker-setpoint" << std::endl;
+    std::cout << ">> " << std::flush;
+    scanf("%d", &modeIdx);
 
     while(true) {
-        auto botpos = botPosSub.latest_msg();
-        auto ballpos = ballPosSub.latest_msg();
         
-        std::cout << "bot[" <<  botpos(0) << "," << botpos(1) 
-                  << "] ball[" << ballpos(0) << "," << ballpos(1)  
-                  << "]" << std::endl; 
+        if(modeIdx == 0) {
+            auto botpos = receivedBotDataSub.latest_msg().pos;
+            auto botvel = receivedBotDataSub.latest_msg().vel;    
+            std::cout << "pos[" <<  botpos(0) << "," << botpos(1) 
+                    << "] vel[" << botvel(0) << "," << botvel(1)  
+                    << "]" << " ang[" << receivedBotDataSub.latest_msg().ang
+                    << "]" << " angvel[" << receivedBotDataSub.latest_msg().angVel << "]"
+                    << std::endl;
+        } 
+
+        if(modeIdx == 1) {
+            auto ballpos = receivedBallDataSub.latest_msg().pos;
+            auto ballvel = receivedBallDataSub.latest_msg().vel;    
+            std::cout << "pos[" <<  ballpos(0) << "," << ballpos(1) 
+                    << "] vel[" << ballvel(0) << "," << ballvel(1)  
+                    << "]" << std::endl;
+        } 
+
+        if(modeIdx == 2) {
+            auto mcmd = motionCmdSub.latest_msg();
+            std::string mode;
+            if(mcmd.mode == CtrlMode::TDRD) mode = "TDRD";
+            if(mcmd.mode == CtrlMode::TDRV) mode = "TDRV";
+            if(mcmd.mode == CtrlMode::TVRD) mode = "TVRD";
+            if(mcmd.mode == CtrlMode::TVRV) mode = "TVRV";
+            if(mcmd.mode == CtrlMode::NSTDRD) mode = "NSTDRD";
+            if(mcmd.mode == CtrlMode::NSTDRV) mode = "NSTDRV";
+            std::cout << "setpoint3d[" <<  mcmd.setpoint3d(0) << ","
+                    << mcmd.setpoint3d(1) << "," << mcmd.setpoint3d(2) 
+                    << "] frame[" << (mcmd.frame == ReferenceFrame::WorldFrame 
+                        ? "world" : "body")  << "] mode[" << mode << "]" << std::endl;
+        }
+
+        if(modeIdx == 3) {
+            auto kicksp = kickerSetPointSub.latest_msg();
+            std::cout << "autocap[" << (enAutoCapSub.latest_msg() ? "true" : "false") 
+                      << "] kick-setpoint[" << kicksp(0) << "," << kicksp(1) << "]" << std::endl;
+        }
         delay(std::chrono::milliseconds(10));
     }
 

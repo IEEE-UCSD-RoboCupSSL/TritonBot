@@ -62,7 +62,7 @@ void MotionModule::task(ThreadPool& threadPool) {
     
     while(1) { // has delay (good for reducing high CPU usage)
         auto cmd = command_sub.latest_msg();
-        move(cmd.setpoint3d, cmd.mode, cmd.refFrame);       
+        move(cmd.setpoint3d, cmd.mode, cmd.frame);       
 
         delay(1); 
     }
