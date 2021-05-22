@@ -9,12 +9,9 @@
 
 class Module {
     public:
-        Module() {}
-        ~Module() {}
-
-
-        virtual void task() {}
-        virtual void task(ThreadPool& threadPool) {}
+        virtual ~Module() {}
+        virtual void task() {};
+        virtual void task(ThreadPool& threadPool) {};
         
         //======================Create New Thread Version=================================//
         /* create a new thread and run the module in that thread */

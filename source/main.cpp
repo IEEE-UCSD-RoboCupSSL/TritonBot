@@ -16,6 +16,7 @@
 #include "CoreModules/BallCaptureModule/BallCaptureModule.hpp"
 #include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
 #include "PeriphModules/RemoteServers/UdpReceiveModule.hpp"
+#include "PeriphModules/CameraClientModule/CameraClientModule.hpp"
 //////////////////////////////////////////////////////////
 #include "ManualTest/TestRunner.hpp"
 
@@ -54,6 +55,7 @@ int main(int argc, char *argv[]) {
         std::unique_ptr<UdpReceiveModule> udpReceiveModule(new UdpReceiveModule());
         std::unique_ptr<TcpReceiveModule> tcpReceiveModule(new TcpReceiveModule());
         std::unique_ptr<BallCaptureModule> ballCaptureModule(new BallCaptureModule());
+        std::unique_ptr<CameraClientModule> cameraClientModule(new VirtualCameraClientModule());
         
         
         // Configs

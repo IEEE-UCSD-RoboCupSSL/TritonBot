@@ -39,7 +39,7 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
     ITPS::FieldSubscriber<SslVisionData> receivedSslVisionDataSub("From:UdpReceiveModule", "SslVision:BotData&BallData(WorldFrame)");
     ITPS::FieldSubscriber<arma::vec> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
     ITPS::FieldSubscriber<McuSensorData> mcuSensorDataSub("From:McuClientModule", "McuSensorData(BodyFrame)");
-    ITPS::FieldSubscriber<CameraData> cameraDataSub("From:CameraModule", "CameraData(BodyFrame)");
+    ITPS::FieldSubscriber<CameraData> cameraDataSub("From:CameraClientModule", "CameraData(BodyFrame)");
 
     /*** Publisher setup ***/
     ITPS::FieldPublisher<BotData> filteredBotDataPub("From:DataProcessorModule", "BotData(BodyFrame)", defaultBotData());
