@@ -9,8 +9,8 @@
 BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec botOrigin);
 BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec botOrigin, float botAng);
 
-DataProcessorModule::DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf) 
-    : botFusion(&botdf), ballFusion(&balldf) {
+DataProcessorModule::DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf, Config cfg) 
+    : botFusion(&botdf), ballFusion(&balldf), config(cfg) {
 
 }
 
@@ -62,8 +62,18 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
 
             filteredBotDataPub.publish(filteredBotData);
             filteredBallDataPub.publish(filteredBallData);
-            isHoldingBallPub.publish(mcuSensorDataSub.getMsg().isHoldingBall);
 
+            if(config.cliConfig.isVirtual) {
+                if(config.cliConfig.simulatorName == "grSim") {
+                    auto bcfg = std::static_pointer_cast<GrSimBotConfig>(config.botConfig);
+                    isHoldingBallPub.publish(
+                        bcfg->isHoldingBall(filteredBallData, filteredBotData)
+                    );
+                }
+                // ...
+            } else {
+                isHoldingBallPub.publish(mcuSensorDataSub.getMsg().isHoldingBall);
+            }
         }, TO_PERIOD(COMMAND_PROCESSOR_FREQUENCY));
     }
 }

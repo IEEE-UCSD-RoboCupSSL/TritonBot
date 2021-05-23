@@ -2,11 +2,11 @@
 
 
 
-arma::vec transformWorldToBodyFrame(arma::vec robotOriginInWorld, float robotAng, arma::vec pointToTransform) {
+arma::vec transformWorldToBodyFrame(arma::vec robotOriginInWorld, float robotAng, arma::vec pointToTransformInWorld) {
 
-    auto v1 = -pointToTransform;
-    auto v2 = robotOriginInWorld;
-    auto vt = -(v1 + v2);
+    auto v1 = pointToTransformInWorld;
+    auto v2 = -robotOriginInWorld;
+    auto vt = v1 + v2;
     return rotationMatrix2D(-robotAng) * vt;
 }
 

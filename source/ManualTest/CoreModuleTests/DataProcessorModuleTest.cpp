@@ -12,7 +12,7 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
     VirtualBotDataFusion botFilter;
     VirtualBallDataFusion ballFilter;
 
-    DataProcessorModule dataProcModule(botFilter, ballFilter);
+    DataProcessorModule dataProcModule(botFilter, ballFilter, config);
 
     // Mock
     ITPS::FieldPublisher<SslVisionData> receivedSslVisionDataPub("From:UdpReceiveModule", "SslVision:BotData&BallData(WorldFrame)", defaultSslVisionData());
@@ -63,9 +63,34 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
         auto botPos = filteredBotDataSub.getMsg().pos;
         auto ballPos = filteredBallDataSub.getMsg().pos;
         std::cout << "botpos[" << botPos(0) << "," << botPos(1) << "] ";
-        std::cout << "ballpos[" << ballPos(0) << "," << ballPos(1) << "] " 
-                     "isholdingball[" << (isHoldingBallSub.getMsg() ? "true" : "false") << "]"<<std::endl;
+        std::cout << "ballpos[" << ballPos(0) << "," << ballPos(1) << "] " << std::endl; 
     }
+
+    mockSslVisData.botData.ang = 123; // bot isn't aiming at the ball 
+    mockSslVisData.ballData.pos = {0, 10};
+    mockSslVisData.botData.pos = {0, -105};
+    receivedSslVisionDataPub.publish(mockSslVisData);
+    delay(10);
+    std::cout << "should print false: isholdingball[" << (isHoldingBallSub.getMsg() ? "true" : "false") << "]"<<std::endl;
+    if(isHoldingBallSub.getMsg()) return false;
+
+
+
+
+    mockSslVisData.botData.ang = 0.0f;
+    mockSslVisData.ballData.pos = {0, 10};
+    mockSslVisData.botData.pos = {0, -105};
+    receivedSslVisionDataPub.publish(mockSslVisData);
+    delay(10);
+    /*
+    std::cout << "processed-data: angle[" << filteredBotDataSub.getMsg().ang << "] ";
+    auto botPos = filteredBotDataSub.getMsg().pos;
+    auto ballPos = filteredBallDataSub.getMsg().pos;
+    std::cout << "botpos[" << botPos(0) << "," << botPos(1) << "] ";
+    std::cout << "ballpos[" << ballPos(0) << "," << ballPos(1) << "] " << std::endl; */
+    std::cout << "should print true: isholdingball[" << (isHoldingBallSub.getMsg() ? "true" : "false") << "]"<<std::endl;
+    if(!isHoldingBallSub.getMsg()) return false;
+
 
     threadPool.joinAll();
 

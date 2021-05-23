@@ -24,7 +24,8 @@ public:
 class VirtualBotConfig : public BotConfig {
 public:
     VirtualBotConfig() : BotConfig(true) {}
-
+    virtual ~VirtualBotConfig() {}
+    virtual bool isBallCloseEnoughToBot(BallData ballData, BotData botData) = 0;
 };
 
 
@@ -33,10 +34,10 @@ class GrSimBotConfig : public VirtualBotConfig {
 private:
     // unit: mm
     float const dribblerOffset = 105.0;
-    float const ballNearBotZoneWidth = 250.0; 
-    float const ballNearBotZoneHeight = 200.0;
-    float const holdBallZoneWidth = 80.0;
-    float const holdBallZoneHeight = 20.0;
+    float const ballNearBotZoneWidth = 500.0; 
+    float const ballNearBotZoneHeight = 300.0;
+    float const holdBallZoneWidth = 100.0;
+    float const holdBallZoneHeight = 40.0;
 
 public:
     GrSimBotConfig() : VirtualBotConfig() {}
@@ -48,9 +49,9 @@ public:
             return false;
         }
         arma::vec2 delta = ballData.pos - botData.pos;
-        if (std::abs(delta(0)) < ballNearBotZoneWidth
-            && delta(1) < dribblerOffset + ballNearBotZoneHeight
-            && delta(1) > dribblerOffset - ballNearBotZoneHeight) {
+        if (std::abs(delta(0)) < (ballNearBotZoneWidth / 2.0)
+            && delta(1) < dribblerOffset + (ballNearBotZoneHeight / 2.0)
+            && delta(1) > dribblerOffset - (ballNearBotZoneHeight / 2.0)) {
             return true;
         }
         return false;
@@ -63,9 +64,12 @@ public:
             return false;
         }
         arma::vec2 delta = ballData.pos - botData.pos;
-        if (std::abs(delta(0)) < holdBallZoneWidth
-            && delta(1) < dribblerOffset + holdBallZoneHeight
-            && delta(1) > dribblerOffset - holdBallZoneHeight) {
+
+        // std::cout << delta << std::endl;
+
+        if (std::abs(delta(0)) < (holdBallZoneWidth / 2.0)
+            && delta(1) < dribblerOffset + (holdBallZoneHeight / 2.0)
+            && delta(1) > dribblerOffset - (holdBallZoneHeight / 2.0)) {
             return true;
         }
         return false;
@@ -76,5 +80,8 @@ public:
 class ErForceSimBotConfig : public VirtualBotConfig {
 public:
     ErForceSimBotConfig() : VirtualBotConfig() {}
-
+    bool isBallCloseEnoughToBot(BallData ballData, BotData botData) {
+        // To-do
+        return false;
+    }
 };

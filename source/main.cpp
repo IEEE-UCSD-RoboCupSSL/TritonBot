@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     //bool isTestMode = false;
     //bool isVirtual = processArgs(argc, argv, isTestMode);
     CliConfig cliConfig = processArgs(argc, argv);
-    std::unique_ptr<BotConfig> botConfig;
+    std::shared_ptr<BotConfig> botConfig;
     if(cliConfig.isVirtual) {
         if(cliConfig.simulatorName == "grSim") {
             botConfig = std::unique_ptr<BotConfig>(new GrSimBotConfig());
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    Config cfg(cliConfig, *botConfig);
+    Config cfg(cliConfig, botConfig);
 
 
     // Preallocate Threads 
