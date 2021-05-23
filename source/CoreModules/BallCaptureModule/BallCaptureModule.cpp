@@ -51,25 +51,25 @@ void BallCaptureModule::task(ThreadPool &threadPool) {
     while (true) { // has delay (good for reducing high CPU usage)
 
 //         if(false){
-//             logger.log(Info, "Ball displacement (x, y): ( " + std::to_string(ball_pos_sub.latest_msg()(0)) + " , "
-//                              + std::to_string(ball_pos_sub.latest_msg()(1)) + " )\n");
-// //            logger.log(Info, "Ball velocity (x, y): ( " + std::to_string(ball_velo_sub.latest_msg()(0)) + " , "
-// //                             + std::to_string(ball_velo_sub.latest_msg()(1)) + " )\n");
-// //            logger.log(Info, "Bot displacement (x, y): ( " + std::to_string(bot_data_sub.latest_msg().pos(0)) + " , "
-// //                             + std::to_string(bot_data_sub.latest_msg().pos(1)) + " )\n");
-// //            logger.log(Info, "Delta displacement (x, y): ( " + std::to_string(ball_pos_sub.latest_msg()(0) - bot_data_sub.latest_msg().pos(0)) +
-// //            ", " + std::to_string(ball_pos_sub.latest_msg()(1) - bot_data_sub.latest_msg().pos(1)) + " )\n");
-// //            logger.log(Info, "Bot velocity (x, y): ( " + std::to_string(bot_data_sub.latest_msg().vel(0)) + " , "
-// //                             + std::to_string(bot_data_sub.latest_msg().vel(1)) + " )\n");
-// //            logger.log(Info, "Bot angle (O): ( " + std::to_string(bot_data_sub.latest_msg().ang) + " )\n");
-// //            logger.log(Info, "Bot ang velocity (w): ( " + std::to_string(bot_data_sub.latest_msg().angVel) + " )\n");
+//             logger.log(Info, "Ball displacement (x, y): ( " + std::to_string(ball_pos_sub.getMsg()(0)) + " , "
+//                              + std::to_string(ball_pos_sub.getMsg()(1)) + " )\n");
+// //            logger.log(Info, "Ball velocity (x, y): ( " + std::to_string(ball_velo_sub.getMsg()(0)) + " , "
+// //                             + std::to_string(ball_velo_sub.getMsg()(1)) + " )\n");
+// //            logger.log(Info, "Bot displacement (x, y): ( " + std::to_string(bot_data_sub.getMsg().pos(0)) + " , "
+// //                             + std::to_string(bot_data_sub.getMsg().pos(1)) + " )\n");
+// //            logger.log(Info, "Delta displacement (x, y): ( " + std::to_string(ball_pos_sub.getMsg()(0) - bot_data_sub.getMsg().pos(0)) +
+// //            ", " + std::to_string(ball_pos_sub.getMsg()(1) - bot_data_sub.getMsg().pos(1)) + " )\n");
+// //            logger.log(Info, "Bot velocity (x, y): ( " + std::to_string(bot_data_sub.getMsg().vel(0)) + " , "
+// //                             + std::to_string(bot_data_sub.getMsg().vel(1)) + " )\n");
+// //            logger.log(Info, "Bot angle (O): ( " + std::to_string(bot_data_sub.getMsg().ang) + " )\n");
+// //            logger.log(Info, "Bot ang velocity (w): ( " + std::to_string(bot_data_sub.getMsg().angVel) + " )\n");
 //             delay(100);
 //         }
 
         bool averageResult = false;
 
-        arma::vec ball_pos = ball_data_sub.latest_msg().pos;
-        BotData latest_motion_data = bot_data_sub.latest_msg();
+        arma::vec ball_pos = ball_data_sub.getMsg().pos;
+        BotData latest_motion_data = bot_data_sub.getMsg();
 
         if (check_close_enough(ball_pos, latest_motion_data)) {
             drib_enable_pub.publish(true);
@@ -97,10 +97,10 @@ void BallCaptureModule::task(ThreadPool &threadPool) {
             total = 0;
         }
 
-        if (enable_sub.latest_msg()) {
+        if (enable_sub.getMsg()) {
 
             // if(false){
-            //     logger.log(Info, "[ball capture] dribble status: " + std::to_string(check_ball_captured_V(ball_data_sub.latest_msg().pos, bot_data_sub.latest_msg())));
+            //     logger.log(Info, "[ball capture] dribble status: " + std::to_string(check_ball_captured_V(ball_data_sub.getMsg().pos, bot_data_sub.getMsg())));
             //     delay(100);
             // }
 
@@ -126,7 +126,7 @@ void BallCaptureModule::task(ThreadPool &threadPool) {
 
             // if(true){
             //     logger.log(Info, "[ball capture] capture command (x, y, O) " + std::to_string(command.mode) + " : (" + std::to_string(delta_x) + ", " + std::to_string(delta_y) +
-            //     ", " + std::to_string(angle + bot_data_sub.latest_msg().ang) + ")\n");
+            //     ", " + std::to_string(angle + bot_data_sub.getMsg().ang) + ")\n");
             // }
 
         }

@@ -59,9 +59,9 @@ namespace ITPS {
      *  * subscriber contains constructors to instantiate a message queue
      * 
      *  * One important distinction between Trivial Mode and MQ Mode:
-     *      * Trivial mode's subcriber's getter function "Msg latest_msg(void)" 
+     *      * Trivial mode's subcriber's getter function "Msg getMsg(void)" 
      *        is non-blocking, and might get garbage value when publisher hasn'Msg published anything
-     *      * MQ mode's getter function "Msg pop_msg(void)" is conditionally blocking, when
+     *      * MQ mode's getter function "Msg getMsg(void)" is conditionally blocking, when
      *        the queue is empty, getter's thread gets blocked until something is published into the queue.
      *        Similarly, when the queue is full, the publisher is blocked instead. 
      */
@@ -301,7 +301,7 @@ namespace ITPS {
             }
 
             // Non-blocking Mode getter method
-            Msg latest_msg() {
+            Msg getMsg() {
                 // non-blocking
                 Msg rtn = this->channel->get_msg();
                 // boost::this_thread::sleep_for(boost::chrono::microseconds(AVOID_STARVATION_DELAY));
@@ -309,7 +309,7 @@ namespace ITPS {
             }   
 
             // method reserved for special use case only
-            void force_set_latest_msg(Msg msg) {
+            void forceSetMsg(Msg msg) {
                 this->channel->set_msg(msg);
             }
 
@@ -352,13 +352,13 @@ namespace ITPS {
             }
 
             // For Message Queue Mode only
-            Msg pop_msg() {
+            Msg getMsg() {
                 // conditionally blocking
                 return msg_queue->consume();
             }
 
             // with time limit, if surpassing the timeout limit, return dft_rtn (default return value) 
-            Msg pop_msg(unsigned int timeout_ms, Msg dft_rtn) {
+            Msg getMsg(unsigned int timeout_ms, Msg dft_rtn) {
                 return msg_queue->consume(timeout_ms, dft_rtn);
             }
 

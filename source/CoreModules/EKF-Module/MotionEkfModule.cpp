@@ -51,7 +51,7 @@ void MotionEKF_Module::init_subscribers() {
 
 
 VF_Data MotionEKF_Module::get_firmware_data() {
-    return firm_data_sub.pop_msg();
+    return firm_data_sub.getMsg();
 }
 
 void MotionEKF_Module::publish_motion_data(BotData data) {

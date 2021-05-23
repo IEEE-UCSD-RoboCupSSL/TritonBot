@@ -54,11 +54,11 @@ void BallEKF_Module::publish_ball_data(BallData data) {
 }
 
 arma::vec BallEKF_Module::get_ball_loc() {
-    return ball_loc_sub.latest_msg();
+    return ball_loc_sub.getMsg();
 }
 
 arma::vec BallEKF_Module::get_ball_vel() {
-    return ball_vel_sub.latest_msg();
+    return ball_vel_sub.getMsg();
 }
 
 /*   */

@@ -61,7 +61,7 @@ void MotionModule::task(ThreadPool& threadPool) {
     logger(Info) << "\033[0;32m Loop Started \033[0m";
     
     while(1) { // has delay (good for reducing high CPU usage)
-        auto cmd = command_sub.latest_msg();
+        auto cmd = command_sub.getMsg();
         move(cmd.setpoint3d, cmd.mode, cmd.frame);       
 
         delay(1); 
@@ -101,8 +101,8 @@ void MotionModule::move(arma::vec setpoint_3d, CtrlMode mode, ReferenceFrame set
     if(setpoint_ref_frame == WorldFrame) {
         if(mode == TDRD || mode == TDRV || mode == NSTDRD || mode == NSTDRV) { // Position Control : Homo-transform a homgeneous POINT
         
-            arma::vec bot_origin = robot_origin_w_sub.latest_msg();
-            double bot_orien = sensor_sub.latest_msg().ang;
+            arma::vec bot_origin = robot_origin_w_sub.getMsg();
+            double bot_orien = sensor_sub.getMsg().ang;
 
             /* The math trick here is we define body frame to be (bot_origin_x, bot_origin_y, bot_orien)
              * in which bot_origin_x/y are static, while bot_orien changes along with the moving robot.
@@ -132,7 +132,7 @@ void MotionModule::move(arma::vec setpoint_3d, CtrlMode mode, ReferenceFrame set
         }
         else { // (Trans) Velocity Control : Homo-transform a homgeneous VECTOR
             arma::vec zero_vec = {0, 0};
-            double bot_orien = sensor_sub.latest_msg().ang;
+            double bot_orien = sensor_sub.getMsg().ang;
             arma::mat A = WorldtoBodyHomoTransMat(zero_vec, bot_orien);
 
             arma::vec setpoint_w = {trans_setpoint.value(0), trans_setpoint.value(1), 0}; // homogeneous vector end with a 0

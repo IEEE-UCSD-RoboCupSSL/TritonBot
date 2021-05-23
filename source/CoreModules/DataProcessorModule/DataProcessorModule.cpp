@@ -6,33 +6,13 @@
 #include "Config/Config.hpp"
 #include "CoreModules/Conversion.hpp"
 
-
+BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec botOrigin);
+BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec botOrigin, float botAng);
 
 DataProcessorModule::DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf) 
     : botFusion(&botdf), ballFusion(&balldf) {
 
 }
-
-
-
-BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec botOrigin) {
-    BotData dataBodyFrame;
-    dataBodyFrame.ang = botDataWorldFrame.ang;
-    dataBodyFrame.angVel = botDataWorldFrame.angVel;
-    dataBodyFrame.frame = ReferenceFrame::BodyFrame;
-    dataBodyFrame.pos = transformWorldToBodyFrame(botOrigin, botDataWorldFrame.ang, botDataWorldFrame.pos);
-    dataBodyFrame.vel = transformWorldToBodyFrame(botOrigin, botDataWorldFrame.ang, botDataWorldFrame.vel);
-    return dataBodyFrame;
-}
-
-BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec botOrigin, float botAng) {
-    BallData dataBodyFrame;
-    dataBodyFrame.frame = ReferenceFrame::BodyFrame;
-    dataBodyFrame.pos = transformWorldToBodyFrame(botOrigin, botAng, ballDataWorldFrame.pos);
-    dataBodyFrame.vel = transformWorldToBodyFrame(botOrigin, botAng, ballDataWorldFrame.vel);
-    return dataBodyFrame;
-}
-
 
 void DataProcessorModule::task(ThreadPool& threadPool) {
     /*** Subscriber setup ***/
@@ -44,7 +24,7 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
     /*** Publisher setup ***/
     ITPS::FieldPublisher<BotData> filteredBotDataPub("From:DataProcessorModule", "BotData(BodyFrame)", defaultBotData());
     ITPS::FieldPublisher<BallData> filteredBallDataPub("From:DataProcessorModule", "BallData(BodyFrame)", defaultBallData());
-    
+    ITPS::FieldPublisher<bool> isHoldingBallPub("From:DataProcessorModule", "IsHoldingBall", false);
 
     try {
         receivedSslVisionDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
@@ -72,22 +52,39 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
     while(true) {
         periodic_session([&](){
 
-            botDataBodyFrame = convertToBodyFrame(receivedSslVisionDataSub.latest_msg().botData, 
-                                                robotOriginInWorldSub.latest_msg());
-            ballDataBodyFrame = convertToBodyFrame(receivedSslVisionDataSub.latest_msg().ballData,
-                                    robotOriginInWorldSub.latest_msg(), botDataBodyFrame.ang); 
+            botDataBodyFrame = convertToBodyFrame(receivedSslVisionDataSub.getMsg().botData, 
+                                                robotOriginInWorldSub.getMsg());
+            ballDataBodyFrame = convertToBodyFrame(receivedSslVisionDataSub.getMsg().ballData,
+                                    robotOriginInWorldSub.getMsg(), botDataBodyFrame.ang); 
 
-            filteredBotData = botFilter->calc(botDataBodyFrame, mcuSensorDataSub.latest_msg());
-            filteredBallData = ballFilter->calc(ballDataBodyFrame, cameraDataSub.latest_msg());
+            filteredBotData = botFilter->calc(botDataBodyFrame, mcuSensorDataSub.getMsg());
+            filteredBallData = ballFilter->calc(ballDataBodyFrame, cameraDataSub.getMsg());
 
             filteredBotDataPub.publish(filteredBotData);
             filteredBallDataPub.publish(filteredBallData);
-
+            isHoldingBallPub.publish(mcuSensorDataSub.getMsg().isHoldingBall);
 
         }, TO_PERIOD(COMMAND_PROCESSOR_FREQUENCY));
     }
-
-
-
 }
+
+BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec botOrigin) {
+    BotData dataBodyFrame;
+    dataBodyFrame.ang = botDataWorldFrame.ang;
+    dataBodyFrame.angVel = botDataWorldFrame.angVel;
+    dataBodyFrame.frame = ReferenceFrame::BodyFrame;
+    dataBodyFrame.pos = transformWorldToBodyFrame(botOrigin, botDataWorldFrame.ang, botDataWorldFrame.pos);
+    dataBodyFrame.vel = transformWorldToBodyFrame(botOrigin, botDataWorldFrame.ang, botDataWorldFrame.vel);
+    return dataBodyFrame;
+}
+
+BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec botOrigin, float botAng) {
+    BallData dataBodyFrame;
+    dataBodyFrame.frame = ReferenceFrame::BodyFrame;
+    dataBodyFrame.pos = transformWorldToBodyFrame(botOrigin, botAng, ballDataWorldFrame.pos);
+    dataBodyFrame.vel = transformWorldToBodyFrame(botOrigin, botAng, ballDataWorldFrame.vel);
+    return dataBodyFrame;
+}
+
+
 

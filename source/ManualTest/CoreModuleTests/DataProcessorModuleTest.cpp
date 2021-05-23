@@ -22,7 +22,8 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
     
     ITPS::FieldSubscriber<BotData> filteredBotDataSub("From:DataProcessorModule", "BotData(BodyFrame)");
     ITPS::FieldSubscriber<BallData> filteredBallDataSub("From:DataProcessorModule", "BallData(BodyFrame)");
-    
+    ITPS::FieldSubscriber<bool> isHoldingBallSub("From:DataProcessorModule", "IsHoldingBall");
+
 
 
 
@@ -31,6 +32,7 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
     try {
         filteredBotDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         filteredBallDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        isHoldingBallSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
         BLogger logger;
@@ -57,11 +59,12 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
 
         delay(10);
 
-        std::cout << "processed-data: angle[" << filteredBotDataSub.latest_msg().ang << "] ";
-        auto botPos = filteredBotDataSub.latest_msg().pos;
-        auto ballPos = filteredBallDataSub.latest_msg().pos;
+        std::cout << "processed-data: angle[" << filteredBotDataSub.getMsg().ang << "] ";
+        auto botPos = filteredBotDataSub.getMsg().pos;
+        auto ballPos = filteredBallDataSub.getMsg().pos;
         std::cout << "botpos[" << botPos(0) << "," << botPos(1) << "] ";
-        std::cout << "ballpos[" << ballPos(0) << "," << ballPos(1) << "]" <<std::endl;
+        std::cout << "ballpos[" << ballPos(0) << "," << ballPos(1) << "] " 
+                     "isholdingball[" << (isHoldingBallSub.getMsg() ? "true" : "false") << "]"<<std::endl;
     }
 
     threadPool.joinAll();

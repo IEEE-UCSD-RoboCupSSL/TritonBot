@@ -26,7 +26,7 @@ static void backgndTask(ITPS::FieldSubscriber<bool>& ballcapStatusSub,
 
         std::string sendStr;
         bool ballcapStatus;
-        ballcapStatus = ballcapStatusSub.latest_msg(); 
+        ballcapStatus = ballcapStatusSub.getMsg(); 
         if(ballcapStatus != prevBallCapStatus) {
             if(ballcapStatus) {
                 sendStr = "BallOnHold";

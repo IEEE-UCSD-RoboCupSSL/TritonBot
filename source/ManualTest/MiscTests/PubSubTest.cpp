@@ -31,7 +31,7 @@ bool PubSubTest::test(ThreadPool& threadPool) {
     threadPool.execute([&](){
         auto t0 = CHRONO_NOW;
         while(CHRONO_NOW - t0 < std::chrono::milliseconds(3000)) {
-            std::cout << psPair.sub->latest_msg() << std::endl;
+            std::cout << psPair.sub->getMsg() << std::endl;
             delay(std::chrono::milliseconds(50));     
         }
     });

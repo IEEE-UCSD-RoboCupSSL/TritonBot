@@ -10,28 +10,22 @@
 
 
 void CommandProcessorModule::task(ThreadPool& threadPool) {
-
-    // ITPS::FieldSubscriber<Command> receivedCommandSub("From:UdpReceiveModule", "Command");
-    
+    /*** Publisher setup ***/
+    ITPS::FieldPublisher<bool> dribblerCommand("From:CommandProcessorModule", "DribblerSwitch", false);
+    ITPS::FieldPublisher<arma::vec> kickerSetPoint("From:CommandProcessorModule", "KickerSetPoint(On/Off)", zeroVec2d());
 
 
     /*** Subscriber setup ***/
-    ITPS::FieldSubscriber< MotionCommand > motionCmdSub("From:UdpReceiveModule", "MotionCommand");
-    ITPS::FieldSubscriber< bool > enAutoCapSub("From:UdpReceiveModule", "EnableAutoCap");
-    ITPS::FieldSubscriber<arma::vec> kickerSetPointSub("From:UdpReceiveModule", "KickingSetPoint");
+    ITPS::FieldSubscriber<Command> receivedCommandSub("From:UdpReceiveModule", "Command");
     ITPS::FieldSubscriber<arma::vec> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
-    ITPS::FieldSubscriber<BotData> botDataSub("MotionEKF", "BotProcessedData");
-    ITPS::FieldSubscriber< MotionCommand > ballCapMotionCmdSub("From:BallCaptureModule", "MotionCommand");
-
-
-
+    ITPS::FieldSubscriber<BotData> filteredBotDataSub("From:DataProcessorModule", "BotData(BodyFrame)");
+    ITPS::FieldSubscriber<BallData> filteredBallDataSub("From:DataProcessorModule", "BallData(BodyFrame)");
+    
     try {
-        ballCapMotionCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        receivedCommandSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         robotOriginInWorldSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        botDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        motionCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        enAutoCapSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-        kickerSetPointSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        filteredBallDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        filteredBotDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
         BLogger logger;
@@ -45,6 +39,7 @@ void CommandProcessorModule::task(ThreadPool& threadPool) {
 
     while(true) {
         periodic_session([&](){
+            //dribblerCommand.publish();
 
             
 
@@ -52,6 +47,25 @@ void CommandProcessorModule::task(ThreadPool& threadPool) {
         }, TO_PERIOD(COMMAND_PROCESSOR_FREQUENCY));
     }
 }
+
+/*
+bool isBallCloseEnoughToBot(arma::vec ballPos, BotData botData) {
+    double const PI = 3.1415926;
+    double const X_TRESHOLD = 200.0;
+    double const Y_TRESHOLD = 200.0;
+    double const DRIBBLER_OFFSET = 105.0;
+
+    double delta_x = ball_pos(0) - latest_motion_data.pos(0);
+    double delta_y = ball_pos(1) - latest_motion_data.pos(1);
+
+    if (std::abs(delta_x) < X_TRESHOLD
+        && delta_y < DRIBBLER_OFFSET + Y_TRESHOLD
+        && delta_y > DRIBBLER_OFFSET - Y_TRESHOLD) {
+        return true;
+    }
+
+    return false;
+}*/
 
 
 
@@ -63,7 +77,7 @@ if(!udpData.commanddata().enable_ball_auto_capture()) {
             else {
                 // Listening to internal AutoCapture module's commands
                 enAutoCapPub.publish(true);
-                mCmd = ballCapMotionCmdSub.latest_msg();
+                mCmd = ballCapMotionCmdSub.getMsg();
                 motionCmdPub.publish(mCmd);
             }
 
@@ -72,8 +86,8 @@ if(!udpData.commanddata().enable_ball_auto_capture()) {
 /*
 
             // reference frame transformation math
-            arma::vec botOrigin = robotOriginInWorldSub.latest_msg();
-            float botOrien = botDataSub.latest_msg().ang;
+            arma::vec botOrigin = robotOriginInWorldSub.getMsg();
+            float botOrien = botDataSub.getMsg().ang;
             botPos = transform(botOrigin, botOrien, botPos);
             botVel = transform(botOrigin, botOrien, botVel);
             ballPos = transform(botOrigin, botOrien, ballPos);

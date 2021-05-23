@@ -35,6 +35,7 @@ int main(int argc, char *argv[]) {
     // Process Comandline Arguments
     bool isTestMode = false;
     bool isVirtual = processArgs(argc, argv, isTestMode);
+    // ITPS::FieldPublisher<bool> isVirtualPub("From:main.cpp", "IsVirtualMode", isVirtual);
 
 
     // Preallocate Threads 

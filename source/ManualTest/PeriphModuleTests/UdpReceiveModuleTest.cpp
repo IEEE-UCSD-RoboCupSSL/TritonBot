@@ -52,25 +52,25 @@ bool UdpReceiveModuleTest::test(ThreadPool& threadPool) {
         while(millis() - t0 < 30000) {
 
             if(modeIdx == 0) {
-                auto botpos = receivedSslVisionDataSub.latest_msg().botData.pos;
-                auto botvel = receivedSslVisionDataSub.latest_msg().botData.vel;    
+                auto botpos = receivedSslVisionDataSub.getMsg().botData.pos;
+                auto botvel = receivedSslVisionDataSub.getMsg().botData.vel;    
                 std::cout << "pos[" <<  botpos(0) << "," << botpos(1) 
                         << "] vel[" << botvel(0) << "," << botvel(1)  
-                        << "]" << " ang[" << receivedSslVisionDataSub.latest_msg().botData.ang
-                        << "]" << " angvel[" << receivedSslVisionDataSub.latest_msg().botData.angVel << "]"
+                        << "]" << " ang[" << receivedSslVisionDataSub.getMsg().botData.ang
+                        << "]" << " angvel[" << receivedSslVisionDataSub.getMsg().botData.angVel << "]"
                         << std::endl;
             } 
 
             if(modeIdx == 1) {
-                auto ballpos = receivedSslVisionDataSub.latest_msg().ballData.pos;
-                auto ballvel = receivedSslVisionDataSub.latest_msg().ballData.vel;    
+                auto ballpos = receivedSslVisionDataSub.getMsg().ballData.pos;
+                auto ballvel = receivedSslVisionDataSub.getMsg().ballData.vel;    
                 std::cout << "pos[" <<  ballpos(0) << "," << ballpos(1) 
                         << "] vel[" << ballvel(0) << "," << ballvel(1)  
                         << "]" << std::endl;
             } 
 
             if(modeIdx == 2) {
-                auto mcmd = receivedCommandSub.latest_msg().motionCommand;
+                auto mcmd = receivedCommandSub.getMsg().motionCommand;
                 std::string mode;
                 if(mcmd.mode == CtrlMode::TDRD) mode = "TDRD";
                 if(mcmd.mode == CtrlMode::TDRV) mode = "TDRV";
@@ -85,8 +85,8 @@ bool UdpReceiveModuleTest::test(ThreadPool& threadPool) {
             }
 
             if(modeIdx == 3) {
-                auto kicksp = receivedCommandSub.latest_msg().kickerSetPoint;
-                std::cout << "autocap[" << (receivedCommandSub.latest_msg().enAutoCap ? "true" : "false") 
+                auto kicksp = receivedCommandSub.getMsg().kickerSetPoint;
+                std::cout << "autocap[" << (receivedCommandSub.getMsg().enAutoCap ? "true" : "false") 
                         << "] kick-setpoint[" << kicksp(0) << "," << kicksp(1) << "]" << std::endl;
             }
             delay(std::chrono::milliseconds(10));

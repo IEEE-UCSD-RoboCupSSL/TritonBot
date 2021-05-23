@@ -52,27 +52,27 @@ void ControlModule::init_subscribers(void) {
 }
 
 bool ControlModule::get_enable_signal(void) {
-    return enable_signal_sub.latest_msg();
+    return enable_signal_sub.getMsg();
 }
 
 arma::vec ControlModule::get_kicker_setpoint(void) {
-    return kicker_setpoint_sub.latest_msg();
+    return kicker_setpoint_sub.getMsg();
 }
 
 bool ControlModule::get_dribbler_signal(void) {
-    return dribbler_signal_sub.latest_msg();
+    return dribbler_signal_sub.getMsg();
 }   
 
 CTRL::SetPoint<arma::vec> ControlModule::get_trans_setpoint(void) {
-    return trans_setpoint_sub.latest_msg();
+    return trans_setpoint_sub.getMsg();
 }
 
 CTRL::SetPoint<float> ControlModule::get_rotat_setpoint(void) {
-    return rotat_setpoint_sub.latest_msg();
+    return rotat_setpoint_sub.getMsg();
 }
 
 BotData ControlModule::get_ekf_feedbacks(void) {
-    return sensor_sub.latest_msg();
+    return sensor_sub.getMsg();
 }
 
 // From WorldFrame(absolute zero degree direction) to BodyFrame(direction the kicker/dribbler points at) coordinates
@@ -99,7 +99,7 @@ void ControlModule::publish_output(VF_Commands& cmd) {
 
 
 bool ControlModule::get_no_slowdown(void) {
-    return no_slowdown_sub.latest_msg();
+    return no_slowdown_sub.getMsg();
 }
 
 /*  */
@@ -167,7 +167,7 @@ void PID_System::task(ThreadPool& threadPool) {
             if(get_no_slowdown()) {
                 pid_amplifier = NS_PID_AMP;
             }
-            pid_consts = pid_consts_sub.latest_msg();
+            pid_consts = pid_consts_sub.getMsg();
             rotat_disp_pid.update_pid_consts(pid_consts.RD_Kp, pid_consts.RD_Ki, pid_consts.RD_Kd);
             trans_disp_pid.update_pid_consts(pid_amplifier * pid_consts.TD_Kp, pid_consts.TD_Ki, pid_consts.TD_Kd);
 

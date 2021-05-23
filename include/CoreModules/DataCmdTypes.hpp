@@ -79,7 +79,7 @@ struct SslVisionData {
 
 struct McuSensorData {
     BotData botData;
-    // ...
+    bool isHoldingBall;
 };
 
 struct CameraData {

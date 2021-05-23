@@ -48,6 +48,7 @@ SslVisionData defaultSslVisionData() {
 McuSensorData defaultMcuSensorData() {
     McuSensorData data;
     data.botData = defaultBotData();
+    data.isHoldingBall = false;
     return data;
 }
 CameraData defaultCameraData() {
