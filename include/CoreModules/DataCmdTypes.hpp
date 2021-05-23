@@ -36,7 +36,7 @@ enum ReferenceFrame {WorldFrame = 0, BodyFrame = 1, NotDetermined = 2};
 
 
 struct MotionCommand {
-    arma::vec setpoint3d; // <x, y, theta> where theta is the orientation angle 
+    arma::vec3 setpoint3d; // <x, y, theta> where theta is the orientation angle 
     CtrlMode mode;
     ReferenceFrame frame;
 };
@@ -49,8 +49,8 @@ struct Command {
 
 
 struct BotData {  
-    arma::vec pos;
-    arma::vec vel;
+    arma::vec2 pos;
+    arma::vec2 vel;
     ReferenceFrame frame;
 
     /* Reference frame does not apply
@@ -66,8 +66,8 @@ struct BotData {
 };
 
 struct BallData { 
-    arma::vec pos; 
-    arma::vec vel;  
+    arma::vec2 pos; 
+    arma::vec2 vel;  
     ReferenceFrame frame;
 };
 

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <string>
+#include "Config/Config.hpp"
 #include "Misc/PubSubSystem/ThreadPool.hpp"
 #include "ManualTest/ManualTest.hpp"
 #include "ManualTest/MiscTests/PeriodicThreadTest.hpp"
@@ -14,15 +15,16 @@
 
 
 
+
 class TestRunner {
 public:
-    TestRunner() {
+    TestRunner(Config cfg) : config(cfg) {
         testsMap["periodic-thread"] = new PeriodicThreadTest();
         testsMap["pubsub"] = new PubSubTest();
-        testsMap["tcp-receive"] = new TcpReceiveModuleTest();
-        testsMap["udp-receive"] = new UdpReceiveModuleTest();
+        testsMap["tcp-receive"] = new TcpReceiveModuleTest(config);
+        testsMap["udp-receive"] = new UdpReceiveModuleTest(config);
         testsMap["conversion"] = new ConversionTest();
-        testsMap["data-processor"] = new DataProcessorModuleTest();
+        testsMap["data-processor"] = new DataProcessorModuleTest(config);
     }
     ~TestRunner() {
         for(auto it = testsMap.begin(); it != testsMap.end(); it++) {
@@ -37,6 +39,7 @@ protected:
 
 private:
     void printAllAvailableTests();
+    Config config;
 };
 
 

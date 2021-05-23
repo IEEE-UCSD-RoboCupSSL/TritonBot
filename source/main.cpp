@@ -5,8 +5,11 @@
 #include "Misc/Utility/BoostLogger.hpp"
 #include "Misc/Utility/ClockUtil.hpp"
 #include "Misc/Utility/Common.hpp"
-#include "Config/Config.hpp"
 #include "ProtoGenerated/vFirmware_API.pb.h"
+#include "ManualTest/TestRunner.hpp"
+#include "Config/Config.hpp"
+#include "Config/CliConfig.hpp"
+#include "Config/BotConfig.hpp"
 
 ////////////////////////MODULES///////////////////////////
 #include "CoreModules/EKF-Module/MotionEkfModule.hpp"
@@ -18,7 +21,7 @@
 #include "PeriphModules/RemoteServers/UdpReceiveModule.hpp"
 #include "PeriphModules/CameraClientModule/CameraClientModule.hpp"
 //////////////////////////////////////////////////////////
-#include "ManualTest/TestRunner.hpp"
+
 
 
 std::ostream& operator<<(std::ostream& os, const arma::vec& v);
@@ -33,19 +36,34 @@ int main(int argc, char *argv[]) {
 
 
     // Process Comandline Arguments
-    bool isTestMode = false;
-    bool isVirtual = processArgs(argc, argv, isTestMode);
-    // ITPS::FieldPublisher<bool> isVirtualPub("From:main.cpp", "IsVirtualMode", isVirtual);
+    //bool isTestMode = false;
+    //bool isVirtual = processArgs(argc, argv, isTestMode);
+    CliConfig cliConfig = processArgs(argc, argv);
+    std::unique_ptr<BotConfig> botConfig;
+    if(cliConfig.isVirtual) {
+        if(cliConfig.simulatorName == "grSim") {
+            botConfig = std::unique_ptr<BotConfig>(new GrSimBotConfig());
+        }
+        if(cliConfig.simulatorName == "ErForce") {
+            botConfig = std::unique_ptr<BotConfig>(new ErForceSimBotConfig());     
+        }
+    } else {
+        // WIP
+        return -1;
+    }
+
+    Config cfg(cliConfig, *botConfig);
 
 
     // Preallocate Threads 
     ThreadPool threadPool(THREAD_POOL_SIZE); // pre-allocate # threads in a pool
 
-    if(isTestMode) {
-        TestRunner testRunner;
+    if(cliConfig.isTestMode) {
+        TestRunner testRunner(cfg);
         testRunner.run(threadPool);
         threadPool.stopIosRun();
     } else {
+        /*
 
         // Note: these smart pointer will be freed when exiting this else block (might cause seg fault if not dealt properly, java is so awesome)
         // Construct module instances
@@ -78,6 +96,7 @@ int main(int argc, char *argv[]) {
 
 
         threadPool.joinAll(); // must have it here, or will cause seg fault, think about the scope issue of the smart pointers
+        */
     }
 
     threadPool.joinAll();

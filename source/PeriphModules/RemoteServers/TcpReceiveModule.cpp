@@ -11,38 +11,9 @@
 #include "Config/Config.hpp"
 #include "ProtoGenerated/RemoteAPI.pb.h"
 #include "Config/ModuleFrequencies.hpp"
-
 using namespace boost;
-
 boost::mutex mu;
-
-
-static void backgndTask(ITPS::FieldSubscriber<bool>& ballcapStatusSub, 
-                         asio::ip::tcp::socket& socket) {
-    bool prevBallCapStatus = true; // deliberately set it true to have a extra socket send at the begining
-    auto period = TO_PERIOD(TCP_RECEIVE_FREQUENCY);
-    while(true) { 
-        auto t = CHRONO_NOW;
-
-        std::string sendStr;
-        bool ballcapStatus;
-        ballcapStatus = ballcapStatusSub.getMsg(); 
-        if(ballcapStatus != prevBallCapStatus) {
-            if(ballcapStatus) {
-                sendStr = "BallOnHold";
-            }
-            else {
-                sendStr = "BallOffHold";
-            }
-            mu.lock();
-            asio::write(socket, asio::buffer(sendStr + "\n"));
-            mu.unlock();
-        }
-        prevBallCapStatus = ballcapStatus;
-
-        std::this_thread::sleep_until(t + period);   
-    }
-}
+void backgndTask(ITPS::FieldSubscriber<bool>& ballcapStatusSub, asio::ip::tcp::socket& socket);
 
 
 // Implementation of task to be run on this thread
@@ -51,14 +22,13 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
     logger.addTag("Connection Server Module");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
-
     int fieldLength = 0;
     int fieldWidth = 0;
     int goalDepth = 0;
     int goalWidth = 0;
 
     asio::io_service ios;
-    asio::ip::tcp::endpoint endpoint(asio::ip::tcp::v4(), TCP_PORT);
+    asio::ip::tcp::endpoint endpoint(asio::ip::tcp::v4(), config.cliConfig.tcpPort);
     asio::ip::tcp::acceptor acceptor(ios, endpoint);
     asio::ip::tcp::socket socket(ios);
     asio::streambuf read_buf;
@@ -77,7 +47,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
     
 
 
-    logger.log(Info, "Server Started on Port Number:" + repr(TCP_PORT)
+    logger.log(Info, "Server Started on Port Number:" + repr(config.cliConfig.tcpPort)
                     + ", Awaiting Remote From:TcpReceiveModule...");
 
     try 
@@ -164,3 +134,28 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
  
 }
 
+void backgndTask(ITPS::FieldSubscriber<bool>& ballcapStatusSub, asio::ip::tcp::socket& socket) {
+    bool prevBallCapStatus = true; // deliberately set it true to have a extra socket send at the begining
+    auto period = TO_PERIOD(TCP_RECEIVE_FREQUENCY);
+    while(true) { 
+        auto t = CHRONO_NOW;
+
+        std::string sendStr;
+        bool ballcapStatus;
+        ballcapStatus = ballcapStatusSub.getMsg(); 
+        if(ballcapStatus != prevBallCapStatus) {
+            if(ballcapStatus) {
+                sendStr = "BallOnHold";
+            }
+            else {
+                sendStr = "BallOffHold";
+            }
+            mu.lock();
+            asio::write(socket, asio::buffer(sendStr + "\n"));
+            mu.unlock();
+        }
+        prevBallCapStatus = ballcapStatus;
+
+        std::this_thread::sleep_until(t + period);   
+    }
+}

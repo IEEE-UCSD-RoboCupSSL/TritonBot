@@ -1,19 +1,26 @@
 #pragma once
 #include <string>
+#include "Config/BotConfig.hpp"
+#include "Config/CliConfig.hpp"
+
+struct Config {
+    // pass by copy is fine, configuration stage isn't performance sensitive
+    Config(CliConfig clicfg, BotConfig botcfg) : cliConfig(clicfg), botConfig(botcfg) {}
+    CliConfig cliConfig;
+    BotConfig botConfig;
+};
+
+
 
 const std::size_t UDP_RBUF_SIZE = 1024;
 const std::size_t UDP_WBUF_SIZE = 1024;
 
-extern unsigned int ROBOT_ID;
 
 extern unsigned int THREAD_POOL_SIZE;
 
 extern unsigned int INIT_DELAY;
 extern unsigned int DEFAULT_SUBSCRIBER_TIMEOUT;
 
-
-extern int TCP_PORT;
-extern int UDP_PORT;
 
 
 extern unsigned int SAFETY_EN_TIMEOUT;
@@ -37,10 +44,4 @@ extern float PID_TDRV_CORR;
 extern float PID_TVRV_CORR;
 
 // extern float PID_MAX_ROT_PERC; // maximum allowed rotational velocity in percentage of max vel
-
-bool processArgs(int argc, char *argv[], bool& isTestMode);
-
-
-
-
 

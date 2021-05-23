@@ -33,7 +33,7 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
     io_service ios;
-    udp::endpoint ep(udp::v4(), UDP_PORT);
+    udp::endpoint ep(udp::v4(), config.cliConfig.udpPort);
     udp::socket socket(ios, ep);
 
     size_t numReceived;
@@ -46,7 +46,7 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     ITPS::FieldPublisher<SslVisionData> receivedSslVisionDataPub("From:UdpReceiveModule", "SslVision:BotData&BallData(WorldFrame)", defaultSslVisionData());
     
 
-    logger.log(Info, "UDP Receiver Started on Port Number:" + repr(UDP_PORT)
+    logger.log(Info, "UDP Receiver Started on Port Number:" + repr(config.cliConfig.udpPort)
                 + ", Listening to Remote AI Commands... ");
 
     UDPData udpData;

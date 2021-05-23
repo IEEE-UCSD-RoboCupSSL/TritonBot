@@ -27,7 +27,7 @@ void TestRunner::run(ThreadPool& threadPool) {
 
     // run the tcp module first in order to accept connection from TritonSoccerAI.java
     auto bcPubPtr = new ITPS::FieldPublisher<bool>("From:BallCaptureModule", "isDribbled", false); 
-    TcpReceiveModule tcpReceiveModule;
+    TcpReceiveModule tcpReceiveModule(config);
     tcpReceiveModule.run(threadPool);
 
     delay(2000);

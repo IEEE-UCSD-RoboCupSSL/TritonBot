@@ -11,7 +11,7 @@
 #include "Config/Config.hpp"
 
 bool UdpReceiveModuleTest::test(ThreadPool& threadPool) {
-    UdpReceiveModule udpReceiveModule;
+    UdpReceiveModule udpReceiveModule(config);
     
     // Run the modules
     udpReceiveModule.run(threadPool);

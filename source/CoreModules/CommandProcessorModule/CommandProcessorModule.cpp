@@ -11,7 +11,7 @@
 
 void CommandProcessorModule::task(ThreadPool& threadPool) {
     /*** Publisher setup ***/
-    ITPS::FieldPublisher<bool> dribblerCommand("From:CommandProcessorModule", "DribblerSwitch", false);
+    ITPS::FieldPublisher<bool> dribblerCommand("From:CommandProcessorModule", "dribblerSwitch", false);
     ITPS::FieldPublisher<arma::vec> kickerSetPoint("From:CommandProcessorModule", "KickerSetPoint(On/Off)", zeroVec2d());
 
 
@@ -48,8 +48,8 @@ void CommandProcessorModule::task(ThreadPool& threadPool) {
     }
 }
 
-/*
-bool isBallCloseEnoughToBot(arma::vec ballPos, BotData botData) {
+
+bool check_close_enough(arma::vec ball_pos, BotData latest_motion_data) {
     double const PI = 3.1415926;
     double const X_TRESHOLD = 200.0;
     double const Y_TRESHOLD = 200.0;
@@ -65,7 +65,7 @@ bool isBallCloseEnoughToBot(arma::vec ballPos, BotData botData) {
     }
 
     return false;
-}*/
+}
 
 
 
