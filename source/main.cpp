@@ -32,9 +32,6 @@ int main(int argc, char *argv[]) {
     std::shared_ptr<BotConfig> botConfig;
 
     // Process .ini config
-    if(cliConfig.botConfigFilePath != "") {
-        processIni(cliConfig.botConfigFilePath, *botConfig);
-    }
     if(cliConfig.isVirtual) {
         if(cliConfig.simulatorName == "grSim") {
             botConfig = std::unique_ptr<BotConfig>(new GrSimBotConfig());
@@ -46,7 +43,12 @@ int main(int argc, char *argv[]) {
         // WIP
         return -1;
     }
+    if(cliConfig.botConfigFilePath != "") {
+        processIni(cliConfig.botConfigFilePath, botConfig);
+    }
 
+
+    // Construct the all-in-one config object 
     Config cfg(cliConfig, botConfig);
 
 

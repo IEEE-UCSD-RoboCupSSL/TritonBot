@@ -28,6 +28,7 @@ public:
     virtual bool isBallCloseEnoughToBot(BallData ballData, BotData botData) = 0;
     PIDConstants transDispConsts;
     PIDConstants rotatDispConsts;
+    float noSlowDownPidAmp;
 };
 
 
@@ -90,4 +91,4 @@ public:
 
 
 
-void processIni(std::string filepath, BotConfig& config);
+void processIni(std::string filepath, std::shared_ptr<BotConfig> config);
