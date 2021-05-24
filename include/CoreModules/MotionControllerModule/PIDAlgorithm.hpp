@@ -1,12 +1,10 @@
 /* Author: Hongtao Zhang */
-
-#ifndef __PID_H_
-#define __PID_H_
+#pragma once
 
 #include <iostream>
 
 template <class T> // This PID code can handle (math)vector value
-class PID_Controller {
+class PIDController {
 
     /*
      * This is generic (time domain) PID controller class, which can be configed to be 
@@ -61,9 +59,9 @@ class PID_Controller {
      * 
      * The specific PID formula used here with some unit scaling is discretized as:
      *  u(t) =   [Kp * e(t)] 
-     *         - [Kd * (e(t) - e(t-1))/period_ms] 
+     *         - [Kd * (e(t) - e(t-1))/periodMs] 
      *         + [Ki * sum{ e(0)*period_s + e(1)*period_s ..... + e(t)*period_s }]
-     *  period_ms = millisecond time difference between the current error measurement and the previous error measuremnt
+     *  periodMs = millisecond time difference between the current error measurement and the previous error measuremnt
      *  period_s = unit-in-second version of the above
      * 
      *  the derivative and integral term uses different units to keep the Kp, Kd, Ki constants
@@ -93,30 +91,30 @@ class PID_Controller {
      */
 private:
     
-    bool is_first_time;
-    bool is_fixed_time_interval;
+    bool isFirstTime;
+    bool isFixedTimeInterval;
     T integral;
-    T prev_error;
-    double period_ms; //unit: millisec 
-    double prev_time_ms; // unit: millisec
-    double (*millis_func)(void);
+    T prevError;
+    double periodMs; //unit: millisec 
+    double prevTimeMs; // unit: millisec
+    double (*millisFunc)(void);
     
-    T first_time_handle(T curr_error) {
+    T firstTimeHandle(T curr_error) {
         this->integral = curr_error - curr_error; // a workaround to get zero/zero_vector of a generic type
-        this->prev_error = curr_error;
-        this->is_first_time = false;
+        this->prevError = curr_error;
+        this->isFirstTime = false;
         return Kp * curr_error;
     }
 
 
-    double get_period() {
-        if(this->is_fixed_time_interval) {
-            return this->period_ms;
+    double getPeriod() {
+        if(this->isFixedTimeInterval) {
+            return this->periodMs;
         }
         else {
-            double curr_time_ms = this->millis_func(); 
-            double dt = curr_time_ms - this->prev_time_ms;
-            this->prev_time_ms = curr_time_ms;
+            double curr_time_ms = this->millisFunc(); 
+            double dt = curr_time_ms - this->prevTimeMs;
+            this->prevTimeMs = curr_time_ms;
             // std::cout << dt << std::endl; // debug
             return dt;
         }
@@ -126,42 +124,42 @@ public:
     // proportional, integral and derivative constants
     double Kp, Ki, Kd;
     
-    PID_Controller(double Kp, double Ki, double Kd) {
+    PIDController(double Kp, double Ki, double Kd) {
         this->Kp = Kp;
         this->Ki = Ki;
         this->Kd = Kd;
     }
 
-    void update_pid_consts(double Kp, double Ki, double Kd) {
+    void updatePidConsts(double Kp, double Ki, double Kd) {
         this->Kp = Kp;
         this->Ki = Ki;
         this->Kd = Kd;
     }
 
     // Fixed time interval mode, often coupled with a timer callback 
-    void init(double frequency_Hz) {
-        this->period_ms = (1.00 / frequency_Hz) * 1000.00;
-        this->is_first_time = true;
-        this->is_fixed_time_interval = true;
+    void init(double frequencyHz) {
+        this->periodMs = (1.00 / frequencyHz) * 1000.00;
+        this->isFirstTime = true;
+        this->isFixedTimeInterval = true;
     }
 
     // Dynamic time interval mode, need to pass in a function handle to measure the curr time in millisec 
     void init(double (*millis)(void)) {
-        this->millis_func = millis;
-        this->is_first_time = true;
-        this->is_fixed_time_interval = false;
+        this->millisFunc = millis;
+        this->isFirstTime = true;
+        this->isFixedTimeInterval = false;
     }
 
 
     /** calculate the PID output **/
     /* used when there is only one data source for measuring the error  */
-    T calculate(T curr_error) {
-        if(is_first_time) return first_time_handle(curr_error);
-        double period = get_period();
-        T derivative = (curr_error - prev_error) / period; 
-        this->integral += curr_error * period / 1000.000;
-        T output = (Kp * curr_error) + (Kd * derivative) + (Ki * integral);
-        prev_error = curr_error;
+    T calculate(T currError) {
+        if(isFirstTime) return firstTimeHandle(currError);
+        double period = getPeriod();
+        T derivative = (currError - prevError) / period; 
+        this->integral += currError * period / 1000.000;
+        T output = (Kp * currError) + (Kd * derivative) + (Ki * integral);
+        prevError = currError;
         return output;
     }
     
@@ -172,31 +170,29 @@ public:
 
     /* used when [error measurement] and [error derivative measurement] come
        from different data sources  */
-    T calculate(T curr_error, T error_rate) {
-        if(is_first_time) return first_time_handle(curr_error);
-        double period = get_period(); 
-        this->integral += curr_error * period / 1000.000;
-        T output = (Kp * curr_error) + (Kd * error_rate) + (Ki * integral);
+    T calculate(T currError, T errorRate) {
+        if(isFirstTime) return firstTimeHandle(currError);
+        double period = getPeriod(); 
+        this->integral += currError * period / 1000.000;
+        T output = (Kp * currError) + (Kd * errorRate) + (Ki * integral);
         return output;
     }
     
     /* used when [error] and [error integral] both 
        have their respective way of measuring directly */
-    T calculate_s(T curr_error, T error_sum) {
-        if(is_first_time) return first_time_handle(curr_error);
-        double period = get_period();
-        T derivative = (curr_error - prev_error) / period; 
-        T output = (Kp * curr_error) + (Kd * derivative) + (Ki * error_sum);
+    T calculate_s(T currError, T errorSum) {
+        if(isFirstTime) return firstTimeHandle(currError);
+        double period = getPeriod();
+        T derivative = (currError - prevError) / period; 
+        T output = (Kp * currError) + (Kd * derivative) + (Ki * errorSum);
         return output;
     }
 
     /* used when [error], [error derivative] and [error integral] 
        all have their respective way of measuring directly */
-    T calculate(T curr_error, T error_rate, T error_sum) {
-        return (Kp * curr_error) + (Kd * error_rate) + (Ki * error_sum);
+    T calculate(T currError, T errorRate, T errorSum) {
+        return (Kp * currError) + (Kd * errorRate) + (Ki * errorSum);
     }
     
 
 };
-
-#endif

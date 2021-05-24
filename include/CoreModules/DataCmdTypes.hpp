@@ -107,6 +107,14 @@ struct ControlInput {
     bool isNoSlowDownMode;
 };
 
+struct ControlOutput  {
+    double vx = 0.00, vy = 0.00, omega = 0.00;
+};
+
+
+struct PIDConstants {
+    double Kp = 0, Kd = 0, Ki = 0;
+};
 
 
 
@@ -118,3 +126,5 @@ SslVisionData defaultSslVisionData();
 McuSensorData defaultMcuSensorData();
 CameraData defaultCameraData();
 ControlInput defaultControlInput();
+PIDConstants defaultPIDConstants();
+ControlOutput defaultControlOutput();

@@ -7,7 +7,6 @@
 #include "PeriphModules/RemoteServers/UdpReceiveModule.hpp"
 #include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
 #include "Misc/Utility/Common.hpp"
-#include "CoreModules/MotionModule/MotionModule.hpp"
 #include "Config/Config.hpp"
 
 bool UdpReceiveModuleTest::test(ThreadPool& threadPool) {

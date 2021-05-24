@@ -74,7 +74,7 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
             } else {
                 isHoldingBallPub.publish(mcuSensorDataSub.getMsg().isHoldingBall);
             }
-        }, TO_PERIOD(COMMAND_PROCESSOR_FREQUENCY));
+        }, TO_PERIOD(DATA_PROCESSOR_FREQUENCY));
     }
 }
 

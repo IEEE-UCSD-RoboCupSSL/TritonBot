@@ -73,3 +73,20 @@ ControlInput defaultControlInput() {
     data.isNoSlowDownMode = false;
     return data;
 }
+
+PIDConstants defaultPIDConstants() {
+    PIDConstants pc;
+    pc.Kd = 0.00f;
+    pc.Kp = 0.00f;
+    pc.Ki = 0.00f;
+    return pc;
+}
+
+
+ControlOutput defaultControlOutput() {
+    ControlOutput co;
+    co.vx = 0.00;
+    co.vy = 0.00;
+    co.omega = 0.00;
+    return co;
+}

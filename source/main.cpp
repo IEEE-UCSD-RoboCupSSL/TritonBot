@@ -12,11 +12,6 @@
 #include "Config/BotConfig.hpp"
 
 ////////////////////////MODULES///////////////////////////
-#include "CoreModules/EKF-Module/MotionEkfModule.hpp"
-#include "CoreModules/EKF-Module/BallEkfModule.hpp"
-#include "CoreModules/ControlModule/ControlModule.hpp"
-#include "CoreModules/MotionModule/MotionModule.hpp"
-#include "CoreModules/BallCaptureModule/BallCaptureModule.hpp"
 #include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
 #include "PeriphModules/RemoteServers/UdpReceiveModule.hpp"
 #include "PeriphModules/CameraClientModule/CameraClientModule.hpp"

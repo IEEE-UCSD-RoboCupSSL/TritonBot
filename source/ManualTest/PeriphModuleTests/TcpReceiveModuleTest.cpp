@@ -6,11 +6,23 @@
 #include "Config/ModuleFrequencies.hpp"
 #include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
 #include "ManualTest/TestRunner.hpp"
+#include <cassert>
 
 
 bool TcpReceiveModuleTest::test(ThreadPool& threadPool) {
     
     /* TCP receive module already ran by TestRunner */
+
+    ITPS::FieldSubscriber<bool> safetyEnableSub("From:TcpReceiveModule", "SafetyEnable"); 
+    try {
+        safetyEnableSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+    }
+    catch(std::exception& e) {
+        BLogger logger;
+        logger.addTag("[TcpReceiveModuleTest.cpp]");
+        logger.log(Error, std::string(e.what()));
+        std::exit(0);
+    }
 
 
     threadPool.execute([&](){
@@ -24,6 +36,9 @@ bool TcpReceiveModuleTest::test(ThreadPool& threadPool) {
     });
 
     std::cout << "This test will quit in 8 seconds" << std::endl;
+
+    assert(safetyEnableSub.getMsg() == true);
+
 
     delay(8000);
 
