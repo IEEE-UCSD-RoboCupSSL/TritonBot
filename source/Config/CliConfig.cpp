@@ -12,10 +12,11 @@ void help_print(BLogger& logger) {
     std::stringstream ss;
     ss << "\nCommand: \n"
        << "For Virtual Robots on the Simulator: \n"
-       << "\t./TritonBot.exe (-v) (-t) (-d) <port_base> \n\n"
+       << "\t./TritonBot.exe (-v) (-t) (-d) (-c <path_to_config_file>) <port_base> \n"
        << "\t\t-v: for controlling virtual robots in the simulator\n"
-       << "\t\t-t: test mode"
-       << "\t\t-d: debug mode"
+       << "\t\t-t: test mode\n"
+       << "\t\t-d: debug mode\n"
+       << "\t\t-c <file path>: desinated a robot config file (.ini file)\n"
        << "\t\t<port_base>: specify the port base number to host the servers of THIS program on (port_base), (port_base+1) \n"
        << "For Real Robots: \n"
        << "\t(WORK IN PROGRESS, NOT SUPPORTED FOR NOW)\n";
@@ -25,34 +26,46 @@ void help_print(BLogger& logger) {
 
 CliConfig processArgs(int argc, char *argv[]) {
     BLogger logger;
-    logger.addTag("CMDArgument Processor");
+    logger.addTag("CLI config");
 
     CliConfig config;
 
     char option;
-    while ( (option = getopt(argc, argv,":vtd")) != -1 ) {
+    while ( (option = getopt(argc, argv,"c:vtdh")) != -1 ) {
         switch(option) {
-            case 'v':
+            case 'v': 
                 config.isVirtual = true;
                 logger(Info) << "[VirtualMode] enabled";
                 break;
-            case 't':
+            case 't': 
                 config.isTestMode = true;
                 logger(Info) << "[TestMode] enabled";
                 break;
             case 'd':
                 BLogger::sink->set_filter(severity >= Debug);
+                logger(Info) << "[DebugMode] enabled";
                 break;
             /* case 'i':
                 config.robotId = std::stoi(optarg);
                 break; */
-            case '?':
+            case 'c':
+                config.botConfigFilePath = std::string(optarg);
+                logger.log(Info, "Config file desinated: " + config.botConfigFilePath);
+                break;
+            case 'h': {
+                BLogger helpLogger;
+                help_print(helpLogger);
+                std::exit(0);
+                break;
+            }
+            case '?': {
                 BLogger errLogger;
                 errLogger.addTag("[setting.cpp]");
                 errLogger.log(Error, std::string("Unknown option: ").append(1, (char)optopt));
-                help_print(logger);
+                help_print(errLogger);
                 std::exit(0);
                 break;
+            }
         }
     }
 

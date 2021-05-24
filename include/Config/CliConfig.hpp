@@ -8,6 +8,7 @@ struct CliConfig {
     unsigned int tcpPort = 6000;
     unsigned int udpPort = 6001;
     std::string simulatorName = "grSim";
+    std::string botConfigFilePath = "";
 };
 
 CliConfig processArgs(int argc, char *argv[]);

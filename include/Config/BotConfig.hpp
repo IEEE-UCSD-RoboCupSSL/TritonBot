@@ -26,6 +26,8 @@ public:
     VirtualBotConfig() : BotConfig(true) {}
     virtual ~VirtualBotConfig() {}
     virtual bool isBallCloseEnoughToBot(BallData ballData, BotData botData) = 0;
+    PIDConstants transDispConsts;
+    PIDConstants rotatDispConsts;
 };
 
 
@@ -85,3 +87,7 @@ public:
         return false;
     }
 };
+
+
+
+void processIni(std::string filepath, BotConfig& config);

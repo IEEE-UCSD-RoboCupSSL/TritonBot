@@ -27,14 +27,14 @@ int main(int argc, char *argv[]) {
     BLogger::setToShorterFormat();
     BLogger::sink->set_filter(severity >= Info);
     
-    // Process Json configurations
-
-
     // Process Comandline Arguments
-    //bool isTestMode = false;
-    //bool isVirtual = processArgs(argc, argv, isTestMode);
     CliConfig cliConfig = processArgs(argc, argv);
     std::shared_ptr<BotConfig> botConfig;
+
+    // Process .ini config
+    if(cliConfig.botConfigFilePath != "") {
+        processIni(cliConfig.botConfigFilePath, *botConfig);
+    }
     if(cliConfig.isVirtual) {
         if(cliConfig.simulatorName == "grSim") {
             botConfig = std::unique_ptr<BotConfig>(new GrSimBotConfig());

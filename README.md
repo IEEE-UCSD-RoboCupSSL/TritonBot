@@ -41,4 +41,5 @@ if you aren't familiar with using vscode:
         *  Markdown All in One
         *  vscode-icons
         *  Live Share (highly recommended for teamwork)
+        *  Txt Syntax
 
