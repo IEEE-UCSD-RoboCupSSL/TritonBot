@@ -7,18 +7,18 @@
 
 
 
-static CTRL::SetPoint<arma::vec> default_trans_sp() {
-    CTRL::SetPoint<arma::vec> rtn;
+static SetPoint<arma::vec> default_trans_sp() {
+    SetPoint<arma::vec> rtn;
     arma::vec zero_vec = {0, 0};
     rtn.value = zero_vec;
-    rtn.type = CTRL::SetPointType::velocity;
+    rtn.type = SetPointType::velocity;
     return rtn;
 }
 
-static CTRL::SetPoint<float> default_rot_sp() {
-    CTRL::SetPoint<float> rtn;
+static SetPoint<float> default_rot_sp() {
+    SetPoint<float> rtn;
     rtn.value = 0;
-    rtn.type = CTRL::SetPointType::velocity;
+    rtn.type = SetPointType::velocity;
     return rtn;
 }
 
@@ -73,23 +73,23 @@ void MotionModule::task(ThreadPool& threadPool) {
 
 void MotionModule::move(arma::vec setpoint_3d, CtrlMode mode, ReferenceFrame setpoint_ref_frame) { // default: setpoint frame is world frame
     switch(mode) {
-        case TDRD: trans_setpoint.type = CTRL::displacement;
-                   rotat_setpoint.type = CTRL::displacement;
+        case TDRD: trans_setpoint.type = SetPointType::displacement;
+                   rotat_setpoint.type = SetPointType::displacement;
                    break;
-        case TDRV: trans_setpoint.type = CTRL::displacement;
-                   rotat_setpoint.type = CTRL::velocity;
+        case TDRV: trans_setpoint.type = SetPointType::displacement;
+                   rotat_setpoint.type = SetPointType::velocity;
                    break;
-        case TVRD: trans_setpoint.type = CTRL::velocity;
-                   rotat_setpoint.type = CTRL::displacement;
+        case TVRD: trans_setpoint.type = SetPointType::velocity;
+                   rotat_setpoint.type = SetPointType::displacement;
                    break;
-        case TVRV: trans_setpoint.type = CTRL::velocity;
-                   rotat_setpoint.type = CTRL::velocity;
+        case TVRV: trans_setpoint.type = SetPointType::velocity;
+                   rotat_setpoint.type = SetPointType::velocity;
                    break;
-        case NSTDRD: trans_setpoint.type = CTRL::displacement;
-                     rotat_setpoint.type = CTRL::displacement;
+        case NSTDRD: trans_setpoint.type = SetPointType::displacement;
+                     rotat_setpoint.type = SetPointType::displacement;
                      break;
-        case NSTDRV: trans_setpoint.type = CTRL::displacement;
-                     rotat_setpoint.type = CTRL::velocity;
+        case NSTDRV: trans_setpoint.type = SetPointType::displacement;
+                     rotat_setpoint.type = SetPointType::velocity;
                      break;
     }
 

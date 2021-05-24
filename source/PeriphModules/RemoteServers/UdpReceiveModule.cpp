@@ -22,7 +22,6 @@ using namespace boost;
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
-static arma::vec transform(arma::vec, float, arma::vec);
 
 // Implementation of task to be run on this thread
 void UdpReceiveModule::task(ThreadPool& threadPool) {
@@ -55,7 +54,7 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     BotData botData;
     BallData ballData;
     MotionCommand mCmd;
-    arma::vec kickVec2d = {0, 0};
+    arma::vec2 kickVec2d = {0, 0};
 
     Command cmd;
     SslVisionData data;

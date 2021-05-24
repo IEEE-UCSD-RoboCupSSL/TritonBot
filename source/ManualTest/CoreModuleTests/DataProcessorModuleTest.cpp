@@ -7,6 +7,7 @@
 #include "Misc/Utility/ClockUtil.hpp"
 #include "Misc/Utility/BoostLogger.hpp"
 #include "Config/Config.hpp"
+#include <cassert>
 
 bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
     VirtualBotDataFusion botFilter;
@@ -16,7 +17,7 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
 
     // Mock
     ITPS::FieldPublisher<SslVisionData> receivedSslVisionDataPub("From:UdpReceiveModule", "SslVision:BotData&BallData(WorldFrame)", defaultSslVisionData());
-    ITPS::FieldPublisher<arma::vec> robotOriginInWorldPub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)", zeroVec2d());
+    ITPS::FieldPublisher<arma::vec2> robotOriginInWorldPub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)", zeroVec2d());
     ITPS::FieldPublisher<McuSensorData> mcuSensorDataPub("From:McuClientModule", "McuSensorData(BodyFrame)", defaultMcuSensorData());
     ITPS::FieldPublisher<CameraData> cameraDataPub("From:CameraClientModule", "CameraData(BodyFrame)", defaultCameraData());
     
@@ -71,8 +72,8 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
     mockSslVisData.botData.pos = {0, -105};
     receivedSslVisionDataPub.publish(mockSslVisData);
     delay(10);
-    std::cout << "should print false: isholdingball[" << (isHoldingBallSub.getMsg() ? "true" : "false") << "]"<<std::endl;
-    if(isHoldingBallSub.getMsg()) return false;
+    //std::cout << "should print false: isholdingball[" << (isHoldingBallSub.getMsg() ? "true" : "false") << "]"<<std::endl;
+    assert(isHoldingBallSub.getMsg() == false);
 
 
 
@@ -88,13 +89,10 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
     auto ballPos = filteredBallDataSub.getMsg().pos;
     std::cout << "botpos[" << botPos(0) << "," << botPos(1) << "] ";
     std::cout << "ballpos[" << ballPos(0) << "," << ballPos(1) << "] " << std::endl; */
-    std::cout << "should print true: isholdingball[" << (isHoldingBallSub.getMsg() ? "true" : "false") << "]"<<std::endl;
-    if(!isHoldingBallSub.getMsg()) return false;
+    // std::cout << "should print true: isholdingball[" << (isHoldingBallSub.getMsg() ? "true" : "false") << "]"<<std::endl;
+    assert(isHoldingBallSub.getMsg() == true);
 
 
     threadPool.joinAll();
-
-    
-
     return true;
 }

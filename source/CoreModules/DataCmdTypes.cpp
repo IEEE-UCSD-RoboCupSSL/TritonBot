@@ -51,9 +51,25 @@ McuSensorData defaultMcuSensorData() {
     data.isHoldingBall = false;
     return data;
 }
+
 CameraData defaultCameraData() {
     CameraData data;
     data.ballData = defaultBallData();
     data.isBallInFov = false;
+    return data;
+}
+
+
+ControlInput defaultControlInput() {
+    ControlInput data;
+    SetPoint<arma::vec2> transsp;
+    transsp.type = SetPointType::velocity;
+    transsp.value = {0.0f, 0.0f};
+    SetPoint<float> rotsp;
+    rotsp.type = SetPointType::velocity;
+    rotsp.value = 0.0f;
+    data.translationalSetPoint = transsp;
+    data.rotationalSetPoint = rotsp;
+    data.isNoSlowDownMode = false;
     return data;
 }

@@ -12,6 +12,7 @@
 #include "ManualTest/PeriphModuleTests/UdpReceiveModuleTest.hpp"
 #include "ManualTest/CoreModuleTests/ConversionTest.hpp"
 #include "ManualTest/CoreModuleTests/DataProcessorModuleTest.hpp"
+#include "ManualTest/CoreModuleTests/CommandProcessorModuleTest.hpp"
 
 
 
@@ -25,6 +26,7 @@ public:
         testsMap["udp-receive"] = new UdpReceiveModuleTest(config);
         testsMap["conversion"] = new ConversionTest();
         testsMap["data-processor"] = new DataProcessorModuleTest(config);
+        testsMap["cmd-processor"] = new CommandProcessorModuleTest(config);
     }
     ~TestRunner() {
         for(auto it = testsMap.begin(); it != testsMap.end(); it++) {

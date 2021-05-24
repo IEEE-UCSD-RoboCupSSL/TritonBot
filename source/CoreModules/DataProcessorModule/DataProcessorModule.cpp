@@ -6,8 +6,8 @@
 #include "Config/Config.hpp"
 #include "CoreModules/Conversion.hpp"
 
-BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec botOrigin);
-BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec botOrigin, float botAng);
+BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec2 botOrigin);
+BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec2 botOrigin, float botAng);
 
 DataProcessorModule::DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf, Config cfg) 
     : botFusion(&botdf), ballFusion(&balldf), config(cfg) {
@@ -17,7 +17,7 @@ DataProcessorModule::DataProcessorModule(BotDataFusion& botdf, BallDataFusion& b
 void DataProcessorModule::task(ThreadPool& threadPool) {
     /*** Subscriber setup ***/
     ITPS::FieldSubscriber<SslVisionData> receivedSslVisionDataSub("From:UdpReceiveModule", "SslVision:BotData&BallData(WorldFrame)");
-    ITPS::FieldSubscriber<arma::vec> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
+    ITPS::FieldSubscriber<arma::vec2> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
     ITPS::FieldSubscriber<McuSensorData> mcuSensorDataSub("From:McuClientModule", "McuSensorData(BodyFrame)");
     ITPS::FieldSubscriber<CameraData> cameraDataSub("From:CameraClientModule", "CameraData(BodyFrame)");
 
@@ -78,21 +78,21 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
     }
 }
 
-BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec botOrigin) {
+BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec2 botOrigin) {
     BotData dataBodyFrame;
     dataBodyFrame.ang = botDataWorldFrame.ang;
     dataBodyFrame.angVel = botDataWorldFrame.angVel;
     dataBodyFrame.frame = ReferenceFrame::BodyFrame;
     dataBodyFrame.pos = transformWorldToBodyFrame(botOrigin, botDataWorldFrame.ang, botDataWorldFrame.pos);
-    dataBodyFrame.vel = transformWorldToBodyFrame(botOrigin, botDataWorldFrame.ang, botDataWorldFrame.vel);
+    dataBodyFrame.vel = transformWorldToBodyFrame(zeroVec2d(), botDataWorldFrame.ang, botDataWorldFrame.vel);
     return dataBodyFrame;
 }
 
-BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec botOrigin, float botAng) {
+BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec2 botOrigin, float botAng) {
     BallData dataBodyFrame;
     dataBodyFrame.frame = ReferenceFrame::BodyFrame;
     dataBodyFrame.pos = transformWorldToBodyFrame(botOrigin, botAng, ballDataWorldFrame.pos);
-    dataBodyFrame.vel = transformWorldToBodyFrame(botOrigin, botAng, ballDataWorldFrame.vel);
+    dataBodyFrame.vel = transformWorldToBodyFrame(zeroVec2d(), botAng, ballDataWorldFrame.vel);
     return dataBodyFrame;
 }
 

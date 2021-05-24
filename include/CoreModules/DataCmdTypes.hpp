@@ -36,7 +36,12 @@ enum ReferenceFrame {WorldFrame = 0, BodyFrame = 1, NotDetermined = 2};
 
 
 struct MotionCommand {
-    arma::vec3 setpoint3d; // <x, y, theta> where theta is the orientation angle 
+    arma::vec3 setpoint3d; /* <x, y, theta> where theta is the orientation angle, 
+                              units: mm and degree (not radians!), degree range from (-180.0f ~ 180.0f degrees)
+                              if the mode is of velocity control type, then the
+                              unit for velocity <x, y> is the percentage of its max 
+                              velocity on the corresponding axis, numerically : (-100.0f ~ 100.0f), where 100.0f represent 100% of max velocity at x or y
+                               */
     CtrlMode mode;
     ReferenceFrame frame;
 };
@@ -44,7 +49,7 @@ struct MotionCommand {
 struct Command {
     MotionCommand motionCommand;
     bool enAutoCap;
-    arma::vec kickerSetPoint;
+    arma::vec2 kickerSetPoint; // unit: m/s
 };
 
 
@@ -89,6 +94,21 @@ struct CameraData {
 };
 
 
+enum SetPointType {velocity, displacement};
+template <typename ValueType>
+struct SetPoint {
+    ValueType value;
+    SetPointType type;
+};
+
+struct ControlInput {
+    SetPoint<arma::vec2> translationalSetPoint;
+    SetPoint<float> rotationalSetPoint;
+    bool isNoSlowDownMode;
+};
+
+
+
 
 MotionCommand defaultMotionCommand();
 Command defaultCommand();
@@ -97,4 +117,4 @@ BallData defaultBallData();
 SslVisionData defaultSslVisionData();
 McuSensorData defaultMcuSensorData();
 CameraData defaultCameraData();
-
+ControlInput defaultControlInput();

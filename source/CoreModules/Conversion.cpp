@@ -2,7 +2,7 @@
 
 
 
-arma::vec transformWorldToBodyFrame(arma::vec robotOriginInWorld, float robotAng, arma::vec pointToTransformInWorld) {
+arma::vec2 transformWorldToBodyFrame(arma::vec2 robotOriginInWorld, float robotAng, arma::vec2 pointToTransformInWorld) {
 
     auto v1 = pointToTransformInWorld;
     auto v2 = -robotOriginInWorld;
@@ -12,7 +12,7 @@ arma::vec transformWorldToBodyFrame(arma::vec robotOriginInWorld, float robotAng
 
 
 // for explaination of the math, check motion_module.cpp
-arma::vec DEPRECATED_transformWorldToBodyFrame(arma::vec origin, float orien, arma::vec point2d) {
+arma::vec2 DEPRECATED_transformWorldToBodyFrame(arma::vec2 origin, float orien, arma::vec2 point2d) {
     arma::mat A = WorldtoBodyHomoTransMat(origin, orien); // world to body homogeneous transformation
     arma::vec p_homo_w = {point2d(0), point2d(1), 1}; // homogeneous point end with a 1 (vector end with a 0)
     arma::vec p_homo_b = A * p_homo_w; // apply transformation to get the same point represented in the body frame

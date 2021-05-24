@@ -7,5 +7,5 @@
 
 
 
-arma::vec transformWorldToBodyFrame(arma::vec robotOriginInWorld, float robotAng, arma::vec pointToTransformInWorld);
-arma::vec DEPRECATED_transformWorldToBodyFrame(arma::vec origin, float orien, arma::vec point2d);
+arma::vec2 transformWorldToBodyFrame(arma::vec2 robotOriginInWorld, float robotAng, arma::vec2 pointToTransformInWorld);
+arma::vec2 DEPRECATED_transformWorldToBodyFrame(arma::vec2 origin, float orien, arma::vec2 point2d);

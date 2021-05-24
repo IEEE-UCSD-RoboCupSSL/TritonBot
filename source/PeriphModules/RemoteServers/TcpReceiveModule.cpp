@@ -37,7 +37,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
 
 
     ITPS::FieldPublisher<bool> safetyEnablePub("From:TcpReceiveModule", "SafetyEnable", false); 
-    ITPS::FieldPublisher< arma::vec > robotOriginInWorldPub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)", zeroVec2d());
+    ITPS::FieldPublisher<arma::vec2> robotOriginInWorldPub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)", zeroVec2d());
     ITPS::FieldPublisher<bool> initSensorsCmdPub("From:TcpReceiveModule", "re/init sensors", false);
     
     ITPS::FieldSubscriber<bool> ballcapStatusSub("From:BallCaptureModule", "isDribbled");
@@ -110,7 +110,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
                     rtnStr = "Invalid Arguments";
                 }
                 else {
-                    arma::vec origin = {std::stod(tokens[1]), std::stod(tokens[2])};
+                    arma::vec2 origin = {std::stod(tokens[1]), std::stod(tokens[2])};
                     initSensorsCmdPub.publish(true); // Initialize Sensors
                     robotOriginInWorldPub.publish(origin); // Update Robot's origin point represented in the world frame of reference
                     rtnStr = "Initialized";

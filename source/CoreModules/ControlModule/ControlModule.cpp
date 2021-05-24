@@ -63,11 +63,11 @@ bool ControlModule::get_dribbler_signal(void) {
     return dribbler_signal_sub.getMsg();
 }   
 
-CTRL::SetPoint<arma::vec> ControlModule::get_trans_setpoint(void) {
+SetPoint<arma::vec> ControlModule::get_trans_setpoint(void) {
     return trans_setpoint_sub.getMsg();
 }
 
-CTRL::SetPoint<float> ControlModule::get_rotat_setpoint(void) {
+SetPoint<float> ControlModule::get_rotat_setpoint(void) {
     return rotat_setpoint_sub.getMsg();
 }
 
@@ -133,8 +133,8 @@ void PID_System::task(ThreadPool& threadPool) {
     BotData feedback;
     arma::vec kicker_setpoint;
     bool dribbler_set_on;
-    CTRL::SetPoint<arma::vec> trans_setpoint;
-    CTRL::SetPoint<float> rotat_setpoint;
+    SetPoint<arma::vec> trans_setpoint;
+    SetPoint<float> rotat_setpoint;
     Vec_2D kicker_out;
 
 

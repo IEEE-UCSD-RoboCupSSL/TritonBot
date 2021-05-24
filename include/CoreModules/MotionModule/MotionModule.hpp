@@ -26,13 +26,13 @@ class MotionModule : public Module {
 
     private:
         arma::vec bodyframe_origin_w = {0, 0, 0}; // this is a world frame coordinate(w/ angle), which is used to calculate info about body frame
-        CTRL::SetPoint<float> rotat_setpoint;
-        CTRL::SetPoint<arma::vec> trans_setpoint;
+        SetPoint<float> rotat_setpoint;
+        SetPoint<arma::vec> trans_setpoint;
         ITPS::FieldSubscriber< BotData > sensor_sub;
         ITPS::FieldSubscriber< arma::vec > robot_origin_w_sub; // robot's origin point (pos(0,0)) with respect to the worldframe (i.e. camera frame)
         ITPS::FieldSubscriber< MotionCommand > command_sub;
-        ITPS::FieldPublisher<CTRL::SetPoint<arma::vec>> trans_setpoint_pub;
-        ITPS::FieldPublisher<CTRL::SetPoint<float>> rotat_setpoint_pub;
+        ITPS::FieldPublisher<SetPoint<arma::vec>> trans_setpoint_pub;
+        ITPS::FieldPublisher<SetPoint<float>> rotat_setpoint_pub;
         ITPS::FieldPublisher<bool> no_slowdown_pub; // work-around for no slowdown modes
 };
 

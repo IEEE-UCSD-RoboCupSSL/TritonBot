@@ -11,13 +11,6 @@
 
 class ControlModule : public Module {
     public: 
-        enum SetPointType {velocity, displacement};
-        template <typename ValueType>
-        struct SetPoint {
-            ValueType value;
-            SetPointType type;
-        };
-
         ControlModule(void);
         virtual ~ControlModule() {}
 
