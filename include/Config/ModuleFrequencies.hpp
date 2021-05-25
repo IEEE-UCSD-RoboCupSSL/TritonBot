@@ -5,8 +5,8 @@
 
 
 /* Module Frequencies */
-#define TCP_RECEIVE_FREQUENCY 10 //Hz 
-#define UDP_RECEIVE_FREQUENCY 500 //Hz
+#define TCP_RECEIVE_FREQUENCY 25 //Hz 
+#define UDP_RECEIVE_FREQUENCY 1000 //Hz
 #define COMMAND_PROCESSOR_FREQUENCY 1000 //Hz
 #define DATA_PROCESSOR_FREQUENCY 1000 //Hz
 // MOTION_CONTROLLER_FREQUENCY will be set in a .ini file 

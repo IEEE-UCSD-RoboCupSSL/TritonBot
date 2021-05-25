@@ -3,11 +3,11 @@
 
 class BotDataFusion {
 public:
-    virtual BotData calc(BotData sslVisionBotData, McuSensorData) = 0;
+    virtual BotData calc(BotData& sslVisionBotData, McuSensorData& mcuSensorData) = 0;
 };
 
 
 class VirtualBotDataFusion : public BotDataFusion {
 public:
-    BotData calc(BotData sslVisionBotData, McuSensorData);
+    BotData calc(BotData& sslVisionBotData, McuSensorData& mcuSensorData);
 };
