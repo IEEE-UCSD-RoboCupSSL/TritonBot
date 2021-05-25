@@ -71,7 +71,7 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
     mockSslVisData.ballData.pos = {0, 10};
     mockSslVisData.botData.pos = {0, -105};
     receivedSslVisionDataPub.publish(mockSslVisData);
-    delay(10);
+    delay(200);
     //std::cout << "should print false: isholdingball[" << (isHoldingBallSub.getMsg() ? "true" : "false") << "]"<<std::endl;
     assert(isHoldingBallSub.getMsg() == false);
 
@@ -82,7 +82,7 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
     mockSslVisData.ballData.pos = {0, 10};
     mockSslVisData.botData.pos = {0, -105};
     receivedSslVisionDataPub.publish(mockSslVisData);
-    delay(10);
+    delay(200);
     /*
     std::cout << "processed-data: angle[" << filteredBotDataSub.getMsg().ang << "] ";
     auto botPos = filteredBotDataSub.getMsg().pos;
@@ -92,6 +92,14 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
     // std::cout << "should print true: isholdingball[" << (isHoldingBallSub.getMsg() ? "true" : "false") << "]"<<std::endl;
     assert(isHoldingBallSub.getMsg() == true);
 
+
+    mockSslVisData.ballData.pos = {0, 50};
+    mockSslVisData.botData.pos = {0, -105};
+    receivedSslVisionDataPub.publish(mockSslVisData);
+    delay(50);
+    assert(isHoldingBallSub.getMsg() == true);
+    delay(100);
+    assert(isHoldingBallSub.getMsg() == false);
 
 
     std::cout << "All test case passed" << std::endl;
