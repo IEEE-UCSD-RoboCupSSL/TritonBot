@@ -35,8 +35,8 @@ void MotionControllerModule::task(ThreadPool& threadPool) {
 
     // Construct PID controllers
    
-    PIDController<float> anglePid(config.botConfig->rotatDispConsts.toArmaVec3());
-    PIDController<arma::vec2> posPid(config.botConfig->transDispConsts.toArmaVec3());
+    PIDController<float> anglePid(config.botConfig->anglePidConsts.toArmaVec3());
+    PIDController<arma::vec2> posPid(config.botConfig->posPidConsts.toArmaVec3());
 
     while(true) {
         anglePid.init(config.botConfig->pidControlFrequency);
@@ -52,10 +52,10 @@ void MotionControllerModule::task(ThreadPool& threadPool) {
                 if(input.isNoSlowDownMode) {
                     pidAmplifier = config.botConfig->noSlowDownPidAmp;
                 }
-                anglePid.updatePidConsts(config.botConfig->rotatDispConsts.toArmaVec3());
-                posPid.updatePidConsts(pidAmplifier * config.botConfig->rotatDispConsts.Kp,
-                                                        config.botConfig->rotatDispConsts.Ki,
-                                                        config.botConfig->rotatDispConsts.Kd);
+                anglePid.updatePidConsts(config.botConfig->anglePidConsts.toArmaVec3());
+                posPid.updatePidConsts(pidAmplifier * config.botConfig->anglePidConsts.Kp,
+                                                        config.botConfig->anglePidConsts.Ki,
+                                                        config.botConfig->anglePidConsts.Kd);
                 
                 // PID calculations : Error = SetPoint - CurrPoint (i.e. ExpectedValue - ActualValue)
                 // Rotational Movement Controller

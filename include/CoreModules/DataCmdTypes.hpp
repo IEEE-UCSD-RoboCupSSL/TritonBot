@@ -108,7 +108,7 @@ struct ControlInput {
 };
 
 struct ControlOutput  {
-    double vx = 0.00, vy = 0.00, omega = 0.00;
+    double vx, vy, omega;
     arma::vec3 toArmaVec3() {
         arma::vec3 v = {vx, vy, omega};
         return v;

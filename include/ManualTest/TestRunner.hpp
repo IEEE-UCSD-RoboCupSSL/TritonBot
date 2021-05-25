@@ -13,8 +13,8 @@
 #include "ManualTest/CoreModuleTests/ConversionTest.hpp"
 #include "ManualTest/CoreModuleTests/DataProcessorModuleTest.hpp"
 #include "ManualTest/CoreModuleTests/CommandProcessorModuleTest.hpp"
-
-
+#include "ManualTest/CoreModuleTests/MotionControllerModuleTest.hpp"
+#include "ManualTest/DEPRECATED_vftest.hpp"
 
 
 class TestRunner {
@@ -22,11 +22,13 @@ public:
     TestRunner(Config cfg) : config(cfg) {
         testsMap["periodic-thread"] = new PeriodicThreadTest();
         testsMap["pubsub"] = new PubSubTest();
-        testsMap["tcp-receive"] = new TcpReceiveModuleTest(config);
-        testsMap["udp-receive"] = new UdpReceiveModuleTest(config);
+        testsMap["tcp-recei"] = new TcpReceiveModuleTest(config);
+        testsMap["udp-recei"] = new UdpReceiveModuleTest(config);
         testsMap["conversion"] = new ConversionTest();
-        testsMap["data-processor"] = new DataProcessorModuleTest(config);
-        testsMap["cmd-processor"] = new CommandProcessorModuleTest(config);
+        testsMap["data-proc"] = new DataProcessorModuleTest(config);
+        testsMap["cmd-proc"] = new CommandProcessorModuleTest(config);
+        testsMap["motion-ctrl"] = new MotionControllerModuleTest(config); 
+        testsMap["vf"] = new VFTest(config);
     }
     ~TestRunner() {
         for(auto it = testsMap.begin(); it != testsMap.end(); it++) {

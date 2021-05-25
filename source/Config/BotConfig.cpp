@@ -35,18 +35,18 @@ void processIni(std::string filepath, std::shared_ptr<BotConfig> config) {
     config->pidControlFrequency = reader.GetInteger("pid controller constants", 
                     "frequency", 500);
 
-    config->transDispConsts.Kp = reader.GetFloat("pid controller constants", 
+    config->posPidConsts.Kp = reader.GetFloat("pid controller constants", 
                     "pid_td_kp", 0.2);
-    config->transDispConsts.Ki = reader.GetFloat("pid controller constants", 
+    config->posPidConsts.Ki = reader.GetFloat("pid controller constants", 
                     "pid_td_ki", 0.0);
-    config->transDispConsts.Kd = reader.GetFloat("pid controller constants", 
+    config->posPidConsts.Kd = reader.GetFloat("pid controller constants", 
                     "pid_td_kd", 0.0);
 
-    config->rotatDispConsts.Kp = reader.GetFloat("pid controller constants", 
+    config->anglePidConsts.Kp = reader.GetFloat("pid controller constants", 
                     "pid_rd_kp", 0.5);
-    config->rotatDispConsts.Ki = reader.GetFloat("pid controller constants", 
+    config->anglePidConsts.Ki = reader.GetFloat("pid controller constants", 
                     "pid_rd_ki", 0.0);
-    config->rotatDispConsts.Kd = reader.GetFloat("pid controller constants", 
+    config->anglePidConsts.Kd = reader.GetFloat("pid controller constants", 
                     "pid_rd_kd", 0.0);
 
     config->noSlowDownPidAmp = reader.GetFloat("pid controller constants", 
@@ -67,12 +67,12 @@ void processIni(std::string filepath, std::shared_ptr<BotConfig> config) {
     logger.log(Info, "Parsed from " + filepath + ":");
     logger.log(Info, "\t\tPidControlFrequency: " + repr(config->pidControlFrequency));
     logger.log(Info, "\t\tNoSlowDownAmplifierConst: " + repr(config->noSlowDownPidAmp));
-    logger.log(Info, "\t\tTransPid: <" + repr(config->transDispConsts.Kp) + "," 
-                                    + repr(config->transDispConsts.Ki) + ","
-                                    + repr(config->transDispConsts.Kd) + ">");
-    logger.log(Info, "\t\tRotatPid: <" + repr(config->rotatDispConsts.Kp) + "," 
-                                    + repr(config->rotatDispConsts.Ki) + ","
-                                    + repr(config->rotatDispConsts.Kd) + ">");
+    logger.log(Info, "\t\tTransPid: <" + repr(config->posPidConsts.Kp) + "," 
+                                    + repr(config->posPidConsts.Ki) + ","
+                                    + repr(config->posPidConsts.Kd) + ">");
+    logger.log(Info, "\t\tRotatPid: <" + repr(config->anglePidConsts.Kp) + "," 
+                                    + repr(config->anglePidConsts.Ki) + ","
+                                    + repr(config->anglePidConsts.Kd) + ">");
 
     logger.log(Info, "\t\tpidTdrdCorr: " + repr(config->pidTdrdCorr));
     logger.log(Info, "\t\tpidTdrvCorr: " + repr(config->pidTdrvCorr));

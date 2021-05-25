@@ -12,8 +12,8 @@
 class BotConfig {
 public:
     unsigned int pidControlFrequency;
-    PIDConstants transDispConsts;
-    PIDConstants rotatDispConsts;
+    PIDConstants posPidConsts;
+    PIDConstants anglePidConsts;
     float noSlowDownPidAmp;
     float pidTdrdCorr;
     float pidTdrvCorr;
