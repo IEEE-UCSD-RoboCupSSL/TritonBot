@@ -24,8 +24,8 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
                                 //ITPS::FieldPublisher<VF_Data>& firm_data_pub, 
                                 ITPS::FieldSubscriber<ControlOutput>& controlOutputSub,
                                 ITPS::FieldSubscriber<bool>& initSensorsCmdSub,
-                                ITPS::FieldSubscriber<bool> dribblerCommandSub,
-                                ITPS::FieldSubscriber<arma::vec2> kickerSetPointSub,
+                                ITPS::FieldSubscriber<bool>& dribblerCommandSub,
+                                ITPS::FieldSubscriber<arma::vec2>& kickerSetPointSub,
                                 BLogger& logger,  
                                 const system::error_code& error);
 
@@ -35,8 +35,8 @@ static void on_data_received(asio::ip::tcp::socket& socket,
                              //ITPS::FieldPublisher<VF_Data>& firm_data_pub, 
                              ITPS::FieldSubscriber<ControlOutput>& controlOutputSub,
                              ITPS::FieldSubscriber<bool>& initSensorsCmdSub,
-                             ITPS::FieldSubscriber<bool> dribblerCommandSub,
-                             ITPS::FieldSubscriber<arma::vec2> kickerSetPointSub,
+                             ITPS::FieldSubscriber<bool>& dribblerCommandSub,
+                             ITPS::FieldSubscriber<arma::vec2>& kickerSetPointSub,
                              BLogger& logger,  
                              const system::error_code& error);
 
@@ -46,8 +46,8 @@ static void on_cmd_sent(asio::ip::tcp::socket& socket,
                         //ITPS::FieldPublisher<VF_Data>& firm_data_pub, 
                         ITPS::FieldSubscriber<ControlOutput>& controlOutputSub,
                         ITPS::FieldSubscriber<bool>& initSensorsCmdSub,
-                        ITPS::FieldSubscriber<bool> dribblerCommandSub,
-                        ITPS::FieldSubscriber<arma::vec2> kickerSetPointSub,
+                        ITPS::FieldSubscriber<bool>& dribblerCommandSub,
+                        ITPS::FieldSubscriber<arma::vec2>& kickerSetPointSub,
                         BLogger& logger,  
                         const system::error_code& error);
 
@@ -57,6 +57,10 @@ void VFirmClientModule::task(ThreadPool& threadPool) {
     BLogger logger;
     logger.addTag("VFirmClientModule");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
+
+
+    ITPS::FieldPublisher<McuSensorData> mcuSensorDataPub("From:McuClientModule", "McuSensorData(BodyFrame)", defaultMcuSensorData());
+  
 
     ITPS::FieldSubscriber<ControlOutput> controlOutputSub("From:MotionControllerModule", "MotionControlOutput");
     ITPS::FieldSubscriber<bool> dribblerCommandSub("From:CommandProcessorModule", "dribblerSwitch");
@@ -79,8 +83,8 @@ void VFirmClientModule::task(ThreadPool& threadPool) {
     asio::io_service io_service;
     asio::ip::tcp::endpoint ep(asio::ip::address::from_string("127.0.0.1"), 8000); //hard code these IP because this legacy file is used for testing purpose only
     asio::ip::tcp::socket socket(io_service);
-    std::string write_buf;
     asio::streambuf read_buf;
+    std::string write_buf;
 
     logger(Info) << "\033[0;32m Initialized \033[0m";
 
@@ -127,8 +131,8 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
                                 //ITPS::FieldPublisher<VF_Data>& firm_data_pub, 
                                 ITPS::FieldSubscriber<ControlOutput>& controlOutputSub,
                                 ITPS::FieldSubscriber<bool>& initSensorsCmdSub,
-                                ITPS::FieldSubscriber<bool> dribblerCommandSub,
-                                ITPS::FieldSubscriber<arma::vec2> kickerSetPointSub,
+                                ITPS::FieldSubscriber<bool>& dribblerCommandSub,
+                                ITPS::FieldSubscriber<arma::vec2>& kickerSetPointSub,
                                 BLogger& logger,  
                                 const system::error_code& error) {
     if(error) {
@@ -138,6 +142,7 @@ static void on_socket_connected(asio::ip::tcp::socket& socket,
         std::exit(0);
     }
     logger(Info) << "\033[0;32m socket connected \033[0m";
+
 
 
     /* start the infinite cycle of [read 1 data] => [send 1 cmd] => [read 1 data] => [send 1 cmd] ....
@@ -165,8 +170,8 @@ static void on_data_received(asio::ip::tcp::socket& socket,
                              //ITPS::FieldPublisher<VF_Data>& firm_data_pub, 
                              ITPS::FieldSubscriber<ControlOutput>& controlOutputSub,
                              ITPS::FieldSubscriber<bool>& initSensorsCmdSub,
-                             ITPS::FieldSubscriber<bool> dribblerCommandSub,
-                             ITPS::FieldSubscriber<arma::vec2> kickerSetPointSub,
+                             ITPS::FieldSubscriber<bool>& dribblerCommandSub,
+                             ITPS::FieldSubscriber<arma::vec2>& kickerSetPointSub,
                              BLogger& logger,  
                              const system::error_code& error) {
     if(error) {
@@ -175,6 +180,7 @@ static void on_data_received(asio::ip::tcp::socket& socket,
         logger.log(Error, error.message());
         std::exit(0);
     }
+
     VF_Data data;                             
     std::istream input_stream(&read_buf); 
     std::string received;
@@ -183,14 +189,14 @@ static void on_data_received(asio::ip::tcp::socket& socket,
     received = std::string(std::istreambuf_iterator<char>(input_stream), {});            
     data.ParseFromString(received);
 
-    UNUSED(data);
     ///firm_data_pub.publish(data); // EKF module is subscribing to this module.
 
-    //logger.log( Debug, "Trans_Dis: " + repr(data.translational_displacement().x()) + ' ' + repr(data.translational_displacement().y()));
-    //logger.log( Debug, "Trans_Vel:" + repr(data.translational_velocity().x()) + ' ' + repr(data.translational_velocity().y()));
-    //logger.log( Debug, "Rot_Dis:" + repr(data.rotational_displacement()));
-    //logger.log( Debug, "Rot_Vel:" + repr(data.rotational_velocity()) + "\n :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) ");
+    logger.log( Debug, "Trans_Dis: " + repr(data.translational_displacement().x()) + ' ' + repr(data.translational_displacement().y()));
+    logger.log( Debug, "Trans_Vel:" + repr(data.translational_velocity().x()) + ' ' + repr(data.translational_velocity().y()));
+    logger.log( Debug, "Rot_Dis:" + repr(data.rotational_displacement()));
+    logger.log( Debug, "Rot_Vel:" + repr(data.rotational_velocity()) + "\n :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) :) ");
     
+
 
     bool re_init = initSensorsCmdSub.getMsg(); // non blocking
     if(re_init) {
@@ -232,7 +238,8 @@ static void on_data_received(asio::ip::tcp::socket& socket,
 
     default_cmd.release_translational_output();  // memory headache, Happy C++ coding :(  see, java is so awesome :)
     default_cmd.release_kicker();
-
+    cmd.release_translational_output();
+    cmd.release_kicker();
 
     // set the write event
     boost::asio::async_write(socket, asio::buffer(write_buf), 
@@ -259,8 +266,8 @@ static void on_cmd_sent(asio::ip::tcp::socket& socket,
                         //ITPS::FieldPublisher<VF_Data>& firm_data_pub, 
                         ITPS::FieldSubscriber<ControlOutput>& controlOutputSub,
                         ITPS::FieldSubscriber<bool>& initSensorsCmdSub,
-                        ITPS::FieldSubscriber<bool> dribblerCommandSub,
-                        ITPS::FieldSubscriber<arma::vec2> kickerSetPointSub,
+                        ITPS::FieldSubscriber<bool>& dribblerCommandSub,
+                        ITPS::FieldSubscriber<arma::vec2>& kickerSetPointSub,
                         BLogger& logger,  
                         const system::error_code& error) {
     if(error) {
