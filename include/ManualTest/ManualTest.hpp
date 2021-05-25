@@ -11,7 +11,7 @@ std::ostream& operator<<(std::ostream& os, const arma::vec3& v);
 
 class ManualTest {
 public:
-    ITPS::FieldPublisher<bool> *ballcapStatusPubMock;
+    ITPS::FieldPublisher<bool> *ballCapStatusPubMock;
     
     virtual bool test(ThreadPool& threadPool) = 0;
     virtual ~ManualTest() {}

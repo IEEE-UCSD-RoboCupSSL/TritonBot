@@ -13,7 +13,7 @@
 #include "Config/ModuleFrequencies.hpp"
 using namespace boost;
 boost::mutex mu;
-void backgndTask(ITPS::FieldSubscriber<bool>& ballcapStatusSub, asio::ip::tcp::socket& socket);
+void backgndTask(ITPS::FieldSubscriber<bool>& ballCapStatusSub, asio::ip::tcp::socket& socket);
 
 
 // Implementation of task to be run on this thread
@@ -40,7 +40,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
     ITPS::FieldPublisher<arma::vec2> robotOriginInWorldPub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)", zeroVec2d());
     ITPS::FieldPublisher<bool> initSensorsCmdPub("From:TcpReceiveModule", "re/init sensors", false);
     
-    ITPS::FieldSubscriber<bool> ballcapStatusSub("From:BallCaptureModule", "isDribbled");
+    ITPS::FieldSubscriber<bool> ballCapStatusSub("From:BallCaptureModule", "isDribbled");
 
     
 
@@ -52,7 +52,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
 
     try 
     {
-        ballcapStatusSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        ballCapStatusSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         acceptor.accept(socket); // blocks until getting a connection request and accept the connection
     }
     catch(std::exception& e)
@@ -68,7 +68,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
     asio::write(socket, asio::buffer("CONNECTION ESTABLISHED\n"));
 
     // enqueue the backgnd task of this module to the thread pool
-    threadPool.execute(boost::bind(&backgndTask, boost::ref(ballcapStatusSub), boost::ref(socket)));
+    threadPool.execute(boost::bind(&backgndTask, boost::ref(ballCapStatusSub), boost::ref(socket)));
 
 
     while(true) { // No delay, blocking-socket-read is used, usually won't use too much CPU resources
@@ -134,17 +134,17 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
  
 }
 
-void backgndTask(ITPS::FieldSubscriber<bool>& ballcapStatusSub, asio::ip::tcp::socket& socket) {
+void backgndTask(ITPS::FieldSubscriber<bool>& ballCapStatusSub, asio::ip::tcp::socket& socket) {
     bool prevBallCapStatus = true; // deliberately set it true to have a extra socket send at the begining
     auto period = TO_PERIOD(TCP_RECEIVE_FREQUENCY);
     while(true) { 
         auto t = CHRONO_NOW;
 
         std::string sendStr;
-        bool ballcapStatus;
-        ballcapStatus = ballcapStatusSub.getMsg(); 
-        if(ballcapStatus != prevBallCapStatus) {
-            if(ballcapStatus) {
+        bool ballCapStatus;
+        ballCapStatus = ballCapStatusSub.getMsg(); 
+        if(ballCapStatus != prevBallCapStatus) {
+            if(ballCapStatus) {
                 sendStr = "BallOnHold";
             }
             else {
@@ -154,7 +154,7 @@ void backgndTask(ITPS::FieldSubscriber<bool>& ballcapStatusSub, asio::ip::tcp::s
             asio::write(socket, asio::buffer(sendStr + "\n"));
             mu.unlock();
         }
-        prevBallCapStatus = ballcapStatus;
+        prevBallCapStatus = ballCapStatus;
 
         std::this_thread::sleep_until(t + period);   
     }

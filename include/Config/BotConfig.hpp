@@ -3,6 +3,8 @@
 #include <string>
 #include "CoreModules/DataCmdTypes.hpp"
 #include "Misc/Utility/BoostLogger.hpp"
+#include "Misc/Utility/ClockUtil.hpp"
+#include "Config/ModuleFrequencies.hpp"
 
 
 /** will separate this into a couple files in the future, I'm too lazy rn **/
@@ -48,8 +50,17 @@ private:
     float const holdBallZoneWidth = 100.0;
     float const holdBallZoneHeight = 40.0;
 
+    std::chrono::steady_clock::time_point t0; 
+    long samplingFrequency = 10; // Hz
+    long hbCnt = 0, roundTotal = 0; 
+    float percentThreshHold = 0.6; // if hbCnt/roundTotal >= 60 %, ball is dribbled 
+    bool hbResult = false;
+
 public:
-    GrSimBotConfig() : VirtualBotConfig() {type = "GrSimBotConfig";}
+    GrSimBotConfig() : VirtualBotConfig() {
+        type = "GrSimBotConfig";
+        t0 = CHRONO_NOW;
+    }
     bool isBallCloseEnoughToBot(BallData ballData, BotData botData) {
         if(ballData.frame != botData.frame) {
             BLogger logger;
@@ -75,13 +86,26 @@ public:
         arma::vec2 delta = ballData.pos - botData.pos;
 
         // std::cout << delta << std::endl;
+        
 
         if (std::abs(delta(0)) < (holdBallZoneWidth / 2.0)
             && delta(1) < dribblerOffset + (holdBallZoneHeight / 2.0)
             && delta(1) > dribblerOffset - (holdBallZoneHeight / 2.0)) {
-            return true;
+            hbCnt++;
         }
-        return false;
+        roundTotal++;
+
+        if(CHRONO_NOW - t0 > TO_PERIOD(samplingFrequency)) {
+            if((float)hbCnt / (float)roundTotal >= percentThreshHold) {
+                hbResult = true;
+            } else {
+                hbResult = false;
+            }
+            t0 = CHRONO_NOW;
+            hbCnt = 0;
+            roundTotal = 0;
+        }
+        return hbResult;
     }
 };
 

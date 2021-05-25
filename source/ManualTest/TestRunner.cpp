@@ -45,7 +45,7 @@ void TestRunner::run(ThreadPool& threadPool) {
             std::cout << "Invalid TestName" << std::endl;
             result = false;
         } else {
-            testObject->ballcapStatusPubMock = bcPubPtr;
+            testObject->ballCapStatusPubMock = bcPubPtr;
             result = testObject->test(threadPool);
         }
 

@@ -30,7 +30,7 @@ bool TcpReceiveModuleTest::test(ThreadPool& threadPool) {
         auto t0 = CHRONO_NOW;
         while(CHRONO_NOW - t0 < std::chrono::seconds(7)) {
             tmp = tmp ? false : true;
-            ballcapStatusPubMock->publish(tmp);
+            ballCapStatusPubMock->publish(tmp);
             delay(std::chrono::seconds(1));
         }
     });
