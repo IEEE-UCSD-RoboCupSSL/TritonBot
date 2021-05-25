@@ -26,6 +26,12 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
     ITPS::FieldPublisher<BallData> filteredBallDataPub("From:DataProcessorModule", "BallData(BodyFrame)", defaultBallData());
     ITPS::FieldPublisher<bool> isHoldingBallPub("From:DataProcessorModule", "IsHoldingBall", false);
 
+
+    BLogger logger;
+    logger.addTag("DataProcessorModule");
+    logger(Info) << "\033[0;32m Thread Started \033[0m";
+
+
     try {
         receivedSslVisionDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         mcuSensorDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
@@ -38,6 +44,9 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
         logger.log(Error, std::string(e.what()));
         std::exit(0);
     }
+
+
+    logger(Info) << "\033[0;32m Initialized \033[0m";
 
 
     BotData botDataBodyFrame;

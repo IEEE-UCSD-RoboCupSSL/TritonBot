@@ -131,7 +131,7 @@ bool CommandProcessorModuleTest::test(ThreadPool& threadPool) {
     );
 
 
-   
+    std::cout << "All test case passed" << std::endl;
     threadPool.joinAll();
     return true;
 }

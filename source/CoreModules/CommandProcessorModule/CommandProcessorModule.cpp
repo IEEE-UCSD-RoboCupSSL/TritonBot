@@ -23,6 +23,11 @@ void CommandProcessorModule::task(ThreadPool& threadPool) {
     ITPS::FieldSubscriber<BallData> filteredBallDataSub("From:DataProcessorModule", "BallData(BodyFrame)");
     ITPS::FieldSubscriber<MotionCommand> ballAutoCapMotionCommandSub("From:BallAutoCaptureModule", "MotionCommand(BodyFrame)");
 
+    BLogger logger;
+    logger.addTag("CommandProcessorModule");
+    logger(Info) << "\033[0;32m Thread Started \033[0m";
+
+
     try {
         receivedCommandSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         robotOriginInWorldSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
@@ -36,6 +41,9 @@ void CommandProcessorModule::task(ThreadPool& threadPool) {
         logger.log(Error, std::string(e.what()));
         std::exit(0);
     }
+
+
+    logger(Info) << "\033[0;32m Initialized \033[0m";
 
     MotionCommand mCmd;
 
@@ -85,27 +93,27 @@ ControlInput processMotionCommand(MotionCommand receivedMCmd, arma::vec2 robotOr
     CtrlMode mode = receivedMCmd.mode;
     ReferenceFrame frame = receivedMCmd.frame;
     switch(mode) {
-        case TDRD: ci.translationalSetPoint.type = SetPointType::displacement;
-                   ci.rotationalSetPoint.type = SetPointType::displacement;
+        case TDRD: ci.translationalSetPoint.type = SetPointType::position;
+                   ci.rotationalSetPoint.type = SetPointType::position;
                    ci.isNoSlowDownMode = false;
                    break;
-        case TDRV: ci.translationalSetPoint.type = SetPointType::displacement;
+        case TDRV: ci.translationalSetPoint.type = SetPointType::position;
                    ci.rotationalSetPoint.type = SetPointType::velocity;
                    ci.isNoSlowDownMode = false;
                    break;
         case TVRD: ci.translationalSetPoint.type = SetPointType::velocity;
-                   ci.rotationalSetPoint.type = SetPointType::displacement;
+                   ci.rotationalSetPoint.type = SetPointType::position;
                    ci.isNoSlowDownMode = false;
                    break;
         case TVRV: ci.translationalSetPoint.type = SetPointType::velocity;
                    ci.rotationalSetPoint.type = SetPointType::velocity;
                    ci.isNoSlowDownMode = false;
                    break;
-        case NSTDRD: ci.translationalSetPoint.type = SetPointType::displacement;
-                     ci.rotationalSetPoint.type = SetPointType::displacement;
+        case NSTDRD: ci.translationalSetPoint.type = SetPointType::position;
+                     ci.rotationalSetPoint.type = SetPointType::position;
                      ci.isNoSlowDownMode = true;
                      break;
-        case NSTDRV: ci.translationalSetPoint.type = SetPointType::displacement;
+        case NSTDRV: ci.translationalSetPoint.type = SetPointType::position;
                      ci.rotationalSetPoint.type = SetPointType::velocity;
                      ci.isNoSlowDownMode = true;
                      break;
@@ -117,7 +125,7 @@ ControlInput processMotionCommand(MotionCommand receivedMCmd, arma::vec2 robotOr
 
     // If CMD setpoint is described in World Reference Frame, we do a World to Body Transformation
     if(frame == WorldFrame) {
-        if(ci.translationalSetPoint.type == SetPointType::displacement) {
+        if(ci.translationalSetPoint.type == SetPointType::position) {
             ci.translationalSetPoint.value = transformWorldToBodyFrame(robotOriginInWorld, 
                                 robotAng, ci.translationalSetPoint.value);
         } else {

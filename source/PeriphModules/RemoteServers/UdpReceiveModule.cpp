@@ -25,7 +25,7 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     UNUSED(threadPool); 
 
     BLogger logger;
-    logger.addTag("UDP Receiver Module");
+    logger.addTag("UdpReceiveModule");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
     io_service ios;

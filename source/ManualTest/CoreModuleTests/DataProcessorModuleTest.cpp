@@ -93,6 +93,9 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
     assert(isHoldingBallSub.getMsg() == true);
 
 
+
+    std::cout << "All test case passed" << std::endl;
+
     threadPool.joinAll();
     return true;
 }

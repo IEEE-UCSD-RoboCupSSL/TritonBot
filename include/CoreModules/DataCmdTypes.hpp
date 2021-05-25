@@ -94,7 +94,7 @@ struct CameraData {
 };
 
 
-enum SetPointType {velocity, displacement};
+enum SetPointType {velocity, position};
 template <typename ValueType>
 struct SetPoint {
     ValueType value;
@@ -109,11 +109,19 @@ struct ControlInput {
 
 struct ControlOutput  {
     double vx = 0.00, vy = 0.00, omega = 0.00;
+    arma::vec3 toArmaVec3() {
+        arma::vec3 v = {vx, vy, omega};
+        return v;
+    }
 };
 
 
 struct PIDConstants {
     double Kp = 0, Kd = 0, Ki = 0;
+    arma::vec3 toArmaVec3() {
+        arma::vec3 v = {Kp, Kd, Ki};
+        return v;
+    }
 };
 
 

@@ -9,26 +9,32 @@
 
 class BotConfig {
 public:
+    unsigned int pidControlFrequency;
+    PIDConstants transDispConsts;
+    PIDConstants rotatDispConsts;
+    float noSlowDownPidAmp;
+    float pidTdrdCorr;
+    float pidTdrvCorr;
+    float pidTvrdCorr;
+    float pidTvrvCorr;
 
-
-    BotConfig(bool __isVirtual) : isVirtual(__isVirtual) {}
-protected:
+    BotConfig(bool __isVirtual) : isVirtual(__isVirtual) { type = "BotConfig";}
+    inline std::string getType() {return type;}
+protected:  
     bool isVirtual;
+    std::string type;
 };
 
 class RealBotConfig : public BotConfig {
 public:
-    RealBotConfig() : BotConfig(false) {} 
+    RealBotConfig() : BotConfig(false) {type = "RealBotConfig";} 
 };
 
 class VirtualBotConfig : public BotConfig {
 public:
-    VirtualBotConfig() : BotConfig(true) {}
+    VirtualBotConfig() : BotConfig(true) {type = "VirtualBotConfig";}
     virtual ~VirtualBotConfig() {}
     virtual bool isBallCloseEnoughToBot(BallData ballData, BotData botData) = 0;
-    PIDConstants transDispConsts;
-    PIDConstants rotatDispConsts;
-    float noSlowDownPidAmp;
 };
 
 
@@ -43,7 +49,7 @@ private:
     float const holdBallZoneHeight = 40.0;
 
 public:
-    GrSimBotConfig() : VirtualBotConfig() {}
+    GrSimBotConfig() : VirtualBotConfig() {type = "GrSimBotConfig";}
     bool isBallCloseEnoughToBot(BallData ballData, BotData botData) {
         if(ballData.frame != botData.frame) {
             BLogger logger;
@@ -82,7 +88,7 @@ public:
 
 class ErForceSimBotConfig : public VirtualBotConfig {
 public:
-    ErForceSimBotConfig() : VirtualBotConfig() {}
+    ErForceSimBotConfig() : VirtualBotConfig() {type = "ErForceSimBotConfig";}
     bool isBallCloseEnoughToBot(BallData ballData, BotData botData) {
         // To-do
         return false;

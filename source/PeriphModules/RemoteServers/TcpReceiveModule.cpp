@@ -19,7 +19,7 @@ void backgndTask(ITPS::FieldSubscriber<bool>& ballcapStatusSub, asio::ip::tcp::s
 // Implementation of task to be run on this thread
 void TcpReceiveModule::task(ThreadPool& threadPool) {
     BLogger logger;
-    logger.addTag("Connection Server Module");
+    logger.addTag("TcpReceiveModule");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
     int fieldLength = 0;

@@ -34,10 +34,10 @@ int main(int argc, char *argv[]) {
     // Process .ini config
     if(cliConfig.isVirtual) {
         if(cliConfig.simulatorName == "grSim") {
-            botConfig = std::unique_ptr<BotConfig>(new GrSimBotConfig());
+            botConfig = std::shared_ptr<GrSimBotConfig>(new GrSimBotConfig());
         }
         if(cliConfig.simulatorName == "ErForce") {
-            botConfig = std::unique_ptr<BotConfig>(new ErForceSimBotConfig());     
+            botConfig = std::shared_ptr<ErForceSimBotConfig>(new ErForceSimBotConfig());     
         }
     } else {
         // WIP

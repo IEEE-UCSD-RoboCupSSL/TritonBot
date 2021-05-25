@@ -2,6 +2,7 @@
 #pragma once
 
 #include <iostream>
+#include <armadillo>
 
 template <class T> // This PID code can handle (math)vector value
 class PIDController {
@@ -130,10 +131,22 @@ public:
         this->Kd = Kd;
     }
 
+    PIDController(arma::vec3 pidConsts) {
+        this->Kp = pidConsts(0);
+        this->Ki = pidConsts(1);
+        this->Kd = pidConsts(2);
+    }
+
     void updatePidConsts(double Kp, double Ki, double Kd) {
         this->Kp = Kp;
         this->Ki = Ki;
         this->Kd = Kd;
+    }
+
+    void updatePidConsts(arma::vec3 pidConsts) {
+        this->Kp = pidConsts(0);
+        this->Ki = pidConsts(1);
+        this->Kd = pidConsts(2);
     }
 
     // Fixed time interval mode, often coupled with a timer callback 
