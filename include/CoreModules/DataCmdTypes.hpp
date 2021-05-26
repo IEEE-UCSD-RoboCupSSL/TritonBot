@@ -83,7 +83,10 @@ struct SslVisionData {
 };
 
 struct McuSensorData {
-    BotData botData;
+    arma::vec2 encCnt;
+    float imuTheta;
+    float imuOmega;
+    arma::vec2 imuAcc;
     bool isHoldingBall;
 };
 

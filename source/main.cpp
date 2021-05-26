@@ -15,7 +15,7 @@
 #include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
 #include "PeriphModules/RemoteServers/UdpReceiveModule.hpp"
 #include "PeriphModules/CameraClientModule/CameraClientModule.hpp"
-#include "PeriphModules/McuClient/DEPRECATED_VFirmClient.hpp"
+#include "PeriphModules/McuClientModule/DEPRECATED_VFirmClient.hpp"
 #include "CoreModules/CommandProcessorModule/CommandProcessorModule.hpp"
 #include "CoreModules/DataProcessorModule/DataProcessorModule.hpp"
 #include "CoreModules/MotionControllerModule/MotionControllerModule.hpp"

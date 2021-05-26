@@ -11,15 +11,17 @@
 void help_print(BLogger& logger) {
     std::stringstream ss;
     ss << "\nCommand: \n"
-       << "For Virtual Robots on the Simulator: \n"
        << "\t./TritonBot.exe (-v) (-t) (-d) (-c <path_to_config_file>) <port_base> \n"
        << "\t\t-v: for controlling virtual robots in the simulator\n"
        << "\t\t-t: test mode\n"
        << "\t\t-d: debug mode\n"
        << "\t\t-c <file path>: desinated a robot config file (.ini file)\n"
-       << "\t\t<port_base>: specify the port base number to host the servers of THIS program on (port_base), (port_base+1) \n"
-       << "For Real Robots: \n"
-       << "\t(WORK IN PROGRESS, NOT SUPPORTED FOR NOW)\n";
+       << "\t\t<port_base>: specify the port base number to host the servers\n"
+       << "\t\t\t\tof THIS program on (port_base), (port_base+1), (port_base + 2) \n"
+       << "\t\t\t\t[port_base]    : tcp port for the server session of this program\n"
+       << "\t\t\t\t[port_base + 1]: udp port for the server session of this program\n"
+       << "\t\t\t\t[port_base + 2]: tcp port of MCU Top program for this program to connect,\n"
+       << "\t\t\t\t                     or tcp port back to the java AI program if in simulator mode (virtual mode)\n";
     logger.log(Info, ss.str());
 }
 
@@ -79,12 +81,15 @@ CliConfig processArgs(int argc, char *argv[]) {
             // <port base>
             config.tcpPort = std::stoi(std::string(argv[argc - 2]));
             config.udpPort = config.tcpPort + 1;
+            config.mcuTopTcpPort = config.tcpPort + 2;
         } else if (optind == argc - 1) {
             // <port base>
             config.tcpPort = std::stoi(std::string(argv[argc - 1]));
             config.udpPort = config.tcpPort + 1;
+            config.mcuTopTcpPort = config.tcpPort + 2;
         } else if(optind == argc) {
-            config.udpPort = config.tcpPort + 1;     
+            config.udpPort = config.tcpPort + 1;   
+            config.mcuTopTcpPort = config.tcpPort + 2;  
         } else {
             BLogger errLogger;
             errLogger.addTag("[Config.cpp]");
@@ -94,9 +99,10 @@ CliConfig processArgs(int argc, char *argv[]) {
         }
 
         std::stringstream ss;
-        ss << "\nThis program listens on LocalHost \n"
-           << "\tTCP Port: " + repr(config.tcpPort) + "\n"
-           << "\tUDP Port: " + repr(config.udpPort) << std::endl;
+        ss << "\nThis program listens on LocalHost\n"
+           << "\tTCP Port: " + repr(config.tcpPort) << "\n"
+           << "\tUDP Port: " + repr(config.udpPort) << "\n"
+           << "\tMCU Top TCP Port: " + repr(config.mcuTopTcpPort) << std::endl;
         logger.log(Info, ss.str());
     }
     else {

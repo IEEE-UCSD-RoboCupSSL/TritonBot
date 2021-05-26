@@ -1,4 +1,4 @@
-#include "PeriphModules/McuClient/DEPRECATED_VFirmClient.hpp"
+#include "PeriphModules/McuClientModule/DEPRECATED_VFirmClient.hpp"
 #include <string>
 #include <thread>
 #include <iostream>

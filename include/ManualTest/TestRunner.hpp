@@ -14,6 +14,7 @@
 #include "ManualTest/CoreModuleTests/DataProcessorModuleTest.hpp"
 #include "ManualTest/CoreModuleTests/CommandProcessorModuleTest.hpp"
 #include "ManualTest/CoreModuleTests/MotionControllerModuleTest.hpp"
+#include "ManualTest/PeriphModuleTests/McuClientModuleTest.hpp"
 #include "ManualTest/DEPRECATED_vftest.hpp"
 
 
@@ -28,6 +29,7 @@ public:
         testsMap["data-proc"] = new DataProcessorModuleTest(config);
         testsMap["cmd-proc"] = new CommandProcessorModuleTest(config);
         testsMap["motion-ctrl"] = new MotionControllerModuleTest(config); 
+        testsMap["mcu-client"] = new McuClientModuleTest(config);
         testsMap["vf"] = new VFTest(config);
     }
     ~TestRunner() {

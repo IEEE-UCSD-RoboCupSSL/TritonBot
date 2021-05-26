@@ -47,7 +47,10 @@ SslVisionData defaultSslVisionData() {
 
 McuSensorData defaultMcuSensorData() {
     McuSensorData data;
-    data.botData = defaultBotData();
+    data.encCnt = {0, 0};
+    data.imuAcc = {0, 0};
+    data.imuTheta = 0.0;
+    data.imuOmega = 0.0;
     data.isHoldingBall = false;
     return data;
 }

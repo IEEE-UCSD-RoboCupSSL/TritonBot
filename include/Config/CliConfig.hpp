@@ -7,6 +7,7 @@ struct CliConfig {
     //unsigned int robotId = 0;
     unsigned int tcpPort = 6000;
     unsigned int udpPort = 6001;
+    unsigned int mcuTopTcpPort = 6002;
     std::string simulatorName = "grSim";
     std::string botConfigFilePath = "";
 };

@@ -23,7 +23,12 @@ bool UdpReceiveModuleTest::test(ThreadPool& threadPool) {
     try {
         receivedCommandSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         receivedSslVisionDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
-    } catch(std::exception& e) {}
+    } catch(std::exception& e) {
+        BLogger logger;
+        logger.addTag("[UdpReceiveModuleTest.cpp]");
+        logger.log(Error, std::string(e.what()));
+        std::exit(0);
+    }
 
     delay(std::chrono::milliseconds(1500));
 
