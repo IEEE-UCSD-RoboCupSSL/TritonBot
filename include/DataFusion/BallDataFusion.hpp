@@ -3,11 +3,11 @@
 
 class BallDataFusion {
 public:
-    virtual BallData calc(BallData& sslVisionBallData, CameraData& cameraDataa) = 0;
+    virtual BallData calc(const BallData& sslVisionBallData, const CameraData& cameraDataa) = 0;
 };
 
 
 class VirtualBallDataFusion : public BallDataFusion {
 public:
-    BallData calc(BallData& sslVisionBallData, CameraData& cameraData);
+    BallData calc(const BallData& sslVisionBallData, const CameraData& cameraData);
 };

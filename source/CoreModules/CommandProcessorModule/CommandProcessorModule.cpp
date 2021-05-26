@@ -7,7 +7,7 @@
 #include "CoreModules/Conversion.hpp"
 
 
-ControlInput processMotionCommand(MotionCommand receivedMCmd, arma::vec2 robotOriginInWorld, float robotAng); 
+ControlInput processMotionCommand(const MotionCommand& receivedMCmd, arma::vec2 robotOriginInWorld, float robotAng); 
 
 void CommandProcessorModule::task(ThreadPool& threadPool) {
     /*** Publisher setup ***/
@@ -87,7 +87,7 @@ void CommandProcessorModule::task(ThreadPool& threadPool) {
 
 
 
-ControlInput processMotionCommand(MotionCommand receivedMCmd, arma::vec2 robotOriginInWorld, float robotAng) { 
+ControlInput processMotionCommand(const MotionCommand& receivedMCmd, arma::vec2 robotOriginInWorld, float robotAng) { 
     ControlInput ci;
     arma::vec3 setpoint3d = receivedMCmd.setpoint3d;
     CtrlMode mode = receivedMCmd.mode;

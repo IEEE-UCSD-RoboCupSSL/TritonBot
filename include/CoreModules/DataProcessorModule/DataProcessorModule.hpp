@@ -10,11 +10,11 @@
 
 class DataProcessorModule : public Module {
     public:
-        DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf, Config cfg);
+        DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf, Config& cfg);
         virtual void task(ThreadPool& threadPool);
     private:
-        BotDataFusion *botFusion;
-        BallDataFusion *ballFusion;
+        BotDataFusion& botDataFilter;
+        BallDataFusion& ballDataFilter;
         Config config;
 };
 

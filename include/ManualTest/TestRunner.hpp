@@ -19,7 +19,7 @@
 
 class TestRunner {
 public:
-    TestRunner(Config cfg) : config(cfg) {
+    TestRunner(Config& cfg) : config(cfg) {
         testsMap["periodic-thread"] = new PeriodicThreadTest();
         testsMap["pubsub"] = new PubSubTest();
         testsMap["tcp-recei"] = new TcpReceiveModuleTest(config);

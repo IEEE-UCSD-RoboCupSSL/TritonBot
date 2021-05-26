@@ -8,7 +8,7 @@
 
 class MotionControllerModule : public Module {
     public:
-        MotionControllerModule(Config cfg) : config(cfg) {}
+        MotionControllerModule(Config& cfg) : config(cfg) {}
         virtual void task(ThreadPool& threadPool);
     private:
         Config config;

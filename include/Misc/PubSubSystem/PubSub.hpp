@@ -358,7 +358,7 @@ namespace ITPS {
             }
 
             // with time limit, if surpassing the timeout limit, return dft_rtn (default return value) 
-            Msg getMsg(unsigned int timeout_ms, Msg dft_rtn) {
+            Msg getMsg(unsigned int timeout_ms, Msg dft_rtn) const {
                 return msg_queue->consume(timeout_ms, dft_rtn);
             }
 

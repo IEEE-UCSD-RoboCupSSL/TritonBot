@@ -4,7 +4,7 @@
 
 class CommandProcessorModule : public Module {
     public:
-        CommandProcessorModule(Config cfg) : config(cfg) {}
+        CommandProcessorModule(Config& cfg) : config(cfg) {}
         virtual void task(ThreadPool& threadPool);
     protected:
         Config config;

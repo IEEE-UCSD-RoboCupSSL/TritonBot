@@ -2,6 +2,6 @@
 
 
 
-BotData VirtualBotDataFusion::calc(BotData& sslVisionBotData, McuSensorData& mcuSensorData) {
+BotData VirtualBotDataFusion::calc(const BotData& sslVisionBotData, const McuSensorData& mcuSensorData) {
     return sslVisionBotData;
 }

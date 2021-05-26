@@ -4,7 +4,7 @@
 
 class CommandProcessorModuleTest : public ManualTest {
 public:
-    CommandProcessorModuleTest(Config cfg) : config(cfg) {}
+    CommandProcessorModuleTest(Config& cfg) : config(cfg) {}
     bool test(ThreadPool& threadPool);
 protected:
     Config config;

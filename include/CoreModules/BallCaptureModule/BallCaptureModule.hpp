@@ -8,7 +8,7 @@
 
 class BallCaptureModule : public Module {
     public:
-        BallCaptureModule(Config cfg) : config(cfg) {}
+        BallCaptureModule(Config& cfg) : config(cfg) {}
         virtual void task(ThreadPool& threadPool);
     private:
         Config config;

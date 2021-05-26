@@ -22,7 +22,10 @@ public:
 
     BotConfig(bool __isVirtual) : isVirtual(__isVirtual) { type = "BotConfig";}
     inline std::string getType() {return type;}
-    virtual MotionCommand autoBallCaptureSolution(bool isHoldingBall, BallData& ballData, BotData& botData) = 0;
+
+    // c++ note: return by copy will be optimized by most c++ compiler via RVO (return value optimization)
+    // c++ note2: const reference is used because it prolongs the life time of rvalue parameter (rval: temporary value) (plz google "const reference rvalue")
+    virtual MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) = 0;
 protected:  
     bool isVirtual;
     std::string type;
@@ -31,15 +34,15 @@ protected:
 class RealBotConfig : public BotConfig {
 public:
     RealBotConfig() : BotConfig(false) {type = "RealBotConfig";} 
-    virtual MotionCommand autoBallCaptureSolution(bool isHoldingBall, BallData& ballData, BotData& botData) = 0;
+    virtual MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) = 0;
 };
 
 class VirtualBotConfig : public BotConfig {
 public:
     VirtualBotConfig() : BotConfig(true) {type = "VirtualBotConfig";}
     virtual ~VirtualBotConfig() {}
-    virtual bool isBallCloseEnoughToBot(BallData& ballData, BotData& botData) = 0;
-    virtual MotionCommand autoBallCaptureSolution(bool isHoldingBall, BallData& ballData, BotData& botData) = 0;
+    virtual bool isBallCloseEnoughToBot(const BallData& ballData, const BotData& botData) = 0;
+    virtual MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) = 0;
 };
 
 
@@ -64,7 +67,7 @@ public:
         type = "GrSimBotConfig";
         t0 = CHRONO_NOW;
     }
-    bool isBallCloseEnoughToBot(BallData& ballData, BotData& botData) {
+    bool isBallCloseEnoughToBot(const BallData& ballData, const BotData& botData) {
         if(ballData.frame != botData.frame) {
             BLogger logger;
             logger.addTag("[BotConfig.hpp]");
@@ -79,7 +82,7 @@ public:
         }
         return false;
     }
-    bool isHoldingBall(BallData& ballData, BotData& botData) {
+    bool isHoldingBall(const BallData& ballData, const BotData& botData) {
         if(ballData.frame != botData.frame) {
             BLogger logger;
             logger.addTag("[BotConfig.hpp]");
@@ -110,7 +113,7 @@ public:
         }
         return hbResult;
     }
-    MotionCommand autoBallCaptureSolution(bool isHoldingBall, BallData& ballData, BotData& botData) {
+    MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) {
         MotionCommand command;
         if (isHoldingBall) {
             double deltaX = ballData.pos(0) - botData.pos(0);
@@ -157,11 +160,11 @@ public:
 class ErForceSimBotConfig : public VirtualBotConfig {
 public:
     ErForceSimBotConfig() : VirtualBotConfig() {type = "ErForceSimBotConfig";}
-    bool isBallCloseEnoughToBot(BallData& ballData, BotData& botData) {
+    bool isBallCloseEnoughToBot(const BallData& ballData, const BotData& botData) {
         // To-do
         return false;
     }
-    MotionCommand autoBallCaptureSolution(bool isHoldingBall, BallData& ballData, BotData& botData) {
+    MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) {
         // To-do
         return defaultMotionCommand();
     }

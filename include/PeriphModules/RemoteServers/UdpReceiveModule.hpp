@@ -5,7 +5,7 @@
 
 class UdpReceiveModule : public Module {
     public:
-        UdpReceiveModule(Config cfg) : config(cfg) {}
+        UdpReceiveModule(Config& cfg) : config(cfg) {}
         virtual void task(ThreadPool& threadPool);
     protected:
         Config config;

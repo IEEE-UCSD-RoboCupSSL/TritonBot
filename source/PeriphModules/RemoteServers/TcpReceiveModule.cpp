@@ -141,8 +141,7 @@ void backgndTask(ITPS::FieldSubscriber<bool>& ballCapStatusSub, asio::ip::tcp::s
         auto t = CHRONO_NOW;
 
         std::string sendStr;
-        bool ballCapStatus;
-        ballCapStatus = ballCapStatusSub.getMsg(); 
+        auto ballCapStatus = ballCapStatusSub.getMsg(); 
         if(ballCapStatus != prevBallCapStatus) {
             if(ballCapStatus) {
                 sendStr = "BallOnHold";

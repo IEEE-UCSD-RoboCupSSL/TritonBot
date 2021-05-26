@@ -4,6 +4,6 @@
 
 
 
-BallData VirtualBallDataFusion::calc(BallData& sslVisionBallData, CameraData& cameraData) {
+BallData VirtualBallDataFusion::calc(const BallData& sslVisionBallData, const CameraData& cameraData) {
     return sslVisionBallData;
 }

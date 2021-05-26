@@ -4,7 +4,7 @@
 
 class UdpReceiveModuleTest : public ManualTest {
 public:
-    UdpReceiveModuleTest(Config cfg) : config(cfg) {}
+    UdpReceiveModuleTest(Config& cfg) : config(cfg) {}
     bool test(ThreadPool& threadPool);
 protected:
     Config config;

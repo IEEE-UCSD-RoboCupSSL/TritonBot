@@ -6,7 +6,7 @@
 
 class TcpReceiveModule : public Module {
     public:
-        TcpReceiveModule(Config cfg) : config(cfg) {}
+        TcpReceiveModule(Config& cfg) : config(cfg) {}
         virtual void task(ThreadPool& threadPool);
     protected:
         Config config;

@@ -53,7 +53,7 @@ void MotionControllerModule::task(ThreadPool& threadPool) {
                     pidAmplifier = config.botConfig->noSlowDownPidAmp;
                 }
                 anglePid.updatePidConsts(config.botConfig->anglePidConsts.toArmaVec3());
-                posPid.updatePidConsts(pidAmplifier * config.botConfig->anglePidConsts.Kp,
+                posPid.updatePidConsts(pidAmplifier * config.botConfig->anglePidConsts.Kp,  // only need to amplify Kp constant
                                                         config.botConfig->anglePidConsts.Ki,
                                                         config.botConfig->anglePidConsts.Kd);
                 

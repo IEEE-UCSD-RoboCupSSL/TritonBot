@@ -6,11 +6,11 @@
 #include "Config/Config.hpp"
 #include "CoreModules/Conversion.hpp"
 
-BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec2 botOrigin);
-BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec2 botOrigin, float botAng);
+BotData convertToBodyFrame(const BotData& botDataWorldFrame, arma::vec2 botOrigin);
+BallData convertToBodyFrame(const BallData& ballDataWorldFrame, arma::vec2 botOrigin, float botAng);
 
-DataProcessorModule::DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf, Config cfg) 
-    : botFusion(&botdf), ballFusion(&balldf), config(cfg) {
+DataProcessorModule::DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf, Config& cfg) 
+    : botDataFilter(botdf), ballDataFilter(balldf), config(cfg) {
 
 }
 
@@ -52,8 +52,6 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
     BotData botDataBodyFrame;
     BallData ballDataBodyFrame;
 
-    auto botFilter = botFusion;
-    auto ballFilter = ballFusion;
 
     BotData filteredBotData;
     BallData filteredBallData;
@@ -66,8 +64,8 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
             ballDataBodyFrame = convertToBodyFrame(receivedSslVisionDataSub.getMsg().ballData,
                                     robotOriginInWorldSub.getMsg(), botDataBodyFrame.ang); 
 
-            filteredBotData = botFilter->calc(botDataBodyFrame, mcuSensorDataSub.getMsg());
-            filteredBallData = ballFilter->calc(ballDataBodyFrame, cameraDataSub.getMsg());
+            filteredBotData = botDataFilter.calc(botDataBodyFrame, mcuSensorDataSub.getMsg());
+            filteredBallData = ballDataFilter.calc(ballDataBodyFrame, cameraDataSub.getMsg());
 
             filteredBotDataPub.publish(filteredBotData);
             filteredBallDataPub.publish(filteredBallData);
@@ -87,7 +85,7 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
     }
 }
 
-BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec2 botOrigin) {
+BotData convertToBodyFrame(const BotData& botDataWorldFrame, arma::vec2 botOrigin) {
     BotData dataBodyFrame;
     dataBodyFrame.ang = botDataWorldFrame.ang;
     dataBodyFrame.angVel = botDataWorldFrame.angVel;
@@ -97,7 +95,7 @@ BotData convertToBodyFrame(BotData botDataWorldFrame, arma::vec2 botOrigin) {
     return dataBodyFrame;
 }
 
-BallData convertToBodyFrame(BallData ballDataWorldFrame, arma::vec2 botOrigin, float botAng) {
+BallData convertToBodyFrame(const BallData& ballDataWorldFrame, arma::vec2 botOrigin, float botAng) {
     BallData dataBodyFrame;
     dataBodyFrame.frame = ReferenceFrame::BodyFrame;
     dataBodyFrame.pos = transformWorldToBodyFrame(botOrigin, botAng, ballDataWorldFrame.pos);

@@ -3,7 +3,7 @@
 #include "Config/Config.hpp"
 class TcpReceiveModuleTest : public ManualTest {
 public:
-    TcpReceiveModuleTest(Config cfg) : config(cfg) {}
+    TcpReceiveModuleTest(Config& cfg) : config(cfg) {}
     bool test(ThreadPool& threadPool);
 protected:
     Config config;
