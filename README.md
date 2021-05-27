@@ -10,6 +10,16 @@ cmake ..
 make -j
 ./TritonBot [arg1] [arg2] ...
 ```
+run ./TritonBot -h to print the help message
+
+to rebuild proto source
+```shell
+rm proto/proto_generated.cmake_msg
+rm -rf proto/ProtoGenerated
+cd build
+make proto
+```
+
 
 refer to https://github.com/IEEE-UCSD-RoboCupSSL/TritonsRCSC-Software-Pack for more details
 

@@ -34,6 +34,26 @@ bool McuClientModuleTest::test(ThreadPool& threadPool) {
         std::exit(0);
     }
 
+    delay(1000);
+
+    initSensorsCmdPub.publish(true);
+    for(float pwr = 0.0; true; pwr+=0.01) {
+        if(pwr >= 100.00) pwr = 0.0;
+        ControlOutput co;
+        co.vx = pwr;
+        co.vy = -pwr;
+        co.omega = pwr / 2.0;
+        controlOutputPub.publish(co);
+        arma::vec2 ko = {pwr / 2.0, pwr / 10.0};
+        kickerSetPointPub.publish(ko);
+        if(pwr >= 50.00) dribblerCommandPub.publish(true);
+        else dribblerCommandPub.publish(false);
+
+        auto data = mcuSensorDataSub.getMsg();
+        std::cout << "Enc[" << data.encCnt << "] ImuAcc[" << data.imuAcc
+                    << "] ImuTheta[" << data.imuTheta << "] ImuOmega[" << data.imuOmega
+                    << "] IsHoldingBall[" << data.isHoldingBall << "]" << std::endl;
+    }
     
     threadPool.joinAll();
     return true;
