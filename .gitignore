@@ -5,3 +5,4 @@ proto/ProtoGenerated/
 proto/proto_generated.cmake_msg
 cmake-build-debug
 cmake-build-debug/
+include/Misc/Inih/inih
