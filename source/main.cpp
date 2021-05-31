@@ -15,7 +15,8 @@
 #include "PeriphModules/RemoteServers/TcpReceiveModule.hpp"
 #include "PeriphModules/RemoteServers/UdpReceiveModule.hpp"
 #include "PeriphModules/CameraClientModule/CameraClientModule.hpp"
-#include "PeriphModules/McuClientModule/DEPRECATED_VFirmClient.hpp"
+//#include "PeriphModules/McuClientModule/DEPRECATED_VFirmClient.hpp"
+#include "PeriphModules/McuClientModule/McuClientModule.hpp"
 #include "CoreModules/CommandProcessorModule/CommandProcessorModule.hpp"
 #include "CoreModules/DataProcessorModule/DataProcessorModule.hpp"
 #include "CoreModules/MotionControllerModule/MotionControllerModule.hpp"
@@ -82,7 +83,7 @@ int main(int argc, char *argv[]) {
             std::unique_ptr<CommandProcessorModule> commandProcessorModule(new CommandProcessorModule(cfg));
             std::unique_ptr<MotionControllerModule> motionControllerModule(new MotionControllerModule(cfg));
             std::unique_ptr<BallCaptureModule> ballCaptureModule(new BallCaptureModule(cfg));
-
+            std::unique_ptr<McuClientModule> mcuClientModule(new McuClientModule(cfg));
 
         
             // Run the servers
@@ -93,6 +94,7 @@ int main(int argc, char *argv[]) {
             commandProcessorModule->run(threadPool);
             motionControllerModule->run(threadPool);
             ballCaptureModule->run(threadPool);
+            mcuClientModule->run(threadPool);
             
 
 
