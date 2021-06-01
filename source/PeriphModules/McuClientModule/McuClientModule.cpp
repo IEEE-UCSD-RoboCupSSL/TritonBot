@@ -64,7 +64,7 @@ void McuClientModule::task(ThreadPool& threadPool) {
     std::shared_ptr<asio::ip::tcp::socket> socket; //(ios);
     boost::system::error_code errCode;
 
-    delay(2000); // delay needed for connecting to Java part in virtual mode
+    //delay(2000); // delay needed for connecting to Java part in virtual mode
 
     do {
         socket = std::shared_ptr<asio::ip::tcp::socket>(new asio::ip::tcp::socket(ios));
