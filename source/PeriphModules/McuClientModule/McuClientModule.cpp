@@ -80,6 +80,20 @@ void McuClientModule::task(ThreadPool& threadPool) {
 
     while(true) {
         periodic_session([&](){
+            /** handle init command **/
+            if(initSensorsCmdSub.getMsg()) {
+                // to init or re-init
+                initSensors(*socket, logger);
+                initSensorsCmdSub.forceSetMsg(false); // set this boolean pub-sub field back to false
+            }
+            /** send all other commands **/
+            sendFirmwareCommand(*socket, controlOutputSub.getMsg(), 
+                                dribblerCommandSub.getMsg(), kickerSetPointSub.getMsg());
+
+
+
+
+
             /** read a packet **/
             // read_buffer is binded to input_stream
             asio::read_until(*socket, readBuf, "\n"); // read until getting delimiter "\n"
@@ -90,18 +104,6 @@ void McuClientModule::task(ThreadPool& threadPool) {
             /** convert and publish read packet **/
             auto data = readFirmwareData(received);
             mcuSensorDataPub.publish(data);
-
-            /** handle init command **/
-            if(initSensorsCmdSub.getMsg()) {
-                // to init or re-init
-                initSensors(*socket, logger);
-                initSensorsCmdSub.forceSetMsg(false); // set this boolean pub-sub field back to false
-            }
-
-            /** send all other commands **/
-            sendFirmwareCommand(*socket, controlOutputSub.getMsg(), 
-                                dribblerCommandSub.getMsg(), kickerSetPointSub.getMsg());
-
         }, TO_PERIOD(MCU_CLIENT_FREQUENCY));
     }
 
@@ -123,6 +125,7 @@ FirmwareCommand defaultFirmwareCommand() {
 }
 
 void sendFirmwareCommand(ip::tcp::socket& socket, const FirmwareCommand& cmd) {
+    // std::cout << cmd.DebugString() << std::endl;
     std::string writeStr;
     cmd.SerializeToString(&writeStr);
     writeStr += '\n';
@@ -138,8 +141,7 @@ void sendFirmwareCommand(ip::tcp::socket& socket, const ControlOutput& ctrlOut,
     cmd.set_dribbler(turnOnDribbler);
     cmd.set_init(false);
     cmd.set_kx(kickerPwr(0));
-    cmd.set_kz(kickerPwr(1)); 
-    std::string writeStr;
+    cmd.set_kz(kickerPwr(1));
     sendFirmwareCommand(socket, cmd);
 }
 
