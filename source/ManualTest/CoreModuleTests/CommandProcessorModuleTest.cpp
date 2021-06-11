@@ -78,6 +78,8 @@ bool CommandProcessorModuleTest::test(ThreadPool& threadPool) {
     assert(arma::approx_equal(controlInputSub.getMsg().translationalSetPoint.value, 
                     zeroVec2d(), "absdiff", 0.001)
     );
+
+    
     cmdMock.enAutoCap = false;
     receivedCommandPub.publish(cmdMock);
     delay(10);

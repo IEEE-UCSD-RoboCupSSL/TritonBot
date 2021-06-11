@@ -6,7 +6,8 @@
 
 class TcpReceiveModule : public Module {
     public:
-        TcpReceiveModule(Config& cfg) : config(cfg) {}
+        // pass by copy on purpose to avoid multithreading synchronization concerns
+        TcpReceiveModule(Config cfg) : config(cfg) {}
         virtual void task(ThreadPool& threadPool);
     protected:
         Config config;

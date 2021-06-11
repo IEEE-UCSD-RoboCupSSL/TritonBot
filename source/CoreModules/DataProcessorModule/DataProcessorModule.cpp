@@ -9,7 +9,9 @@
 BotData convertToBodyFrame(const BotData& botDataWorldFrame, arma::vec2 botOrigin);
 BallData convertToBodyFrame(const BallData& ballDataWorldFrame, arma::vec2 botOrigin, float botAng);
 
-DataProcessorModule::DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf, Config& cfg) 
+
+// config pass by copy on purpose to avoid multithreading synchronization concerns
+DataProcessorModule::DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf, Config cfg) 
     : botDataFilter(botdf), ballDataFilter(balldf), config(cfg) {
 
 }

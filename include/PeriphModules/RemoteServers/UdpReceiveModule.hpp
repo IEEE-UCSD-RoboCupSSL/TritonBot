@@ -5,7 +5,8 @@
 
 class UdpReceiveModule : public Module {
     public:
-        UdpReceiveModule(Config& cfg) : config(cfg) {}
+        // pass by copy on purpose to avoid multithreading synchronization concerns
+        UdpReceiveModule(Config cfg) : config(cfg) {}
         virtual void task(ThreadPool& threadPool);
     protected:
         Config config;

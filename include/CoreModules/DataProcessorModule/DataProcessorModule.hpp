@@ -10,7 +10,9 @@
 
 class DataProcessorModule : public Module {
     public:
-        DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf, Config& cfg);
+
+        // config pass by copy on purpose to avoid multithreading synchronization concerns
+        DataProcessorModule(BotDataFusion& botdf, BallDataFusion& balldf, Config cfg);
         virtual void task(ThreadPool& threadPool);
     private:
         BotDataFusion& botDataFilter;

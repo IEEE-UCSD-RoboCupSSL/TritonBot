@@ -4,8 +4,7 @@
 #include "Config/CliConfig.hpp"
 
 struct Config {
-    // pass by copy is fine, configuration stage isn't performance sensitive
-    Config(CliConfig clicfg, std::shared_ptr<BotConfig> botcfg) 
+    Config(CliConfig& clicfg, std::shared_ptr<BotConfig> botcfg) 
         : cliConfig(clicfg), botConfig(botcfg) {}
     CliConfig cliConfig;
     std::shared_ptr<BotConfig> botConfig;

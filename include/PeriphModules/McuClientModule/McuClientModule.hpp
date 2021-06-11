@@ -7,7 +7,8 @@
 
 class McuClientModule : public Module {
     public:
-        McuClientModule(Config& cfg) : config(cfg) {}
+        // pass by copy on purpose to avoid multithreading synchronization concerns
+        McuClientModule(Config cfg) : config(cfg) {}
         virtual void task(ThreadPool& threadPool);
     protected:
         Config config;
