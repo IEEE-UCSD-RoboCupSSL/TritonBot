@@ -1,6 +1,9 @@
 #pragma once
 
 #include <armadillo>
+#include <string>
+#include <sstream>
+#include "Misc/Utility/Common.hpp"
 
 // Controller controls one of the following physics variables 
 enum CtrlMode {TDRD = 0, //TDRD: translational displacement & rotational displacement (at the same time)
@@ -50,6 +53,19 @@ struct Command {
     MotionCommand motionCommand;
     bool enAutoCap;
     arma::vec2 kickerSetPoint; // unit: m/s
+    std::string toString() {
+        std::stringstream ss;
+        ss << "Command [\n" 
+           << "\tMotionCommand [\n"
+           << "\t\tSetPoint: " << motionCommand.setpoint3d << "\n"
+           << "\t\tMode:     " << motionCommand.mode << "\n"
+           << "\t\tReferenceFrame: " << motionCommand.frame << "\n"
+           << "\t]\n"
+           << "\tKickerSetPoint: " << kickerSetPoint << "\n"
+           << "\tEnAutoCap" << (enAutoCap ? "True" : "False") << "\n"
+           << "\t]" << std::endl; 
+        return ss.str();
+    }
 };
 
 
@@ -80,6 +96,24 @@ struct BallData {
 struct SslVisionData {
     BotData botData;
     BallData ballData;
+    std::string toString() {
+        std::stringstream ss;
+        ss << "SSL Vision Data [\n"
+           << "\tBotData [\n"
+           << "\t\tPos:    " << botData.pos << "\n"
+           << "\t\tVel:    " << botData.vel << "\n"
+           << "\t\tAng:    " << botData.ang << "\n"
+           << "\t\tAngVel: " << botData.angVel << "\n"
+           << "\t\tReferenceFrame: " << botData.frame << "\n"
+           << "\t]\n"
+           << "\tBallData [\n"
+           << "\t\tPos: " << ballData.pos << "\n"
+           << "\t\tVel: " << ballData.vel << "\n"
+           << "\t\tReferenceFrame: " << ballData.frame << "\n"
+           << "\t]\n"
+           << "\t]" << std::endl; 
+        return ss.str();
+    }
 };
 
 struct McuSensorData {

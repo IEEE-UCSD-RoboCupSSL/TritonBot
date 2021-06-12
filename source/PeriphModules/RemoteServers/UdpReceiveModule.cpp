@@ -56,6 +56,8 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     Command cmd;
     SslVisionData data;
 
+    unsigned int prevT = millis();
+
 
     while(true) {
         periodic_session([&](){
@@ -105,6 +107,14 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
 
             kickVec2d = {udpData.commanddata().kicker_set_point().x(), udpData.commanddata().kicker_set_point().y()};
             cmd.kickerSetPoint = kickVec2d;
+
+            if(config.cliConfig.liveMonitorTarget == "UdpReceiveModule") {
+                if(millis() - prevT > 300) {
+                    logger.log(Info, data.toString());
+                    logger.log(Info, cmd.toString());
+                    prevT = millis();
+                } 
+            }
 
             /* publish */
             receivedSslVisionDataPub.publish(data);

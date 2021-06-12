@@ -2,12 +2,9 @@
 #include "Misc/PubSubSystem/ThreadPool.hpp"
 #include "Misc/PubSubSystem/Module.hpp"
 #include <armadillo>
+#include "Misc/Utility/Common.hpp"
 
 
-
-std::ostream& operator<<(std::ostream& os, const arma::vec& v);
-std::ostream& operator<<(std::ostream& os, const arma::vec2& v);
-std::ostream& operator<<(std::ostream& os, const arma::vec3& v);
 
 class ManualTest {
 public:

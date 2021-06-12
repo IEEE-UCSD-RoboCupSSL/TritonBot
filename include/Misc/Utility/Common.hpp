@@ -67,3 +67,9 @@ arma::mat changeBasisMatrix2D(arma::vec vx, arma::vec vy) ;
 arma::mat WorldtoBodyHomoTransMat(arma::vec robot_position_w, double robot_orient_w);
 
 arma::vec zeroVec2d(void);
+
+
+
+std::ostream& operator<<(std::ostream& os, const arma::vec& v);
+std::ostream& operator<<(std::ostream& os, const arma::vec2& v);
+std::ostream& operator<<(std::ostream& os, const arma::vec3& v);

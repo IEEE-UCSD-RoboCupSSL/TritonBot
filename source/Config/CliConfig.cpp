@@ -11,17 +11,18 @@
 void help_print(BLogger& logger) {
     std::stringstream ss;
     ss << "\nCommand: \n"
-       << "\t./TritonBot.exe (-v) (-t) (-d) (-c <path_to_config_file>) <port_base> \n"
-       << "\t\t-v: for controlling virtual robots in the simulator\n"
-       << "\t\t-t: test mode\n"
-       << "\t\t-d: debug mode\n"
-       << "\t\t-c <file path>: desinated a robot config file (.ini file)\n"
-       << "\t\t<port_base>: specify the port base number to host the servers\n"
-       << "\t\t\t\tof THIS program on (port_base), (port_base+1), (port_base + 2) \n"
-       << "\t\t\t\t[port_base]    : tcp port for the server session of this program\n"
-       << "\t\t\t\t[port_base + 1]: udp port for the server session of this program\n"
-       << "\t\t\t\t[port_base + 2]: tcp port of MCU Top program for this program to connect,\n"
-       << "\t\t\t\t                     or tcp port back to the java AI program if in simulator mode (virtual mode)\n";
+       << "./TritonBot.exe (-v) (-t) (-d) (-c <path_to_config_file>) <port_base> \n"
+       << "\t-v: for controlling virtual robots in the simulator\n"
+       << "\t-t: test mode\n"
+       << "\t-d: debug mode\n"
+       << "\t-l <module name>: liveLogging-a-module mode, module name is in camelcase, e.g.: McuClientModule\n"
+       << "\t-c <file path>: desinated a robot config file (.ini file)\n"
+       << "\t<port_base>: specify the port base number to host the servers\n"
+       << "\t\t\tof THIS program on (port_base), (port_base+1), (port_base + 2) \n"
+       << "\t\t\t[port_base]    : tcp port for the server session of this program\n"
+       << "\t\t\t[port_base + 1]: udp port for the server session of this program\n"
+       << "\t\t\t[port_base + 2]: tcp port of MCU Top program for this program to connect,\n"
+       << "\t\t\t                     or tcp port back to the java AI program if in simulator mode (virtual mode)\n";
     logger.log(Info, ss.str());
 }
 
@@ -33,7 +34,7 @@ CliConfig processArgs(int argc, char *argv[]) {
     CliConfig config;
 
     char option;
-    while ( (option = getopt(argc, argv,"c:vtdh")) != -1 ) {
+    while ( (option = getopt(argc, argv,"c:l:vtdh")) != -1 ) {
         switch(option) {
             case 'v': 
                 config.isVirtual = true;
@@ -53,6 +54,10 @@ CliConfig processArgs(int argc, char *argv[]) {
             case 'c':
                 config.botConfigFilePath = std::string(optarg);
                 logger.log(Info, "Config file desinated: " + config.botConfigFilePath);
+                break;
+            case 'l':
+                config.liveMonitorTarget = std::string(optarg);
+                logger.log(Info, "\033[0;32m Will Live-Monitoring: " + config.liveMonitorTarget + "\033[0m");
                 break;
             case 'h': {
                 BLogger helpLogger;

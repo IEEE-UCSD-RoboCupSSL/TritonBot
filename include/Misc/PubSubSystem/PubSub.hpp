@@ -386,6 +386,28 @@ namespace ITPS {
     };
 
 
+    template <typename Msg>
+    class MQPubSubPair {
+        public: 
+            MQPublisher<Msg>* pub;
+            MQSubscriber<Msg>* sub;
+
+            MQPubSubPair(std::string topic_name, std::string msg_name) {
+                pub = new MQPublisher<Msg>(topic_name, msg_name);
+                sub = new MQSubscriber<Msg>(topic_name, msg_name);
+                sub->subscribe();
+            }
+            MQPubSubPair(std::string topic_name, std::string msg_name, unsigned int queue_size) {
+                pub = new MQPublisher<Msg>(topic_name, msg_name);
+                sub = new MQSubscriber<Msg>(topic_name, msg_name, queue_size);
+                sub->subscribe();
+            }
+            ~MQPubSubPair() {
+                delete pub;
+                delete sub;
+            }
+    };
+
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
