@@ -120,11 +120,11 @@ FirmwareCommand defaultFirmwareCommand() {
     FirmwareCommand cmd;
     cmd.set_init(false);
     cmd.set_dribbler(false);
-    cmd.set_kx(0.00);
-    cmd.set_kz(0.00);
-    cmd.set_vx(0.00);
-    cmd.set_vy(0.00);
-    cmd.set_w(0.00);
+    cmd.set_kx(0.00f);
+    cmd.set_kz(0.00f);
+    cmd.set_vx(0.00f);
+    cmd.set_vy(0.00f);
+    cmd.set_w(0.00f);
     return cmd;
 }
 
@@ -139,13 +139,13 @@ void sendFirmwareCommand(ip::tcp::socket& socket, const FirmwareCommand& cmd) {
 void sendFirmwareCommand(ip::tcp::socket& socket, const ControlOutput& ctrlOut, 
                                 const bool turnOnDribbler, const arma::vec2 kickerPwr) {
     FirmwareCommand cmd;
-    cmd.set_vx(ctrlOut.vx);
-    cmd.set_vy(ctrlOut.vy);
-    cmd.set_w(ctrlOut.omega);
+    cmd.set_vx((float)ctrlOut.vx);
+    cmd.set_vy((float)ctrlOut.vy);
+    cmd.set_w((float)ctrlOut.omega);
     cmd.set_dribbler(turnOnDribbler);
     cmd.set_init(false);
-    cmd.set_kx(kickerPwr(0));
-    cmd.set_kz(kickerPwr(1));
+    cmd.set_kx((float)kickerPwr(0));
+    cmd.set_kz((float)kickerPwr(1));
     sendFirmwareCommand(socket, cmd);
 }
 
