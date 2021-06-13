@@ -79,7 +79,7 @@ void McuClientModule::task(ThreadPool& threadPool) {
 
 
     while(true) {
-        periodic_session([&](){
+        //periodic_session([&](){
             auto ctrlOut = controlOutputSub.getMsg();
             auto dribCmd = dribblerCommandSub.getMsg();
             auto kickSp = kickerSetPointSub.getMsg();
@@ -108,7 +108,8 @@ void McuClientModule::task(ThreadPool& threadPool) {
             /** convert and publish read packet **/
             auto data = readFirmwareData(received);
             mcuSensorDataPub.publish(data);
-        }, TO_PERIOD(MCU_CLIENT_FREQUENCY));
+        //}, TO_PERIOD(MCU_CLIENT_FREQUENCY));
+        delay(2); // socket read/write freq is not derterministic, so just use a simple delay instead
     }
 
     //socket.shutdown(ip::tcp::socket::shutdown_both);
