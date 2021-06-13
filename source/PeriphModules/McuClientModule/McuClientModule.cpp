@@ -80,6 +80,11 @@ void McuClientModule::task(ThreadPool& threadPool) {
 
     while(true) {
         periodic_session([&](){
+            auto ctrlOut = controlOutputSub.getMsg();
+            auto dribCmd = dribblerCommandSub.getMsg();
+            auto kickSp = kickerSetPointSub.getMsg();
+
+
             /** handle init command **/
             if(initSensorsCmdSub.getMsg()) {
                 // to init or re-init
@@ -87,8 +92,7 @@ void McuClientModule::task(ThreadPool& threadPool) {
                 initSensorsCmdSub.forceSetMsg(false); // set this boolean pub-sub field back to false
             }
             /** send all other commands **/
-            sendFirmwareCommand(*socket, controlOutputSub.getMsg(), 
-                                dribblerCommandSub.getMsg(), kickerSetPointSub.getMsg());
+            sendFirmwareCommand(*socket, ctrlOut, dribCmd, kickSp);
 
 
 
@@ -167,4 +171,47 @@ void initSensors(asio::ip::tcp::socket& socket, BLogger& logger) {
     cmd.set_init(false);
     sendFirmwareCommand(socket, cmd);
     logger(Info) << "\033[0;32m Request command to initialize sensors has been sent to MCU Top program \033[0m";
+}
+
+
+
+
+void McuClientModuleMonitor::task(ThreadPool& threadPool) {
+
+    ITPS::FieldSubscriber<McuSensorData> mcuSensorDataSub("From:McuClientModule", "McuSensorData(BodyFrame)");
+
+    ITPS::FieldSubscriber<ControlOutput> controlOutputSub("From:MotionControllerModule", "MotionControlOutput");
+    ITPS::FieldSubscriber<bool> dribblerCommandSub("From:CommandProcessorModule", "dribblerSwitch");
+    ITPS::FieldSubscriber<arma::vec2> kickerSetPointSub("From:CommandProcessorModule", "KickerSetPoint(On/Off)");
+    ITPS::FieldSubscriber<bool> initSensorsCmdSub("From:TcpReceiveModule", "re/init sensors");
+   
+
+    try {
+        mcuSensorDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        controlOutputSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        dribblerCommandSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        kickerSetPointSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        initSensorsCmdSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+    } catch(std::exception& e) {
+        BLogger logger;
+        logger.addTag("[McuClientModule.cpp]");
+        logger.log(Error, std::string(e.what()));
+        std::exit(0);
+    }
+
+    BLogger mlog;
+    mlog.setToShortestFormat();
+    while(true) {
+        periodic_session([&]() {
+            mlog.log(Info, controlOutputSub.getMsg().toString());
+            std::stringstream ss;
+            ss << "DribblerCommand: " << (dribblerCommandSub.getMsg()?"ON":"OFF") << "\t"
+                << "KickerSetPoint: " << kickerSetPointSub.getMsg() << "\t"
+                << "InitSensorCommand: " << (initSensorsCmdSub.getMsg()?"True":"False") << std::endl; 
+            mlog.log(Info, ss.str());
+            mlog.log(Info, mcuSensorDataSub.getMsg().toString());
+            mlog(Info) << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
+        }, std::chrono::milliseconds(samplingPeriod));
+    }
+
 }

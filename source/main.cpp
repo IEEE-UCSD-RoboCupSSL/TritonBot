@@ -25,9 +25,6 @@
 
 
 
-
-
-
 int main(int argc, char *argv[]) {
     // Logger Initialization
     BLogger::staticInit();
@@ -96,7 +93,17 @@ int main(int argc, char *argv[]) {
             motionControllerModule->run(threadPool);
             ballCaptureModule->run(threadPool);
             mcuClientModule->run(threadPool);
-            
+
+            // Constructor the monitors for the above modules
+            int monitorPrintPeriod = 300; // unit: milliseconds
+            std::unique_ptr<UdpReceiveModuleMonitor> udpReceiveModuleMonitor(new UdpReceiveModuleMonitor(monitorPrintPeriod));
+            std::unique_ptr<McuClientModuleMonitor> mcuClientModuleMonitor(new McuClientModuleMonitor(monitorPrintPeriod));
+
+
+            // Run the cli-designated module monitor
+            ModuleMonitor::runMonitor(cfg.cliConfig.liveMonitorTarget, threadPool);
+
+
 
 
             threadPool.joinAll(); // must have it here, or will cause seg fault, think about the scope issue of the smart pointers

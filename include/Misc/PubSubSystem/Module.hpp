@@ -52,3 +52,31 @@ class Module {
         boost::shared_ptr<boost::thread> mthread;
 
 };
+
+
+
+class ModuleMonitor : public Module {
+    public :
+        static bool runMonitor(std::string monitorName) {
+            auto monitor = findMonitor(monitorName);
+            if(monitor != nullptr) monitor->run();
+            else return false; 
+            return true;
+        }
+        static bool runMonitor(std::string monitorName, ThreadPool& threadPool) {
+            auto monitor = findMonitor(monitorName);
+            if(monitor != nullptr) monitor->run(threadPool);
+            else return false; 
+            return true;
+        }
+    protected:
+        static std::unordered_map<std::string, ModuleMonitor*> moduleMonitorMap;
+
+    private:
+        static ModuleMonitor* findMonitor(std::string key) {
+            auto iter = moduleMonitorMap.find(key);
+            if(iter == moduleMonitorMap.end()) return nullptr;
+            else return iter->second;
+        }
+};
+

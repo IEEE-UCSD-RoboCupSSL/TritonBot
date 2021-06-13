@@ -55,15 +55,15 @@ struct Command {
     arma::vec2 kickerSetPoint; // unit: m/s
     std::string toString() {
         std::stringstream ss;
-        ss << "Command [\n" 
+        ss << "\nCommand [\n" 
            << "\tMotionCommand [\n"
            << "\t\tSetPoint: " << motionCommand.setpoint3d << "\n"
-           << "\t\tMode:     " << motionCommand.mode << "\n"
+           << "\t\tMode: " << motionCommand.mode << "\n"
            << "\t\tReferenceFrame: " << motionCommand.frame << "\n"
            << "\t]\n"
            << "\tKickerSetPoint: " << kickerSetPoint << "\n"
-           << "\tEnAutoCap" << (enAutoCap ? "True" : "False") << "\n"
-           << "\t]" << std::endl; 
+           << "\tEnAutoCap: " << (enAutoCap ? "True" : "False") << "\n"
+           << "]" << std::endl; 
         return ss.str();
     }
 };
@@ -98,11 +98,11 @@ struct SslVisionData {
     BallData ballData;
     std::string toString() {
         std::stringstream ss;
-        ss << "SSL Vision Data [\n"
+        ss << "\nSSL Vision Data [\n"
            << "\tBotData [\n"
-           << "\t\tPos:    " << botData.pos << "\n"
-           << "\t\tVel:    " << botData.vel << "\n"
-           << "\t\tAng:    " << botData.ang << "\n"
+           << "\t\tPos: " << botData.pos << "\n"
+           << "\t\tVel: " << botData.vel << "\n"
+           << "\t\tAng: " << botData.ang << "\n"
            << "\t\tAngVel: " << botData.angVel << "\n"
            << "\t\tReferenceFrame: " << botData.frame << "\n"
            << "\t]\n"
@@ -111,7 +111,7 @@ struct SslVisionData {
            << "\t\tVel: " << ballData.vel << "\n"
            << "\t\tReferenceFrame: " << ballData.frame << "\n"
            << "\t]\n"
-           << "\t]" << std::endl; 
+           << "]" << std::endl; 
         return ss.str();
     }
 };
@@ -122,6 +122,18 @@ struct McuSensorData {
     float imuOmega;
     arma::vec2 imuAcc;
     bool isHoldingBall;
+        std::string toString() {
+        std::stringstream ss;
+        ss << "\nMcuSensorData [\n"
+           << "\tEncCount: " << encCnt << "\n"
+           << "\tImuTheta: " << imuTheta << "\n"
+           << "\tImuOmega: " << imuOmega << "\n"
+           << "\tImuAcc: " << imuAcc << "\n"  
+           << "\tIsHoldingBall: " << (isHoldingBall? "True" : "False") << "\n"   
+           << "]" << std::endl; 
+        return ss.str();
+    }
+    
 };
 
 struct CameraData {
@@ -142,6 +154,20 @@ struct ControlInput {
     SetPoint<arma::vec2> translationalSetPoint;
     SetPoint<float> rotationalSetPoint;
     bool isNoSlowDownMode;
+    std::string toString() {
+        std::stringstream ss;
+        ss << "\nControlInput [\n"
+           << "\tTranslationalSetPoint [\n"
+           << "\t\tType: " << translationalSetPoint.type << "\n"
+           << "\t\tValue: " << translationalSetPoint.value << "\n"
+           << "\t]\n"
+           << "\tRotationalSetPoint [\n"
+           << "\t\tType: " << rotationalSetPoint.type << "\n"
+           << "\t\tValue: " << rotationalSetPoint.value << "\n"
+           << "\t]\n"
+           << "]" << std::endl; 
+        return ss.str();
+    }
 };
 
 struct ControlOutput  {
@@ -149,6 +175,11 @@ struct ControlOutput  {
     arma::vec3 toArmaVec3() {
         arma::vec3 v = {vx, vy, omega};
         return v;
+    }
+    std::string toString() {
+        std::stringstream ss;
+        ss << "ControlOutput [" << toArmaVec3() << "]" << std::endl; 
+        return ss.str();
     }
 };
 
@@ -158,6 +189,11 @@ struct PIDConstants {
     arma::vec3 toArmaVec3() {
         arma::vec3 v = {Kp, Kd, Ki};
         return v;
+    }
+    std::string toString() {
+        std::stringstream ss;
+        ss << "PIDConstants [" << toArmaVec3() << "]" << std::endl; 
+        return ss.str();
     }
 };
 

@@ -56,9 +56,6 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
     Command cmd;
     SslVisionData data;
 
-    unsigned int prevT = millis();
-
-
     while(true) {
         periodic_session([&](){
             numReceived = socket.receive_from(asio::buffer(receiveBuffer), ep);
@@ -108,14 +105,6 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
             kickVec2d = {udpData.commanddata().kicker_set_point().x(), udpData.commanddata().kicker_set_point().y()};
             cmd.kickerSetPoint = kickVec2d;
 
-            if(config.cliConfig.liveMonitorTarget == "UdpReceiveModule") {
-                if(millis() - prevT > 300) {
-                    logger.log(Info, data.toString());
-                    logger.log(Info, cmd.toString());
-                    prevT = millis();
-                } 
-            }
-
             /* publish */
             receivedSslVisionDataPub.publish(data);
             receivedCommandPub.publish(cmd);
@@ -125,3 +114,29 @@ void UdpReceiveModule::task(ThreadPool& threadPool) {
 }
 
 
+
+
+void UdpReceiveModuleMonitor::task(ThreadPool& threadPool) {
+    ITPS::FieldSubscriber<Command> receivedCommandSub("From:UdpReceiveModule", "Command");
+    ITPS::FieldSubscriber<SslVisionData> receivedSslVisionDataSub("From:UdpReceiveModule", "SslVision:BotData&BallData(WorldFrame)");
+    try {
+        receivedCommandSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        receivedSslVisionDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+    } catch(std::exception& e) {
+        BLogger logger;
+        logger.addTag("[UdpReceiveModule.cpp]");
+        logger.log(Error, std::string(e.what()));
+        std::exit(0);
+    }
+
+    BLogger mlog;
+    mlog.setToShortestFormat();
+    while(true) {
+        periodic_session([&]() {
+            mlog.log(Info, receivedCommandSub.getMsg().toString());
+            mlog.log(Info, receivedSslVisionDataSub.getMsg().toString());
+            mlog(Info) << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
+        }, std::chrono::milliseconds(samplingPeriod));
+    }
+
+}

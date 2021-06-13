@@ -14,3 +14,16 @@ class McuClientModule : public Module {
         Config config;
 };
 
+
+
+class McuClientModuleMonitor : public ModuleMonitor {
+    public:
+        // pass by copy on purpose to avoid multithreading synchronization concerns
+        McuClientModuleMonitor(int samplingPeriodMs) : samplingPeriod(samplingPeriodMs) {
+            ModuleMonitor::moduleMonitorMap["McuClientModule"] = this;
+        }
+        virtual void task(ThreadPool& threadPool);
+    protected:
+        int samplingPeriod;
+};
+
