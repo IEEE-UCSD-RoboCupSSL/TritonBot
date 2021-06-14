@@ -20,8 +20,8 @@ cmake_minimum_required(VERSION 3.10)
 
 
 #set compiler
-set(CMAKE_C_COMPILER "arm-linux-gnueabihf-gcc")
-set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
+set(CMAKE_C_COMPILER "bin/arm-linux-gnueabihf-gcc")
+set(CMAKE_CXX_COMPILER "bin/arm-linux-gnueabihf-g++")
 # set(CMAKE_C_COMPILER "clang")
 # set(CMAKE_CXX_COMPILER "clang++")
 # add_compile_options("-Qunused-arguments")
