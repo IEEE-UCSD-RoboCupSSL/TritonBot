@@ -129,18 +129,57 @@ FirmwareCommand defaultFirmwareCommand() {
     return cmd;
 }
 
+bool McuClientModule::isBigEndian = false;
+
 void sendFirmwareCommand(ip::tcp::socket& socket, const FirmwareCommand& cmd) {
     // std::cout << cmd.DebugString() << std::endl;
-    char prefixLength[4];   
+    char prefixLength[4];
     std::string cmdProtoBinary;
+
     cmd.SerializeToString(&cmdProtoBinary);
-    *((int*)prefixLength) = (int)(cmdProtoBinary.length());
-    std::string prefix(prefixLength);
-    std::string sendStr = prefix + cmdProtoBinary;
-    asio::write(socket, asio::buffer(sendStr, sendStr.length()));
-    //std::cout << "XXXXX: " << sendStr.length() << std::endl;
-    //std::cout << "OOOOO: " << sendStr << std::endl;
-    
+    *((int*)prefixLength) = cmdProtoBinary.length();
+    std::vector<char> plContainer;
+    if(McuClientModule::isBigEndian){
+        plContainer.push_back(prefixLength[0]);
+        plContainer.push_back(prefixLength[1]);
+        plContainer.push_back(prefixLength[2]);
+        plContainer.push_back(prefixLength[3]);
+    }
+    else{
+        plContainer.push_back(prefixLength[3]);
+        plContainer.push_back(prefixLength[2]);
+        plContainer.push_back(prefixLength[1]);
+        plContainer.push_back(prefixLength[0]);
+    }
+
+    for(int i = 0; i < cmdProtoBinary.length(); i++) {
+        plContainer.push_back(cmdProtoBinary[i]);
+    }
+    asio::write(socket, asio::buffer(plContainer, plContainer.size()));
+//    std::cout << "XXXXX: " << sendStr.length() << std::endl;
+//    std::cout << "ZZZZZ: " << prefix << std::endl;
+
+//    std::cout << "isBigEndian:" << McuClientModule::isBigEndian << std::endl;
+//
+//    std::cout << "========================" << std::endl;
+//    std::cout << "cmdProtoBinary: ";
+//    for (std::size_t i = 0; i < cmdProtoBinary.size(); ++i)
+//    {
+//        std::cout << std::bitset<8>(cmdProtoBinary.c_str()[i]);
+//    }
+//    std::cout << std::endl;
+//    std::cout << "========================" << std::endl;
+//
+//    std::cout << "========================" << std::endl;
+//    std::cout << "plContainer: ";
+//    for (std::size_t i = 0; i < plContainer.size(); ++i)
+//    {
+//        std::cout << std::bitset<8>(plContainer[i]);
+//    }
+//    std::cout << std::endl;
+//    std::cout << "========================" << std::endl;
+
+
 }
 
 void sendFirmwareCommand(ip::tcp::socket& socket, const ControlOutput& ctrlOut, 

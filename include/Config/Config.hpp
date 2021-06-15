@@ -5,9 +5,18 @@
 
 struct Config {
     Config(CliConfig& clicfg, std::shared_ptr<BotConfig> botcfg) 
-        : cliConfig(clicfg), botConfig(botcfg) {}
+        : cliConfig(clicfg), botConfig(botcfg) {
+
+        union {
+            uint32_t i;
+            char c[4];
+        } bint = {0x01020304};
+
+        isBigEndian = bint.c[0] == 1;
+    }
     CliConfig cliConfig;
     std::shared_ptr<BotConfig> botConfig;
+    bool isBigEndian = false;
 };
 
 
