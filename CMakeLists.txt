@@ -87,17 +87,8 @@ aux_source_directory(source/CoreModules/BallCaptureModule BC_srcs)
 aux_source_directory(source/ManualTest/IntegrationTests ITT_srcs)
 aux_source_directory(source/Misc/PubSubSystem PSS_srcs)
 
-
-
-
-
-
 #add macro definitions "#define xxx"
 add_definitions(-DBOOST_LOG_DYN_LINK) #macro needed by boost logger
-
-
-
-
 
 ####--------------------------------Protobuf--------------------------------###
 ##run protoc to auto generate protobuf source code
