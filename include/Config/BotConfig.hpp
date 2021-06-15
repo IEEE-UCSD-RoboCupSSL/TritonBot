@@ -1,4 +1,5 @@
 #pragma once
+
 #include <armadillo>
 #include <string>
 #include "CoreModules/DataCmdTypes.hpp"
@@ -20,29 +21,38 @@ public:
     float pidTvrdCorr;
     float pidTvrvCorr;
 
-    BotConfig(bool __isVirtual) : isVirtual(__isVirtual) { type = "BotConfig";}
-    inline std::string getType() {return type;}
+    BotConfig(bool __isVirtual) : isVirtual(__isVirtual) { type = "BotConfig"; }
+
+    inline std::string getType() { return type; }
 
     // c++ note: return by copy will be optimized by most c++ compiler via RVO (return value optimization)
     // c++ note2: const reference is used because it prolongs the life time of rvalue parameter (rval: temporary value) (plz google "const reference rvalue")
-    virtual MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) = 0;
-protected:  
+    virtual MotionCommand
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double d) = 0;
+
+protected:
     bool isVirtual;
     std::string type;
 };
 
 class RealBotConfig : public BotConfig {
 public:
-    RealBotConfig() : BotConfig(false) {type = "RealBotConfig";} 
-    virtual MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) = 0;
+    RealBotConfig() : BotConfig(false) { type = "RealBotConfig"; }
+
+    virtual MotionCommand
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double d) = 0;
 };
 
 class VirtualBotConfig : public BotConfig {
 public:
-    VirtualBotConfig() : BotConfig(true) {type = "VirtualBotConfig";}
+    VirtualBotConfig() : BotConfig(true) { type = "VirtualBotConfig"; }
+
     virtual ~VirtualBotConfig() {}
-    virtual bool isBallCloseEnoughToBot(const BallData& ballData, const BotData& botData) = 0;
-    virtual MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) = 0;
+
+    virtual bool isBallCloseEnoughToBot(const BallData &ballData, const BotData &botData) = 0;
+
+    virtual MotionCommand
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double interpolationRate) = 0;
 };
 
 
@@ -51,14 +61,14 @@ class GrSimBotConfig : public VirtualBotConfig {
 private:
     // unit: mm
     float const dribblerOffset = 105.0;
-    float const ballNearBotZoneWidth = 500.0; 
+    float const ballNearBotZoneWidth = 500.0;
     float const ballNearBotZoneHeight = 300.0;
     float const holdBallZoneWidth = 100.0;
     float const holdBallZoneHeight = 40.0;
 
-    std::chrono::steady_clock::time_point t0; 
+    std::chrono::steady_clock::time_point t0;
     long samplingFrequency = 10; // Hz
-    long hbCnt = 0, roundTotal = 0; 
+    long hbCnt = 0, roundTotal = 0;
     float percentThreshHold = 0.6; // if hbCnt/roundTotal >= 60 %, ball is dribbled 
     bool hbResult = false;
 
@@ -67,8 +77,9 @@ public:
         type = "GrSimBotConfig";
         t0 = CHRONO_NOW;
     }
-    bool isBallCloseEnoughToBot(const BallData& ballData, const BotData& botData) {
-        if(ballData.frame != botData.frame) {
+
+    bool isBallCloseEnoughToBot(const BallData &ballData, const BotData &botData) {
+        if (ballData.frame != botData.frame) {
             BLogger logger;
             logger.addTag("[BotConfig.hpp]");
             logger(Warning) << "ball data frame is inconsistant with bot data fram";
@@ -82,8 +93,9 @@ public:
         }
         return false;
     }
-    bool isHoldingBall(const BallData& ballData, const BotData& botData) {
-        if(ballData.frame != botData.frame) {
+
+    bool isHoldingBall(const BallData &ballData, const BotData &botData) {
+        if (ballData.frame != botData.frame) {
             BLogger logger;
             logger.addTag("[BotConfig.hpp]");
             logger(Warning) << "ball data frame is inconsistant with bot data fram";
@@ -92,7 +104,7 @@ public:
         arma::vec2 delta = ballData.pos - botData.pos;
 
         // std::cout << delta << std::endl;
-        
+
 
         if (std::abs(delta(0)) < (holdBallZoneWidth / 2.0)
             && delta(1) < dribblerOffset + (holdBallZoneHeight / 2.0)
@@ -101,8 +113,8 @@ public:
         }
         roundTotal++;
 
-        if(CHRONO_NOW - t0 > TO_PERIOD(samplingFrequency)) {
-            if((float)hbCnt / (float)roundTotal >= percentThreshHold) {
+        if (CHRONO_NOW - t0 > TO_PERIOD(samplingFrequency)) {
+            if ((float) hbCnt / (float) roundTotal >= percentThreshHold) {
                 hbResult = true;
             } else {
                 hbResult = false;
@@ -121,23 +133,24 @@ public:
      * @param isHoldingBal == isEnabled && isCaptured
      * @param ballData
      * @param botData
+     * @param interpolationRate The rate which we interpolate the movement of the ball. A rate of 1 means
+     *                          that we go to where the ball should be after 1 sec assuming the velocity
+     *                          stays constant.
      * @return A command to be issued
      */
-    MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) {
+    MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
+                                          double const interpolationRate) {
         MotionCommand command;
         if (isHoldingBall) {
             double ballVelX = ballData.vel(0);
             double ballVelY = ballData.vel(1);
-            double const interpolationRate = 1; /* The rate which we interpolate the movement of the ball.
-                                                   A rate of 1 means that we go to where the ball should be after
-                                                   1 sec assuming the velocity stays constant */
 
             double interpolatedPositionX = ballData.pos(0) + interpolationRate * ballVelX; // Calculate offset
             double interpolatedPositionY = ballData.pos(1) + interpolationRate * ballVelY;
 
             double deltaX = interpolatedPositionX - botData.pos(0);
             double deltaY = interpolatedPositionY - botData.pos(1);
-            
+
             double angle;
             // might be simplified by using std::atan2, but i'm too lazy to refactor this since this method might be replaced by a new solution soon
             if (deltaX < 0.0001 && deltaX > -0.0001) {
@@ -151,15 +164,15 @@ public:
                 if (deltaY >= 0 && deltaX >= 0) {
                     angle = std::atan(deltaY / deltaX) * 180.0 / 3.1415926 - 90;
                 }
-                // second quadrant
+                    // second quadrant
                 else if (deltaY >= 0 && deltaX < 0) {
                     angle = 90 - std::atan(deltaY / -deltaX) * 180.0 / 3.1415926;
                 }
-                // fourth quadrant
+                    // fourth quadrant
                 else if (deltaY < 0 && deltaX >= 0) {
                     angle = std::atan(deltaY / deltaX) * 180.0 / 3.1415926 - 90;
                 }
-                // third quadrant
+                    // third quadrant
                 else {
                     angle = 90 - std::atan(deltaY / -deltaX) * 180.0 / 3.1415926;
                 }
@@ -179,17 +192,19 @@ public:
 
 class ErForceSimBotConfig : public VirtualBotConfig {
 public:
-    ErForceSimBotConfig() : VirtualBotConfig() {type = "ErForceSimBotConfig";}
-    bool isBallCloseEnoughToBot(const BallData& ballData, const BotData& botData) {
+    ErForceSimBotConfig() : VirtualBotConfig() { type = "ErForceSimBotConfig"; }
+
+    bool isBallCloseEnoughToBot(const BallData &ballData, const BotData &botData) {
         // To-do
         return false;
     }
-    MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) {
+
+    MotionCommand
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double d) {
         // To-do
         return defaultMotionCommand();
     }
 };
-
 
 
 void processIni(std::string filepath, std::shared_ptr<BotConfig> config);

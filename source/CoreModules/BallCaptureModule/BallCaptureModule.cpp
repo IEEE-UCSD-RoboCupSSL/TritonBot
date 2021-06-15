@@ -48,7 +48,7 @@ void BallCaptureModule::task(ThreadPool& threadPool) {
             } 
 
             if(enableAutoCaptureSub.getMsg()) {
-                auto mCmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData);
+                auto mCmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData, 1);
                 
                 ballAutoCapMotionCommandPub.publish(mCmd); 
             }

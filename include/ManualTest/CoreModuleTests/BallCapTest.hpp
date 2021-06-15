@@ -11,11 +11,14 @@
 
 class BallCapTest : public ManualTest {
 public:
-    BallCapTest();
+    BallCapTest(Config&);
 
     bool test(ThreadPool &threadPool) override;
 
     ~BallCapTest() override;
+
+protected:
+    Config config;
 
 };
 
