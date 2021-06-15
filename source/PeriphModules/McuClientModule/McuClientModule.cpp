@@ -100,7 +100,12 @@ void McuClientModule::task(ThreadPool& threadPool) {
 
             /** read a packet **/
             // read_buffer is binded to input_stream
-            asio::read_until(*socket, readBuf, "\n"); // read until getting delimiter "\n"
+            //asio::read_until(*socket, readBuf, "\n"); // read until getting delimiter "\n"
+            asio::read(*socket, readBuf, asio::transfer_exactly(4));
+            std::string prefix = std::string(std::istreambuf_iterator<char>(inputStream), {}); // c++11 or above
+            int packetLength = *((int*)prefix.c_str());
+            
+            asio::read(*socket, readBuf, asio::transfer_exactly(packetLength));
             // convert input stream to string, note that "readBuf" is binded to "input_stream" 
             std::string received =  std::string(std::istreambuf_iterator<char>(inputStream), {}); // c++11 or above
             //std::cout << received << std::endl;
