@@ -53,9 +53,9 @@ void MotionControllerModule::task(ThreadPool& threadPool) {
                     pidAmplifier = config.botConfig->noSlowDownPidAmp;
                 }
                 anglePid.updatePidConsts(config.botConfig->anglePidConsts.toArmaVec3());
-                posPid.updatePidConsts(pidAmplifier * config.botConfig->anglePidConsts.Kp,  // only need to amplify Kp constant
-                                                        config.botConfig->anglePidConsts.Ki,
-                                                        config.botConfig->anglePidConsts.Kd);
+                posPid.updatePidConsts(pidAmplifier * config.botConfig->posPidConsts.Kp,  // only need to amplify Kp constant
+                                                        config.botConfig->posPidConsts.Ki,
+                                                        config.botConfig->posPidConsts.Kd);
                 
                 // PID calculations : Error = SetPoint - CurrPoint (i.e. ExpectedValue - ActualValue)
                 // Rotational Movement Controller

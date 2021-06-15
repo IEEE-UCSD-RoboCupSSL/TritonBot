@@ -94,14 +94,14 @@ void McuClientModule::task(ThreadPool& threadPool) {
     std::string writeBuf;
 
     // MCU Top program will always be at localhost, the top part of the firmware layer will run in the same device this program is at
-    asio::ip::tcp::endpoint ep(asio::ip::address::from_string("127.0.0.1"), config.cliConfig.mcuTopTcpPort); 
+    asio::ip::tcp::endpoint tcpEp(asio::ip::address::from_string("127.0.0.1"), config.cliConfig.mcuTopTcpPort); 
     std::shared_ptr<asio::ip::tcp::socket> socket; //(ios);
     boost::system::error_code errCode;
 
     do {
         socket = std::shared_ptr<asio::ip::tcp::socket>(new asio::ip::tcp::socket(ios));
         socket->open(ip::tcp::v4());
-        socket->connect(ep, errCode);
+        socket->connect(tcpEp, errCode);
         if(errCode) {
             logger(Error) << "Failed at connecting MCU Top, will retry";
         }
@@ -128,7 +128,9 @@ void McuClientModule::task(ThreadPool& threadPool) {
 
     threadPool.execute([&](){
         io_service ios;
-        ip::udp::endpoint ep(ip::udp::v4(), config.cliConfig.mcuTopUdpReadPort);        
+        // ep to McuTop is always localhost
+        ip::udp::endpoint ep(ip::address::from_string("127.0.0.1"),  
+                                config.cliConfig.mcuTopUdpReadPort);        
         std::shared_ptr<asio::ip::udp::socket> udpSocket(new asio::ip::udp::socket(ios, ep));
 
         while(true) {
