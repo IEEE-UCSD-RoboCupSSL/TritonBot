@@ -138,6 +138,9 @@ void sendFirmwareCommand(ip::tcp::socket& socket, const FirmwareCommand& cmd) {
     std::string prefix(prefixLength);
     std::string sendStr = prefix + cmdProtoBinary;
     asio::write(socket, asio::buffer(sendStr, sendStr.length()));
+    //std::cout << "XXXXX: " << sendStr.length() << std::endl;
+    //std::cout << "OOOOO: " << sendStr << std::endl;
+    
 }
 
 void sendFirmwareCommand(ip::tcp::socket& socket, const ControlOutput& ctrlOut, 
