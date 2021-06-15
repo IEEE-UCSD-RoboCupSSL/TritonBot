@@ -131,10 +131,13 @@ FirmwareCommand defaultFirmwareCommand() {
 
 void sendFirmwareCommand(ip::tcp::socket& socket, const FirmwareCommand& cmd) {
     // std::cout << cmd.DebugString() << std::endl;
-    std::string writeStr;
-    cmd.SerializeToString(&writeStr);
-    writeStr += '\n';
-    asio::write(socket, asio::buffer(writeStr));
+    char prefixLength[4];   
+    std::string cmdProtoBinary;
+    cmd.SerializeToString(&cmdProtoBinary);
+    *((int*)prefixLength) = cmdProtoBinary.length();
+    std::string prefix(prefixLength);
+    std::string sendStr = prefix + cmdProtoBinary;
+    asio::write(socket, asio::buffer(sendStr));
 }
 
 void sendFirmwareCommand(ip::tcp::socket& socket, const ControlOutput& ctrlOut, 
