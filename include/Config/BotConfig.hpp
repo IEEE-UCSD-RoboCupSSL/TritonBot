@@ -113,11 +113,31 @@ public:
         }
         return hbResult;
     }
+
+    /**
+     * Construct a TDRD bodyframe command to be issued. Commands the current robot to naively approach the ball
+     * without any obstacle avoidance enabled. The command will interpolate the movement of the ball so that
+     * the robot "intercepts" the moving ball.
+     * @param isHoldingBal == isEnabled && isCaptured
+     * @param ballData
+     * @param botData
+     * @return A command to be issued
+     */
     MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData& ballData, const BotData& botData) {
         MotionCommand command;
         if (isHoldingBall) {
-            double deltaX = ballData.pos(0) - botData.pos(0);
-            double deltaY = ballData.pos(1) - botData.pos(1);
+            double ballVelX = ballData.vel(0);
+            double ballVelY = ballData.vel(1);
+            double const interpolationRate = 1; /* The rate which we interpolate the movement of the ball.
+                                                   A rate of 1 means that we go to where the ball should be after
+                                                   1 sec assuming the velocity stays constant */
+
+            double interpolatedPositionX = ballData.pos(0) + interpolationRate * ballVelX; // Calculate offset
+            double interpolatedPositionY = ballData.pos(1) + interpolationRate * ballVelY;
+
+            double deltaX = interpolatedPositionX - botData.pos(0);
+            double deltaY = interpolatedPositionY - botData.pos(1);
+            
             double angle;
             // might be simplified by using std::atan2, but i'm too lazy to refactor this since this method might be replaced by a new solution soon
             if (deltaX < 0.0001 && deltaX > -0.0001) {
@@ -146,7 +166,7 @@ public:
             }
             command.mode = CtrlMode::TDRD;
             command.frame = ReferenceFrame::BodyFrame;
-            command.setpoint3d = {ballData.pos(0), ballData.pos(1), angle + botData.ang};
+            command.setpoint3d = {interpolatedPositionX, interpolatedPositionY, angle};
         } else {
             command.mode = CtrlMode::TVRV;
             command.frame = ReferenceFrame::BodyFrame;
