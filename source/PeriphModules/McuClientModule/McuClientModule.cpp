@@ -134,10 +134,10 @@ void sendFirmwareCommand(ip::tcp::socket& socket, const FirmwareCommand& cmd) {
     char prefixLength[4];   
     std::string cmdProtoBinary;
     cmd.SerializeToString(&cmdProtoBinary);
-    *((int*)prefixLength) = cmdProtoBinary.length();
+    *((int*)prefixLength) = (int)(cmdProtoBinary.length());
     std::string prefix(prefixLength);
     std::string sendStr = prefix + cmdProtoBinary;
-    asio::write(socket, asio::buffer(sendStr));
+    asio::write(socket, asio::buffer(sendStr, sendStr.length()));
 }
 
 void sendFirmwareCommand(ip::tcp::socket& socket, const ControlOutput& ctrlOut, 
