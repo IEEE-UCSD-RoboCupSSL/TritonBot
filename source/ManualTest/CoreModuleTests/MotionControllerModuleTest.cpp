@@ -74,6 +74,7 @@ bool MotionControllerModuleTest::test(ThreadPool& threadPool) {
     }
 
 
-    threadPool.joinAll();
+    
+    while(true) delay(10000);
     return true;
 }

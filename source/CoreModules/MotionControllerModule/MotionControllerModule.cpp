@@ -78,6 +78,7 @@ void MotionControllerModule::task(ThreadPool& threadPool) {
 
                 // Translational Movement Controller
                 if(input.translationalSetPoint.type == SetPointType::position) {
+                    // std::cout << "DEBUG: " << (input.translationalSetPoint.value - feedback.pos) << std::endl; 
                     posPidOutput = posPid.calculate(input.translationalSetPoint.value - feedback.pos );
                     // correct deviation due to rotation momentum
                     if(input.rotationalSetPoint.type == SetPointType::position) {
@@ -86,7 +87,7 @@ void MotionControllerModule::task(ThreadPool& threadPool) {
                     else {
                         corrAngle = -angVelOutput * config.botConfig->pidTdrvCorr;
                     }
-                    posPidOutput = rotationMatrix2D(corrAngle) * posPidOutput; // correct direction by rotation matrix
+                    // posPidOutput = rotationMatrix2D(corrAngle) * posPidOutput; // correct direction by rotation matrix
                 }
                 else {
                     // type == velocity
@@ -124,8 +125,20 @@ void MotionControllerModule::task(ThreadPool& threadPool) {
                     output.omega = angVelOutput;
                 }
 
+
                 /* Effect of Normalizing: more power spent on rotation results in less spent on translation, vice versa */
                 auto outputArmaVec3 = output.toArmaVec3();
+                // // Normalize translational output first
+                // arma::vec2 outputTrans = {outputArmaVec3(0), outputArmaVec3(1)};
+                // if(arma::norm(outputTrans) > 100.00) {
+                //     // Normalize the output vector to limit the maximum output vector norm to 100.00
+                //     outputTrans = arma::normalise(outputTrans);
+                //     outputTrans *= 100.00;
+                // }
+                // outputArmaVec3(0) = outputTrans(0);
+                // outputArmaVec3(1) = outputTrans(1);
+                // if(outputArmaVec3(2) > 100.00) outputArmaVec3(2) = 100.00;
+                // if(outputArmaVec3(2) < -100.00) outputArmaVec3(2) = -100.00;
                 if(arma::norm(outputArmaVec3) > 100.00) {
                     // Normalize the output vector to limit the maximum output vector norm to 100.00
                     outputArmaVec3 = arma::normalise(outputArmaVec3);
@@ -134,7 +147,7 @@ void MotionControllerModule::task(ThreadPool& threadPool) {
                 output.vx = outputArmaVec3(0);
                 output.vy = outputArmaVec3(1);
                 output.omega = outputArmaVec3(2);
-
+                
                 // publish output
                 controlOutputPub.publish(output);
 

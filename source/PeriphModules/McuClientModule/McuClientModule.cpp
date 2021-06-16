@@ -28,25 +28,6 @@ FirmwareCommand defaultFirmwareCommand() {
     return cmd;
 }
 
-void sendFirmwareCommand(ip::udp::socket& socket, const FirmwareCommand& cmd, ip::udp::endpoint& ep) {
-    std::string cmdProtoBinary;
-    cmd.SerializeToString(&cmdProtoBinary);
-    socket.send_to(asio::buffer(cmdProtoBinary), ep);
-}
-
-void sendFirmwareCommand(ip::udp::socket& socket, const ControlOutput& ctrlOut, 
-                                const bool turnOnDribbler, const arma::vec2 kickerPwr, ip::udp::endpoint& ep) {
-    FirmwareCommand cmd;
-    cmd.set_vx((float)ctrlOut.vx);
-    cmd.set_vy((float)ctrlOut.vy);
-    cmd.set_w((float)ctrlOut.omega);
-    cmd.set_dribbler(turnOnDribbler);
-    cmd.set_init(false);
-    cmd.set_kx((float)kickerPwr(0));
-    cmd.set_kz((float)kickerPwr(1));
-    sendFirmwareCommand(socket, cmd, ep);
-}
-
 McuSensorData readFirmwareData(const std::string& packetStr) {
     FirmwareData dataReceived;
     McuSensorData data;
@@ -120,7 +101,23 @@ void McuClientModule::task(ThreadPool& threadPool) {
             auto dribCmd = dribblerCommandSub.getMsg();
             auto kickSp = kickerSetPointSub.getMsg();
             /** send all other commands **/
-            sendFirmwareCommand(*udpSocket, ctrlOut, dribCmd, kickSp, ep);
+            FirmwareCommand cmd;
+            float vx = int(ctrlOut.vx * 100.00) / 100.00f;
+            float vy = int(ctrlOut.vy * 100.00) / 100.00f;
+            float w = int(ctrlOut.omega * 100.00) / 100.00f;
+            float kx = int(kickSp(0) * 100.00) / 100.00f;
+            float kz = int(kickSp(1) * 100.00) / 100.00f;
+            cmd.set_vx(vx);
+            cmd.set_vy(vy);
+            cmd.set_w(w);
+            cmd.set_dribbler(dribCmd);
+            cmd.set_init(false);
+            cmd.set_kx(kx);
+            cmd.set_kz(kz);
+            std::string cmdProtoBinary;
+            cmd.SerializeToString(&cmdProtoBinary);
+            udpSocket->send_to(asio::buffer(cmdProtoBinary), ep);
+
             
             delay(TO_PERIOD(MCU_CLIENT_FREQUENCY));
         }

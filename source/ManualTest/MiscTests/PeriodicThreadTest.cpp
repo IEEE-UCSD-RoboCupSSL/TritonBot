@@ -32,6 +32,5 @@ bool PeriodicThreadTest::test(ThreadPool& threadPool) {
     hwm.run(threadPool);
     
     delay(std::chrono::seconds(10));
-    //threadPool.joinAll();
     return true;
 }

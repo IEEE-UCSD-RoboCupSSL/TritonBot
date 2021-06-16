@@ -55,6 +55,7 @@ bool McuClientModuleTest::test(ThreadPool& threadPool) {
                     << "] IsHoldingBall[" << data.isHoldingBall << "]" << std::endl;
     }
     
-    threadPool.joinAll();
+    
+    while(true) delay(10000);
     return true;
 }

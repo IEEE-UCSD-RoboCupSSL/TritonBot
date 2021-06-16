@@ -4,7 +4,7 @@ MotionCommand defaultMotionCommand() {
     MotionCommand dftCmd;
     dftCmd.setpoint3d = {0, 0, 0};
     dftCmd.mode = CtrlMode::TVRV;
-    dftCmd.frame = ReferenceFrame::BodyFrame;
+    dftCmd.frame = ReferenceFrame::WorldFrame;
     return dftCmd;
 }
 

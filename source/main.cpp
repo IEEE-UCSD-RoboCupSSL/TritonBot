@@ -106,14 +106,16 @@ int main(int argc, char *argv[]) {
 
 
 
-            threadPool.joinAll(); // must have it here, or will cause seg fault, think about the scope issue of the smart pointers
+            
+            while(true) delay(10000); // must have it here, or will cause seg fault, think about the scope issue of the smart pointers
         } else {
             // To-do ...
             return -1;
         }
     }
 
-    threadPool.joinAll();
+    while(true) delay(10000);
+
     return 0;
 }
 

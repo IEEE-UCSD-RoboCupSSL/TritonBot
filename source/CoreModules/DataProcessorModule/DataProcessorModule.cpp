@@ -60,11 +60,13 @@ void DataProcessorModule::task(ThreadPool& threadPool) {
 
     while(true) {
         periodic_session([&](){
+            auto sslVisionData = receivedSslVisionDataSub.getMsg();
+            auto origin = robotOriginInWorldSub.getMsg();
 
-            botDataBodyFrame = convertToBodyFrame(receivedSslVisionDataSub.getMsg().botData, 
+            botDataBodyFrame = convertToBodyFrame(sslVisionData.botData, 
                                                 robotOriginInWorldSub.getMsg());
-            ballDataBodyFrame = convertToBodyFrame(receivedSslVisionDataSub.getMsg().ballData,
-                                    robotOriginInWorldSub.getMsg(), botDataBodyFrame.ang); 
+            ballDataBodyFrame = convertToBodyFrame(sslVisionData.ballData,
+                                    origin, botDataBodyFrame.ang); 
 
             filteredBotData = botDataFilter.calc(botDataBodyFrame, mcuSensorDataSub.getMsg());
             filteredBallData = ballDataFilter.calc(ballDataBodyFrame, cameraDataSub.getMsg());

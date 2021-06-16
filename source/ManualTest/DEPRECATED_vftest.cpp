@@ -45,6 +45,7 @@ bool VFTest::test(ThreadPool& threadPool) {
     ballCaptureModule->run(threadPool);
     vFirmClientModule->run(threadPool);
 
-    threadPool.joinAll();
+    
+    while(true) delay(10000);
     return true;
 }

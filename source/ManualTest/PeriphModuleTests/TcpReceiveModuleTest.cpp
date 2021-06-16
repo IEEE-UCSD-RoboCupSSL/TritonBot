@@ -42,6 +42,5 @@ bool TcpReceiveModuleTest::test(ThreadPool& threadPool) {
 
     delay(8000);
 
-    // threadPool.joinAll();
     return true;
 }

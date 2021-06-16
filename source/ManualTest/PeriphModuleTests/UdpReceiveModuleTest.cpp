@@ -97,6 +97,5 @@ bool UdpReceiveModuleTest::test(ThreadPool& threadPool) {
         }
     }
 
-    // threadPool.joinAll();
     return true;
 }
