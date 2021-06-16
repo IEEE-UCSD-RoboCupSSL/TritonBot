@@ -22,7 +22,9 @@ void help_print(BLogger& logger) {
        << "\t\t\t[port_base]    : tcp port for the server session of this program\n"
        << "\t\t\t[port_base + 1]: udp port for the server session of this program\n"
        << "\t\t\t[port_base + 2]: tcp port of MCU Top program for this program to connect,\n"
-       << "\t\t\t                     or tcp port back to the java AI program if in simulator mode (virtual mode)\n";
+       << "\t\t\t                     or tcp port back to the java AI program if in simulator mode (virtual mode)\n"
+       << "\t\t\t[port_base + 3]: udp write port of MCU Top program for this program to write to,\n"
+       << "\t\t\t[port_base + 4]: udp read port of MCU Top program for this program to read from,\n";
     logger.log(Info, ss.str());
 }
 
@@ -87,14 +89,20 @@ CliConfig processArgs(int argc, char *argv[]) {
             config.tcpPort = std::stoi(std::string(argv[argc - 2]));
             config.udpPort = config.tcpPort + 1;
             config.mcuTopTcpPort = config.tcpPort + 2;
+            config.mcuTopUdpReadPort = config.tcpPort + 3;
+            config.mcuTopUdpWritePort = config.tcpPort + 4;
         } else if (optind == argc - 1) {
             // <port base>
             config.tcpPort = std::stoi(std::string(argv[argc - 1]));
             config.udpPort = config.tcpPort + 1;
             config.mcuTopTcpPort = config.tcpPort + 2;
+            config.mcuTopUdpReadPort = config.tcpPort + 3;
+            config.mcuTopUdpWritePort = config.tcpPort + 4;
         } else if(optind == argc) {
             config.udpPort = config.tcpPort + 1;   
             config.mcuTopTcpPort = config.tcpPort + 2;  
+            config.mcuTopUdpReadPort = config.tcpPort + 3;
+            config.mcuTopUdpWritePort = config.tcpPort + 4;
         } else {
             BLogger errLogger;
             errLogger.addTag("[Config.cpp]");
@@ -107,7 +115,9 @@ CliConfig processArgs(int argc, char *argv[]) {
         ss << "\nThis program listens on LocalHost\n"
            << "\tTCP Port: " + repr(config.tcpPort) << "\n"
            << "\tUDP Port: " + repr(config.udpPort) << "\n"
-           << "\tMCU Top TCP Port: " + repr(config.mcuTopTcpPort) << std::endl;
+           << "\tMCU Top TCP Port: " + repr(config.mcuTopTcpPort) << "\n"
+           << "\tMCU Top UDP Read Port: " + repr(config.mcuTopUdpReadPort) << "\n"
+           << "\tMCU Top UDP Write Port: " + repr(config.mcuTopUdpWritePort) << std::endl;
         logger.log(Info, ss.str());
     }
     else {

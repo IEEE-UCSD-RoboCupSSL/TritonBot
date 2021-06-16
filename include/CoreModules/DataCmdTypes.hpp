@@ -185,9 +185,9 @@ struct ControlOutput  {
 
 
 struct PIDConstants {
-    double Kp = 0, Kd = 0, Ki = 0;
+    double Kp = 0, Ki = 0, Kd = 0;
     arma::vec3 toArmaVec3() {
-        arma::vec3 v = {Kp, Kd, Ki};
+        arma::vec3 v = {Kp, Ki, Kd};
         return v;
     }
     std::string toString() {

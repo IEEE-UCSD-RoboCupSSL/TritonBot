@@ -15,24 +15,41 @@
 using namespace boost;
 using namespace boost::asio;
 
+/*====================== helper functions ====================================*/
+FirmwareCommand defaultFirmwareCommand() {
+    FirmwareCommand cmd;
+    cmd.set_init(false);
+    cmd.set_dribbler(false);
+    cmd.set_kx(0.00f);
+    cmd.set_kz(0.00f);
+    cmd.set_vx(0.00f);
+    cmd.set_vy(0.00f);
+    cmd.set_w(0.00f);
+    return cmd;
+}
 
-FirmwareCommand defaultFirmwareCommand();
-void sendFirmwareCommand(ip::tcp::socket& socket, const FirmwareCommand& cmd);
-void sendFirmwareCommand(ip::tcp::socket& socket, const ControlOutput& ctrlOut, const bool turnOnDribbler, const arma::vec2 kickerPwr);
-McuSensorData readFirmwareData(const std::string& packetStr);
-void initSensors(asio::ip::tcp::socket& socket, BLogger& logger);
+McuSensorData readFirmwareData(const std::string& packetStr) {
+    FirmwareData dataReceived;
+    McuSensorData data;
+    dataReceived.ParseFromString(packetStr);
+    data.encCnt = {dataReceived.enc_x(), dataReceived.enc_y()};
+    data.imuAcc = {dataReceived.imu_ax(), dataReceived.imu_ay()};
+    data.imuOmega = dataReceived.imu_omega();
+    data.imuTheta = dataReceived.imu_theta();
+    data.isHoldingBall = dataReceived.is_holdingball();
+    return data;
+}
+/*==========================================================================*/
+
 
 
 void McuClientModule::task(ThreadPool& threadPool) {
-
     BLogger logger;
     logger.addTag("McuClientModule");
     logger(Info) << "\033[0;32m Thread Started \033[0m";
 
-
     ITPS::FieldPublisher<McuSensorData> mcuSensorDataPub("From:McuClientModule", "McuSensorData(BodyFrame)", defaultMcuSensorData());
   
-
     ITPS::FieldSubscriber<ControlOutput> controlOutputSub("From:MotionControllerModule", "MotionControlOutput");
     ITPS::FieldSubscriber<bool> dribblerCommandSub("From:CommandProcessorModule", "dribblerSwitch");
     ITPS::FieldSubscriber<arma::vec2> kickerSetPointSub("From:CommandProcessorModule", "KickerSetPoint(On/Off)");
@@ -54,22 +71,18 @@ void McuClientModule::task(ThreadPool& threadPool) {
     logger(Info) << "\033[0;32m Initialized \033[0m";
 
     asio::io_service ios;
-
-    asio::streambuf readBuf;
-    std::istream inputStream(&readBuf);
+    boost::array<char, UDP_RBUF_SIZE> receiveBuffer;
     std::string writeBuf;
 
     // MCU Top program will always be at localhost, the top part of the firmware layer will run in the same device this program is at
-    asio::ip::tcp::endpoint ep(asio::ip::address::from_string("127.0.0.1"), config.cliConfig.mcuTopTcpPort); 
+    asio::ip::tcp::endpoint tcpEp(asio::ip::address::from_string("127.0.0.1"), config.cliConfig.mcuTopTcpPort); 
     std::shared_ptr<asio::ip::tcp::socket> socket; //(ios);
     boost::system::error_code errCode;
-
-    //delay(2000); // delay needed for connecting to Java part in virtual mode
 
     do {
         socket = std::shared_ptr<asio::ip::tcp::socket>(new asio::ip::tcp::socket(ios));
         socket->open(ip::tcp::v4());
-        socket->connect(ep, errCode);
+        socket->connect(tcpEp, errCode);
         if(errCode) {
             logger(Error) << "Failed at connecting MCU Top, will retry";
         }
@@ -77,39 +90,69 @@ void McuClientModule::task(ThreadPool& threadPool) {
 
     logger.log(Info, "\033[0;32m Connected to MCU Top \033[0m");
 
+    threadPool.execute([&](){
+        io_service ios;
+        ip::udp::endpoint ep(ip::udp::v4(), config.cliConfig.mcuTopUdpWritePort);        
+        std::shared_ptr<asio::ip::udp::socket> udpSocket(new asio::ip::udp::socket(ios));
+        udpSocket->open(ip::udp::v4());
 
-    while(true) {
-        //periodic_session([&](){
+        while(true) {
             auto ctrlOut = controlOutputSub.getMsg();
             auto dribCmd = dribblerCommandSub.getMsg();
             auto kickSp = kickerSetPointSub.getMsg();
+            /** send all other commands **/
+            FirmwareCommand cmd;
+            float vx = int(ctrlOut.vx * 100.00) / 100.00f;
+            float vy = int(ctrlOut.vy * 100.00) / 100.00f;
+            float w = int(ctrlOut.omega * 100.00) / 100.00f;
+            float kx = int(kickSp(0) * 100.00) / 100.00f;
+            float kz = int(kickSp(1) * 100.00) / 100.00f;
+            cmd.set_vx(vx);
+            cmd.set_vy(vy);
+            cmd.set_w(w);
+            cmd.set_dribbler(dribCmd);
+            cmd.set_init(false);
+            cmd.set_kx(kx);
+            cmd.set_kz(kz);
+            std::string cmdProtoBinary;
+            cmd.SerializeToString(&cmdProtoBinary);
+            udpSocket->send_to(asio::buffer(cmdProtoBinary), ep);
+
+            
+            delay(TO_PERIOD(MCU_CLIENT_FREQUENCY));
+        }
+    });
+
+    threadPool.execute([&](){
+        io_service ios;
+        // ep to McuTop is always localhost
+        ip::udp::endpoint ep(ip::address::from_string("127.0.0.1"),  
+                                config.cliConfig.mcuTopUdpReadPort);        
+        std::shared_ptr<asio::ip::udp::socket> udpSocket(new asio::ip::udp::socket(ios, ep));
+
+        while(true) {
+            size_t numReceived = udpSocket->receive_from(asio::buffer(receiveBuffer), ep);
+            std::string packetReceived = std::string(receiveBuffer.begin(), receiveBuffer.begin() + numReceived);
+
+            /** convert and publish read packet **/
+            auto data = readFirmwareData(packetReceived);
+            mcuSensorDataPub.publish(data);
+
+            delay(TO_PERIOD(MCU_CLIENT_FREQUENCY));
+        }
+    });
 
 
+    while(true) {
+        periodic_session([&](){
             /** handle init command **/
             if(initSensorsCmdSub.getMsg()) {
                 // to init or re-init
-                initSensors(*socket, logger);
+                asio::write(*socket, asio::buffer("init\n"));
                 initSensorsCmdSub.forceSetMsg(false); // set this boolean pub-sub field back to false
+                logger(Info) << "\033[0;32m Request command to initialize sensors has been sent to MCU Top program \033[0m";
             }
-            /** send all other commands **/
-            sendFirmwareCommand(*socket, ctrlOut, dribCmd, kickSp);
-
-
-
-
-
-            /** read a packet **/
-            // read_buffer is binded to input_stream
-            asio::read_until(*socket, readBuf, "\n"); // read until getting delimiter "\n"
-            // convert input stream to string, note that "readBuf" is binded to "input_stream" 
-            std::string received =  std::string(std::istreambuf_iterator<char>(inputStream), {}); // c++11 or above
-            //std::cout << received << std::endl;
-
-            /** convert and publish read packet **/
-            auto data = readFirmwareData(received);
-            mcuSensorDataPub.publish(data);
-        //}, TO_PERIOD(MCU_CLIENT_FREQUENCY));
-        delay(2); // socket read/write freq is not derterministic, so just use a simple delay instead
+        }, TO_PERIOD(MCU_CLIENT_FREQUENCY));
     }
 
     //socket.shutdown(ip::tcp::socket::shutdown_both);
@@ -117,65 +160,13 @@ void McuClientModule::task(ThreadPool& threadPool) {
 }
 
 
-FirmwareCommand defaultFirmwareCommand() {
-    FirmwareCommand cmd;
-    cmd.set_init(false);
-    cmd.set_dribbler(false);
-    cmd.set_kx(0.00f);
-    cmd.set_kz(0.00f);
-    cmd.set_vx(0.00f);
-    cmd.set_vy(0.00f);
-    cmd.set_w(0.00f);
-    return cmd;
-}
-
-void sendFirmwareCommand(ip::tcp::socket& socket, const FirmwareCommand& cmd) {
-    // std::cout << cmd.DebugString() << std::endl;
-    std::string writeStr;
-    cmd.SerializeToString(&writeStr);
-    writeStr += '\n';
-    asio::write(socket, asio::buffer(writeStr));
-}
-
-void sendFirmwareCommand(ip::tcp::socket& socket, const ControlOutput& ctrlOut, 
-                                const bool turnOnDribbler, const arma::vec2 kickerPwr) {
-    FirmwareCommand cmd;
-    cmd.set_vx((float)ctrlOut.vx);
-    cmd.set_vy((float)ctrlOut.vy);
-    cmd.set_w((float)ctrlOut.omega);
-    cmd.set_dribbler(turnOnDribbler);
-    cmd.set_init(false);
-    cmd.set_kx((float)kickerPwr(0));
-    cmd.set_kz((float)kickerPwr(1));
-    sendFirmwareCommand(socket, cmd);
-}
-
-McuSensorData readFirmwareData(const std::string& packetStr) {
-    FirmwareData dataReceived;
-    McuSensorData data;
-    dataReceived.ParseFromString(packetStr);
-    data.encCnt = {dataReceived.enc_x(), dataReceived.enc_y()};
-    data.imuAcc = {dataReceived.imu_ax(), dataReceived.imu_ay()};
-    data.imuOmega = dataReceived.imu_omega();
-    data.imuTheta = dataReceived.imu_theta();
-    data.isHoldingBall = dataReceived.is_holdingball();
-    return data;
-}
-
-
-/* sequence to send a cmd packet through socket to invoke sensor initialization */
-void initSensors(asio::ip::tcp::socket& socket, BLogger& logger) {
-    FirmwareCommand cmd = defaultFirmwareCommand();
-    cmd.set_init(true);
-    sendFirmwareCommand(socket, cmd);
-    delay(std::chrono::milliseconds(500));
-    cmd.set_init(false);
-    sendFirmwareCommand(socket, cmd);
-    logger(Info) << "\033[0;32m Request command to initialize sensors has been sent to MCU Top program \033[0m";
-}
 
 
 
+
+
+
+//-------------------------------------------------------------------------------------//
 
 void McuClientModuleMonitor::task(ThreadPool& threadPool) {
 

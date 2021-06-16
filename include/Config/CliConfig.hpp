@@ -10,6 +10,8 @@ struct CliConfig {
     unsigned int tcpPort = 6000;
     unsigned int udpPort = 6001;
     unsigned int mcuTopTcpPort = 6002;
+    unsigned int mcuTopUdpReadPort = 6003;
+    unsigned int mcuTopUdpWritePort = 6004;
     std::string simulatorName = "grSim";
     std::string botConfigFilePath = "";
     std::string liveMonitorTarget = ""; 

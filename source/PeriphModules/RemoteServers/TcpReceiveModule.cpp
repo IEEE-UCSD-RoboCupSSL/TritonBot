@@ -112,7 +112,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
                 else {
                     arma::vec2 origin = {std::stod(tokens[1]), std::stod(tokens[2])};
                     initSensorsCmdPub.publish(true); // Initialize Sensors
-                    robotOriginInWorldPub.publish(origin); // Update Robot's origin point represented in the world frame of reference
+                    // robotOriginInWorldPub.publish(origin); // Update Robot's origin point represented in the world frame of reference
                     rtnStr = "Initialized";
                     safetyEnablePub.publish(true);
                 }

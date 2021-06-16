@@ -14,5 +14,6 @@
 
 void VirtualCameraClientModule::task(ThreadPool& threadPool) {
     ITPS::FieldPublisher<CameraData> cameraDataPub("From:CameraClientModule", "CameraData(BodyFrame)", defaultCameraData());
-    threadPool.joinAll();
+    
+    while(true) delay(10000);
 }

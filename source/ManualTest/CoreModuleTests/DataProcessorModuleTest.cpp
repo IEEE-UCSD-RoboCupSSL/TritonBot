@@ -104,6 +104,7 @@ bool DataProcessorModuleTest::test(ThreadPool& threadPool) {
 
     std::cout << "All test case passed" << std::endl;
 
-    threadPool.joinAll();
+    
+    while(true) delay(10000);
     return true;
 }
