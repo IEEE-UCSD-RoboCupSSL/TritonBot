@@ -127,26 +127,32 @@ void MotionControllerModule::task(ThreadPool& threadPool) {
 
 
                 /* Effect of Normalizing: more power spent on rotation results in less spent on translation, vice versa */
+                /* Imaging the output to be a 3D vector: <x, y, z>, where z is omega, the angular speed 
+                 * the constraint is a sphere in R3 with radius 100, corresponding to 100%.
+                 * The robot should prioritize rotation so that it won't move crooked as often,
+                 * hence, the constraint of <x, y> in R2 is pre-determined by the magnitude of the 
+                 * rotational element 'z' (a.k.a w/omega), this constraint is the intersection between 
+                 * the plaine z=outputArmaVec3(2) and the sphere.
+                 * This percentage representation maps robot motion vector in a sphere whose projection on
+                 * to the x-y plane is a circle, however the exact velocity constraint isn't a circle,
+                 * but a 2D diamond determined by robot's max vertical and max horizontal speed, the mapping
+                 * from the circle constraint to the diamond constraint will be taken care in the McuTop program
+                 */
                 auto outputArmaVec3 = output.toArmaVec3();
-                // // Normalize translational output first
-                // arma::vec2 outputTrans = {outputArmaVec3(0), outputArmaVec3(1)};
-                // if(arma::norm(outputTrans) > 100.00) {
-                //     // Normalize the output vector to limit the maximum output vector norm to 100.00
-                //     outputTrans = arma::normalise(outputTrans);
-                //     outputTrans *= 100.00;
-                // }
-                // outputArmaVec3(0) = outputTrans(0);
-                // outputArmaVec3(1) = outputTrans(1);
-                // if(outputArmaVec3(2) > 100.00) outputArmaVec3(2) = 100.00;
-                // if(outputArmaVec3(2) < -100.00) outputArmaVec3(2) = -100.00;
-                if(arma::norm(outputArmaVec3) > 100.00) {
-                    // Normalize the output vector to limit the maximum output vector norm to 100.00
-                    outputArmaVec3 = arma::normalise(outputArmaVec3);
-                    outputArmaVec3 *= 100.00;
+                float z = outputArmaVec3(2);
+                if(z > 100.00f) z = 100.00f;
+                if(z < -100.00f) z = -100.00f;
+                //max magnitude for xy plain vector, which is the xy constraint: intersection between the sphere and the plaine z=outputArmaVec3(2)
+                float maxMagForXy = std::sqrt(std::pow(100.00f, 2) - std::pow(z, 2));
+                arma::vec2 xy = {outputArmaVec3(0), outputArmaVec3(1)};
+                if(arma::norm(xy) > maxMagForXy) {
+                    // Normalize the output vector to limit the maximum output vector norm to be maxMag
+                    xy = arma::normalise(xy);
+                    xy *= maxMagForXy;
                 }
-                output.vx = outputArmaVec3(0);
-                output.vy = outputArmaVec3(1);
-                output.omega = outputArmaVec3(2);
+                output.vx = xy(0);
+                output.vy = xy(1);
+                output.omega = z;
                 
                 // publish output
                 controlOutputPub.publish(output);
