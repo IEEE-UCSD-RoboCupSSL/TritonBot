@@ -24,18 +24,24 @@ bool BallCapTest::test(ThreadPool &threadPool) {
 
     MotionCommand cmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData, interpolationRate);
 
-
     std::cout << "cmd.setpoint3d: " << cmd.setpoint3d << std::endl;
     std::cout << "cmd.frame" << cmd.frame << std::endl;
     std::cout << "cmd.mode" << cmd.mode << std::endl;
 
-    assert(cmd.setpoint3d(0) == 20);
-    assert(cmd.setpoint3d(1) == 10);
-    assert((-64.0 <= cmd.setpoint3d(2)) && (cmd.setpoint3d(2) <= -63.0));
-    assert(cmd.mode == TDRD);
-    assert(cmd.frame == BodyFrame);
+    try {
+        ManualTest::testDoubleEq("Test if cmd.setpoint3d(0) is 20", 20, cmd.setpoint3d(0), 0.1);
+        ManualTest::testDoubleEq("Test if cmd.setpoint3d(1) is 10", 10, cmd.setpoint3d(1), 0.1);
+        ManualTest::testDoubleEq("Test if cmd.setpoint3d(2) is within -64 and -63", -63.5, cmd.setpoint3d(1), 0.5);
+        ManualTest::testModeEq("Test if cmd.mode is TDRD", TDRD, cmd.mode);
+        ManualTest::testFrameEq("Test if cmd.frame is BodyFrame", BodyFrame, cmd.frame);
 
-    std::cout << "All test case passed" << std::endl;
+    } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
+        std::cout << "Enter any key to continue: " << std::endl;
+        std::string dummy;
+        std::cin >> dummy;
+    }
+
     return true;
 }
 
