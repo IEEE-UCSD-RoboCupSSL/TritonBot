@@ -3,6 +3,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <string>
+#include <ManualTest/CoreModuleTests/BallCapTest.hpp>
 #include "Config/Config.hpp"
 #include "Misc/PubSubSystem/ThreadPool.hpp"
 #include "ManualTest/ManualTest.hpp"
@@ -31,6 +32,7 @@ public:
         testsMap["motion-ctrl"] = new MotionControllerModuleTest(config); 
         testsMap["mcu-client"] = new McuClientModuleTest(config);
         testsMap["vf"] = new VFTest(config);
+        testsMap["interpolated-cap"] =  new BallCapTest(config);
     }
     ~TestRunner() {
         for(auto it = testsMap.begin(); it != testsMap.end(); it++) {

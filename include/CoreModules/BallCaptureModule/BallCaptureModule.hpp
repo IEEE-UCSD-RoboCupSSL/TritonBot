@@ -11,7 +11,8 @@ class BallCaptureModule : public Module {
 
         // pass by copy on purpose to avoid multithreading synchronization concerns
         BallCaptureModule(Config cfg) : config(cfg) {}
-        virtual void task(ThreadPool& threadPool);
+
+    [[noreturn]] virtual void task(ThreadPool& threadPool);
     private:
         Config config;
 };

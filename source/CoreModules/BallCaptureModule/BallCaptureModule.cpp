@@ -6,7 +6,7 @@
 #include "Config/Config.hpp"
 
 
-void BallCaptureModule::task(ThreadPool& threadPool) {
+[[noreturn]] void BallCaptureModule::task(ThreadPool& threadPool) {
 
     ITPS::FieldSubscriber<bool> enableAutoCaptureSub("From:CommandProcessorModule", "EnableAutoCapture");
     ITPS::FieldSubscriber<BotData> filteredBotDataSub("From:DataProcessorModule", "BotData(BodyFrame)");
@@ -48,7 +48,7 @@ void BallCaptureModule::task(ThreadPool& threadPool) {
             } 
 
             if(enableAutoCaptureSub.getMsg()) {
-                auto mCmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData);
+                auto mCmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData, 1);
                 
                 ballAutoCapMotionCommandPub.publish(mCmd); 
             }
