@@ -26,11 +26,11 @@ public:
 
     static bool testDoubleEq(const std::string& testName, double expected, double actual, double precision) {
         if (((expected + precision) >= actual) && ((expected - precision) <= actual)) {
-            std::cout << "[Test PASSED] test: [" << testName << "] with expected = " << expected << " and actual = "
+            std::cout << "[Test PASSED] test: [" << testName << "] with expected = " << expected << ", precision = " << precision << " and actual = "
                       << actual << std::endl;
             return true;
         }
-        std::cout << "[Test FAILED] test: [" << testName << "] with expected = " << expected << " and actual = "
+        std::cout << "[Test FAILED] test: [" << testName << "] with expected = " << expected << ", precision = " << precision << " and actual = "
                   << actual << std::endl;
         return false;
     }
@@ -67,6 +67,13 @@ public:
         std::cout << "[Test FAILED] test: [" << testName << "] with expected = " << expected << " and actual = "
                   << actual << std::endl;
         return false;
+    }
+
+    static void pauseAfterTest(){
+        std::cout << "Enter any key to continue: " << std::endl;
+        std::string dummy;
+        std::getline(std::cin, dummy);
+        std::fflush(stdin);
     }
 
 
