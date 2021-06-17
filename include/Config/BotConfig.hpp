@@ -28,7 +28,8 @@ public:
     // c++ note: return by copy will be optimized by most c++ compiler via RVO (return value optimization)
     // c++ note2: const reference is used because it prolongs the life time of rvalue parameter (rval: temporary value) (plz google "const reference rvalue")
     virtual MotionCommand
-    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double const interpolationRate) = 0;
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
+                            double const interpolationRate, double angle) = 0;
 
 protected:
     bool isVirtual;
@@ -40,7 +41,8 @@ public:
     RealBotConfig() : BotConfig(false) { type = "RealBotConfig"; }
 
     virtual MotionCommand
-    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double const interpolationRate) = 0;
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
+                            double const interpolationRate, double angle) = 0;
 };
 
 class VirtualBotConfig : public BotConfig {
@@ -52,7 +54,8 @@ public:
     virtual bool isBallCloseEnoughToBot(const BallData &ballData, const BotData &botData) = 0;
 
     virtual MotionCommand
-    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double const interpolationRate) = 0;
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
+                            double const interpolationRate, double angle) = 0;
 };
 
 
@@ -139,9 +142,9 @@ public:
      * @return A command to be issued
      */
     MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
-                                          double const interpolationRate) override {
+                                          double const interpolationRate, double angle) override {
 //        MotionCommand command;
-//        if (isHoldingBall) {
+//        if (!isHoldingBall) {
 //            double deltaX = ballData.pos(0) - botData.pos(0);
 //            double deltaY = ballData.pos(1) - botData.pos(1);
 //            double angle;
@@ -181,33 +184,31 @@ public:
 //        return command;
 
         MotionCommand command;
-        if (isHoldingBall) {
-            double ballVelX = ballData.vel(0);
-            double ballVelY = ballData.vel(1);
-
-            double interpolatedPositionX = ballData.pos(0) + interpolationRate * ballVelX; // Calculate offset
-            double interpolatedPositionY = ballData.pos(1) + interpolationRate * ballVelY;
-
-//            double interpolatedPositionX = ballData.pos(0); // Calculate offset
-//            double interpolatedPositionY = ballData.pos(1);
-
-            double deltaX = interpolatedPositionX - botData.pos(0);
-            double deltaY = interpolatedPositionY - botData.pos(1);
-
-            double angle;
-            // might be simplified by using std::atan2, but i'm too lazy to refactor this since this method might be replaced by a new solution soon
-            if (deltaX < 0.0001 && deltaX > -0.0001) {
-                if (deltaY > 0) {
-                    angle = 0;
-                } else {
-                    angle = 179.9;
-                }
-            } else {
-               angle = std::atan2(deltaY, deltaX) * 180.0 / 3.1415926 - 90;
+        if (!isHoldingBall) {
+            double angleInRad = to_radian(angle);
+            arma::vec2 botOrientation = {-std::sin(angleInRad), std::cos(angleInRad)};
+            arma::vec2 ballvel = ballData.vel;
+            double const botStopBeforeBallDistance = 150;
+            if (arma::norm(ballvel) > 2000) {
+                ballvel = 2000 * arma::normalise(ballvel);
             }
-            command.mode = CtrlMode::TDRD;
+
+            arma::vec2 interpolatedPosition = ballData.pos + interpolationRate * ballvel -
+                                              botStopBeforeBallDistance * botOrientation; // Calculate offset
+
+
+            arma::vec2 botToInterPosDistance = interpolatedPosition - botData.pos;
+
+
             command.frame = ReferenceFrame::BodyFrame;
-            command.setpoint3d = {interpolatedPositionX, interpolatedPositionY, angle + botData.ang};
+
+            if (arma::norm(botToInterPosDistance) > 100) {
+                command.mode = CtrlMode::NSTDRD;
+                command.setpoint3d = { interpolatedPosition(0), interpolatedPosition(1), angle };
+            } else {
+                command.mode = CtrlMode::TDRD;
+                command.setpoint3d = { ballData.pos(0), ballData.pos(1), angle };
+            }
         } else {
             command.mode = CtrlMode::TVRV;
             command.frame = ReferenceFrame::BodyFrame;
@@ -228,7 +229,8 @@ public:
     }
 
     MotionCommand
-    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double const interpolationRate) {
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
+                            double const interpolationRate, double angle) {
         // To-do
         return defaultMotionCommand();
     }

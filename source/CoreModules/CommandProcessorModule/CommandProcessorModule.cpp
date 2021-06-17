@@ -124,7 +124,7 @@ ControlInput processMotionCommand(const MotionCommand& receivedMCmd, arma::vec2 
 
 
     // If CMD setpoint is described in World Reference Frame, we do a World to Body Transformation
-//    if(frame == WorldFrame) {
+    if(frame == WorldFrame) {
         if(ci.translationalSetPoint.type == SetPointType::position) {
             ci.translationalSetPoint.value = transformWorldToBodyFrame(robotOriginInWorld, 
                                 robotAng, ci.translationalSetPoint.value);
@@ -132,6 +132,6 @@ ControlInput processMotionCommand(const MotionCommand& receivedMCmd, arma::vec2 
             ci.translationalSetPoint.value = transformWorldToBodyFrame(zeroVec2d(), 
                                 robotAng, ci.translationalSetPoint.value);
         }
-//    }
+    }
     return ci;
 }

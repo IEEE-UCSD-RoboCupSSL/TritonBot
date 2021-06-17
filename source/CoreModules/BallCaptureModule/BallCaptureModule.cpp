@@ -35,6 +35,8 @@
     }
 
     logger(Info) << "\033[0;32m Initialized \033[0m";
+    bool prevEnAutoCap = false;
+    double angle = 0.00;
 
     while(true) {
         periodic_session([&](){
@@ -46,12 +48,21 @@
             } else {
                 ballCapStatusPub.publish(false);
             } 
+            bool enAutoCap = enableAutoCaptureSub.getMsg();
 
-            if(enableAutoCaptureSub.getMsg()) {
-                auto mCmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData, 1);
+            if(enAutoCap) {
+                if(!prevEnAutoCap) {
+                    prevEnAutoCap = true;
+                    angle = botData.ang;
+                }
+
+                auto mCmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData, 0.5, angle);
                 
                 ballAutoCapMotionCommandPub.publish(mCmd); 
+            } else {
+                prevEnAutoCap = false;
             }
+
         }, TO_PERIOD(BALL_CAPTURE_FREQUENCY));
     }
 

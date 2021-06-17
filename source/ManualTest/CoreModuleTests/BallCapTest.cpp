@@ -8,7 +8,7 @@ BallCapTest::BallCapTest(Config &cfg) : config(cfg) {}
 
 bool BallCapTest::test(ThreadPool &threadPool) {
 
-    bool isHoldingBall = true;
+    bool isHoldingBall = false;
     BallData ballData;
     ballData.frame = BodyFrame;
     ballData.pos = {10, 10};
@@ -22,7 +22,8 @@ bool BallCapTest::test(ThreadPool &threadPool) {
 
     double interpolationRate = 1.0;
 
-    MotionCommand cmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData, interpolationRate);
+    MotionCommand cmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData, interpolationRate,
+                                                                  0);
 
     std::cout << "cmd.setpoint3d: " << cmd.setpoint3d << std::endl;
     std::cout << "cmd.frame" << cmd.frame << std::endl;
@@ -37,8 +38,18 @@ bool BallCapTest::test(ThreadPool &threadPool) {
 
     } catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
-
     }
+
+    ballData.frame = BodyFrame;
+    ballData.pos = {10, 10};
+    ballData.vel = {10, 0};
+
+    botData.frame = BodyFrame;
+    botData.pos = {0, 0};
+    botData.vel = {0, 0};
+    botData.ang = 0;
+    botData.angVel = 0;
+
 
     ManualTest::pauseAfterTest();
     return true;
