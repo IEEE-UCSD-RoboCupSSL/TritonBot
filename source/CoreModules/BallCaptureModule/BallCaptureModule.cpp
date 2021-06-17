@@ -6,7 +6,7 @@
 #include "Config/Config.hpp"
 
 
-void BallCaptureModule::task(ThreadPool& threadPool) {
+[[noreturn]] void BallCaptureModule::task(ThreadPool& threadPool) {
 
     ITPS::FieldSubscriber<bool> enableAutoCaptureSub("From:CommandProcessorModule", "EnableAutoCapture");
     ITPS::FieldSubscriber<BotData> filteredBotDataSub("From:DataProcessorModule", "BotData(BodyFrame)");

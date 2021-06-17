@@ -28,7 +28,7 @@ public:
     // c++ note: return by copy will be optimized by most c++ compiler via RVO (return value optimization)
     // c++ note2: const reference is used because it prolongs the life time of rvalue parameter (rval: temporary value) (plz google "const reference rvalue")
     virtual MotionCommand
-    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double d) = 0;
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double const interpolationRate) = 0;
 
 protected:
     bool isVirtual;
@@ -40,7 +40,7 @@ public:
     RealBotConfig() : BotConfig(false) { type = "RealBotConfig"; }
 
     virtual MotionCommand
-    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double d) = 0;
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double const interpolationRate) = 0;
 };
 
 class VirtualBotConfig : public BotConfig {
@@ -52,7 +52,7 @@ public:
     virtual bool isBallCloseEnoughToBot(const BallData &ballData, const BotData &botData) = 0;
 
     virtual MotionCommand
-    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double interpolationRate) = 0;
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double const interpolationRate) = 0;
 };
 
 
@@ -78,7 +78,7 @@ public:
         t0 = CHRONO_NOW;
     }
 
-    bool isBallCloseEnoughToBot(const BallData &ballData, const BotData &botData) {
+    bool isBallCloseEnoughToBot(const BallData &ballData, const BotData &botData) override {
         if (ballData.frame != botData.frame) {
             BLogger logger;
             logger.addTag("[BotConfig.hpp]");
@@ -139,7 +139,47 @@ public:
      * @return A command to be issued
      */
     MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
-                                          double const interpolationRate) {
+                                          double const interpolationRate) override {
+//        MotionCommand command;
+//        if (isHoldingBall) {
+//            double deltaX = ballData.pos(0) - botData.pos(0);
+//            double deltaY = ballData.pos(1) - botData.pos(1);
+//            double angle;
+//            // might be simplified by using std::atan2, but i'm too lazy to refactor this since this method might be replaced by a new solution soon
+//            if (deltaX < 0.0001 && deltaX > -0.0001) {
+//                if (deltaY > 0) {
+//                    angle = 0;
+//                } else {
+//                    angle = 179.9;
+//                }
+//            } else {
+//                // first quadrant
+//                if (deltaY >= 0 && deltaX >= 0) {
+//                    angle = std::atan(deltaY / deltaX) * 180.0 / 3.1415926 - 90;
+//                }
+//                    // second quadrant
+//                else if (deltaY >= 0 && deltaX < 0) {
+//                    angle = 90 - std::atan(deltaY / -deltaX) * 180.0 / 3.1415926;
+//                }
+//                    // fourth quadrant
+//                else if (deltaY < 0 && deltaX >= 0) {
+//                    angle = std::atan(deltaY / deltaX) * 180.0 / 3.1415926 - 90;
+//                }
+//                    // third quadrant
+//                else {
+//                    angle = 90 - std::atan(deltaY / -deltaX) * 180.0 / 3.1415926;
+//                }
+//            }
+//            command.mode = CtrlMode::TDRD;
+//            command.frame = ReferenceFrame::BodyFrame;
+//            command.setpoint3d = {ballData.pos(0), ballData.pos(1), angle + botData.ang};
+//        } else {
+//            command.mode = CtrlMode::TVRV;
+//            command.frame = ReferenceFrame::BodyFrame;
+//            command.setpoint3d = {0, 0, 0};
+//        }
+//        return command;
+
         MotionCommand command;
         if (isHoldingBall) {
             double ballVelX = ballData.vel(0);
@@ -147,6 +187,9 @@ public:
 
             double interpolatedPositionX = ballData.pos(0) + interpolationRate * ballVelX; // Calculate offset
             double interpolatedPositionY = ballData.pos(1) + interpolationRate * ballVelY;
+
+//            double interpolatedPositionX = ballData.pos(0); // Calculate offset
+//            double interpolatedPositionY = ballData.pos(1);
 
             double deltaX = interpolatedPositionX - botData.pos(0);
             double deltaY = interpolatedPositionY - botData.pos(1);
@@ -160,26 +203,11 @@ public:
                     angle = 179.9;
                 }
             } else {
-                // first quadrant
-                if (deltaY >= 0 && deltaX >= 0) {
-                    angle = std::atan(deltaY / deltaX) * 180.0 / 3.1415926 - 90;
-                }
-                    // second quadrant
-                else if (deltaY >= 0 && deltaX < 0) {
-                    angle = 90 - std::atan(deltaY / -deltaX) * 180.0 / 3.1415926;
-                }
-                    // fourth quadrant
-                else if (deltaY < 0 && deltaX >= 0) {
-                    angle = std::atan(deltaY / deltaX) * 180.0 / 3.1415926 - 90;
-                }
-                    // third quadrant
-                else {
-                    angle = 90 - std::atan(deltaY / -deltaX) * 180.0 / 3.1415926;
-                }
+               angle = std::atan2(deltaY, deltaX) * 180.0 / 3.1415926 - 90;
             }
             command.mode = CtrlMode::TDRD;
             command.frame = ReferenceFrame::BodyFrame;
-            command.setpoint3d = {interpolatedPositionX, interpolatedPositionY, angle};
+            command.setpoint3d = {interpolatedPositionX, interpolatedPositionY, angle + botData.ang};
         } else {
             command.mode = CtrlMode::TVRV;
             command.frame = ReferenceFrame::BodyFrame;
@@ -200,7 +228,7 @@ public:
     }
 
     MotionCommand
-    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double d) {
+    autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData, double const interpolationRate) {
         // To-do
         return defaultMotionCommand();
     }
