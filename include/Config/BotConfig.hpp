@@ -171,9 +171,8 @@ public:
             std::printf("[DeltaAngle] %f \n", absDeltaAngle);
             std::printf("[ballToBotDis] %f \n", ballToBotDis);
 
-
             command.frame = ReferenceFrame::BodyFrame;
-            if (absDeltaAngle > 20.0 || ballToBotDis > 1000.0) {
+            if (absDeltaAngle > 20.0 && ballToBotDis > 1000.0) {
                 command.mode = CtrlMode::TDRD;
                 command.setpoint3d = {interpolatedPosition(0), interpolatedPosition(1), angle};
             } else {
