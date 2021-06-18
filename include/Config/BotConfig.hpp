@@ -146,6 +146,12 @@ public:
      */
     MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
                                           double const interpolationRate, double angle) override {
+
+        std::printf("[BallData] 1. pos: < %f , %f > , 2. vel: < %f , %f > , 3. frame: %d \n", ballData.pos(0), ballData.pos(1),
+                    ballData.vel(0), ballData.vel(1), ballData.frame);
+        std::printf("[BotData]  1. pos: < %f , %f > , 2. vel: < %f , %f > , 3. frame: %d \n", botData.pos(0), botData.pos(1),
+                    botData.vel(0), botData.vel(1), botData.frame);
+
         boost::lock_guard<boost::mutex> guard(mu);
         MotionCommand command;
         if (!isHoldingBall) {
@@ -162,10 +168,10 @@ public:
             command.frame = ReferenceFrame::BodyFrame;
             if (arma::norm(botToInterPosDistance) > 100) {
                 command.mode = CtrlMode::NSTDRD;
-                command.setpoint3d = { interpolatedPosition(0), interpolatedPosition(1), angle };
+                command.setpoint3d = {interpolatedPosition(0), interpolatedPosition(1), angle};
             } else {
                 command.mode = CtrlMode::TDRD;
-                command.setpoint3d = { ballData.pos(0), ballData.pos(1), angle };
+                command.setpoint3d = {ballData.pos(0), ballData.pos(1), angle};
             }
         } else {
             command.mode = CtrlMode::TVRV;
