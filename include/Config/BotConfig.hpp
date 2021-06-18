@@ -83,7 +83,7 @@ public:
     }
 
     bool isBallCloseEnoughToBot(const BallData &ballData, const BotData &botData) override {
-        boost::lock_guard<boost::mutex> guard(mu);
+        //boost::lock_guard<boost::mutex> guard(mu);
         if (ballData.frame != botData.frame) {
             BLogger logger;
             logger.addTag("[BotConfig.hpp]");
@@ -100,7 +100,7 @@ public:
     }
 
     bool isHoldingBall(const BallData &ballData, const BotData &botData) {
-        boost::lock_guard<boost::mutex> guard(mu);
+        //boost::lock_guard<boost::mutex> guard(mu);
         if (ballData.frame != botData.frame) {
             BLogger logger;
             logger.addTag("[BotConfig.hpp]");
@@ -147,31 +147,40 @@ public:
     MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
                                           double const interpolationRate, double angle) override {
 
-        std::printf("[BallData] 1. pos: < %f , %f > , 2. vel: < %f , %f > , 3. frame: %d \n", ballData.pos(0), ballData.pos(1),
-                    ballData.vel(0), ballData.vel(1), ballData.frame);
-        std::printf("[BotData]  1. pos: < %f , %f > , 2. vel: < %f , %f > , 3. frame: %d \n", botData.pos(0), botData.pos(1),
-                    botData.vel(0), botData.vel(1), botData.frame);
+//        std::printf("[BallData] 1. pos: < %f , %f > , 2. vel: < %f , %f > , 3. frame: %d \n", ballData.pos(0), ballData.pos(1),
+//                    ballData.vel(0), ballData.vel(1), ballData.frame);
+//        std::printf("[BotData]  1. pos: < %f , %f > , 2. vel: < %f , %f > , 3. frame: %d \n", botData.pos(0), botData.pos(1),
+//                    botData.vel(0), botData.vel(1), botData.frame);
 
-        boost::lock_guard<boost::mutex> guard(mu);
+//        boost::lock_guard<boost::mutex> guard(mu);
         MotionCommand command;
         if (!isHoldingBall) {
             double angleInRad = to_radian(angle);
             arma::vec2 botOrientation = {-std::sin(angleInRad), std::cos(angleInRad)};
             arma::vec2 ballvel = ballData.vel;
-            double const botStopBeforeBallDistance = 150;
+            double const botStopBeforeBallDistance = 300;
             if (arma::norm(ballvel) > 2000) {
                 ballvel = 2000 * arma::normalise(ballvel);
             }
             arma::vec2 interpolatedPosition = ballData.pos + interpolationRate * ballvel -
                                               botStopBeforeBallDistance * botOrientation; // Calculate offset
-            arma::vec2 botToInterPosDistance = interpolatedPosition - botData.pos;
+
+            double absDeltaAngle = abs(toAngle(ballData.pos - botData.pos) - 90);
+            double ballToBotDis = abs(arma::norm(ballData.pos - botData.pos));
+
+            std::printf("[DeltaAngle] %f \n", absDeltaAngle);
+            std::printf("[ballToBotDis] %f \n", ballToBotDis);
+
+
             command.frame = ReferenceFrame::BodyFrame;
-            if (arma::norm(botToInterPosDistance) > 100) {
-                command.mode = CtrlMode::NSTDRD;
+            if (absDeltaAngle > 20.0 || ballToBotDis > 1000.0) {
+                command.mode = CtrlMode::TDRD;
                 command.setpoint3d = {interpolatedPosition(0), interpolatedPosition(1), angle};
             } else {
                 command.mode = CtrlMode::TDRD;
                 command.setpoint3d = {ballData.pos(0), ballData.pos(1), angle};
+//                command.mode = CtrlMode::TVRV;
+//                command.setpoint3d = {0, 0, 0};
             }
         } else {
             command.mode = CtrlMode::TVRV;

@@ -15,6 +15,14 @@ arma::vec map(arma::vec value, range_t from, range_t to) {
     return value;
 }
 
+double toAngle(arma::vec2 orientation){
+    if(std::abs(orientation(0)) < 0.00001){
+        return orientation(1) > 0 ? 0 : 180;
+    }
+
+    return std::atan2(orientation(1), orientation(0)) * 180 / Pi;
+}
+
 // pass by reference element-wise mapping, suit for large size vectors
 void map2(arma::vec& value, range_t from, range_t to) {
     for(int i = 0; i < size(value).n_rows; i++) {

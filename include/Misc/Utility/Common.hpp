@@ -61,6 +61,7 @@ arma::vec map(arma::vec value, range_t from, range_t to);
 void map2(arma::vec& value, range_t from, range_t to);
 
 
+double toAngle(arma::vec2 orientation);
 
 arma::mat rotationMatrix2D(double angle_degree);
 arma::mat changeBasisMatrix2D(arma::vec vx, arma::vec vy) ;
