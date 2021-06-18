@@ -12,6 +12,7 @@
 
 class BotConfig {
 public:
+    boost::mutex mu;
     unsigned int pidControlFrequency;
     PIDConstants posPidConsts;
     PIDConstants anglePidConsts;
@@ -82,6 +83,7 @@ public:
     }
 
     bool isBallCloseEnoughToBot(const BallData &ballData, const BotData &botData) override {
+        boost::lock_guard<boost::mutex> guard(mu);
         if (ballData.frame != botData.frame) {
             BLogger logger;
             logger.addTag("[BotConfig.hpp]");
@@ -98,6 +100,7 @@ public:
     }
 
     bool isHoldingBall(const BallData &ballData, const BotData &botData) {
+        boost::lock_guard<boost::mutex> guard(mu);
         if (ballData.frame != botData.frame) {
             BLogger logger;
             logger.addTag("[BotConfig.hpp]");
@@ -143,46 +146,7 @@ public:
      */
     MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
                                           double const interpolationRate, double angle) override {
-//        MotionCommand command;
-//        if (!isHoldingBall) {
-//            double deltaX = ballData.pos(0) - botData.pos(0);
-//            double deltaY = ballData.pos(1) - botData.pos(1);
-//            double angle;
-//            // might be simplified by using std::atan2, but i'm too lazy to refactor this since this method might be replaced by a new solution soon
-//            if (deltaX < 0.0001 && deltaX > -0.0001) {
-//                if (deltaY > 0) {
-//                    angle = 0;
-//                } else {
-//                    angle = 179.9;
-//                }
-//            } else {
-//                // first quadrant
-//                if (deltaY >= 0 && deltaX >= 0) {
-//                    angle = std::atan(deltaY / deltaX) * 180.0 / 3.1415926 - 90;
-//                }
-//                    // second quadrant
-//                else if (deltaY >= 0 && deltaX < 0) {
-//                    angle = 90 - std::atan(deltaY / -deltaX) * 180.0 / 3.1415926;
-//                }
-//                    // fourth quadrant
-//                else if (deltaY < 0 && deltaX >= 0) {
-//                    angle = std::atan(deltaY / deltaX) * 180.0 / 3.1415926 - 90;
-//                }
-//                    // third quadrant
-//                else {
-//                    angle = 90 - std::atan(deltaY / -deltaX) * 180.0 / 3.1415926;
-//                }
-//            }
-//            command.mode = CtrlMode::TDRD;
-//            command.frame = ReferenceFrame::BodyFrame;
-//            command.setpoint3d = {ballData.pos(0), ballData.pos(1), angle + botData.ang};
-//        } else {
-//            command.mode = CtrlMode::TVRV;
-//            command.frame = ReferenceFrame::BodyFrame;
-//            command.setpoint3d = {0, 0, 0};
-//        }
-//        return command;
-
+        boost::lock_guard<boost::mutex> guard(mu);
         MotionCommand command;
         if (!isHoldingBall) {
             double angleInRad = to_radian(angle);
@@ -192,16 +156,10 @@ public:
             if (arma::norm(ballvel) > 2000) {
                 ballvel = 2000 * arma::normalise(ballvel);
             }
-
             arma::vec2 interpolatedPosition = ballData.pos + interpolationRate * ballvel -
                                               botStopBeforeBallDistance * botOrientation; // Calculate offset
-
-
             arma::vec2 botToInterPosDistance = interpolatedPosition - botData.pos;
-
-
             command.frame = ReferenceFrame::BodyFrame;
-
             if (arma::norm(botToInterPosDistance) > 100) {
                 command.mode = CtrlMode::NSTDRD;
                 command.setpoint3d = { interpolatedPosition(0), interpolatedPosition(1), angle };
