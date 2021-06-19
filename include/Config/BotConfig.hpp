@@ -2,6 +2,7 @@
 
 #include <armadillo>
 #include <string>
+#include <CoreModules/Conversion.hpp>
 #include "CoreModules/DataCmdTypes.hpp"
 #include "Misc/Utility/BoostLogger.hpp"
 #include "Misc/Utility/ClockUtil.hpp"
@@ -30,7 +31,8 @@ public:
     // c++ note2: const reference is used because it prolongs the life time of rvalue parameter (rval: temporary value) (plz google "const reference rvalue")
     virtual MotionCommand
     autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
-                            double const interpolationRate, double angle) = 0;
+                            double const interpolationRate, double angle,
+                            arma::vec2 &robotOriginInWorld) = 0;
 
 protected:
     bool isVirtual;
@@ -43,7 +45,8 @@ public:
 
     virtual MotionCommand
     autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
-                            double const interpolationRate, double angle) = 0;
+                            double const interpolationRate, double angle,
+                            arma::vec2 &robotOriginInWorld) = 0;
 };
 
 class VirtualBotConfig : public BotConfig {
@@ -56,7 +59,8 @@ public:
 
     virtual MotionCommand
     autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
-                            double const interpolationRate, double angle) = 0;
+                            double const interpolationRate, double angle,
+                            arma::vec2 &robotOriginInWorld) = 0;
 };
 
 
@@ -145,18 +149,26 @@ public:
      * @return A command to be issued
      */
     MotionCommand autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
-                                          double const interpolationRate, double angle) override {
+                                          double const interpolationRate, double angle,
+                                          arma::vec2 &robotOriginInWorld) override {
 
-//        std::printf("[BallData] 1. pos: < %f , %f > , 2. vel: < %f , %f > , 3. frame: %d \n", ballData.pos(0), ballData.pos(1),
-//                    ballData.vel(0), ballData.vel(1), ballData.frame);
-//        std::printf("[BotData]  1. pos: < %f , %f > , 2. vel: < %f , %f > , 3. frame: %d \n", botData.pos(0), botData.pos(1),
+//        std::printf("-BotData-  1. pos: < %f , %f > , 2. vel: < %f , %f > , 3. frame: %d \n", botData.pos(0),
+//                    botData.pos(1),
 //                    botData.vel(0), botData.vel(1), botData.frame);
+//        std::printf("[BallData] 1. pos: < %f , %f > , 2. vel: < %f , %f > , 3. frame: %d \n", ballData.pos(0),
+//                    ballData.pos(1),
+//                    ballData.vel(0), ballData.vel(1), ballData.frame);
+
 
 //        boost::lock_guard<boost::mutex> guard(mu);
         MotionCommand command;
         if (!isHoldingBall) {
             double angleInRad = to_radian(angle);
-            arma::vec2 botOrientation = {-std::sin(angleInRad), std::cos(angleInRad)};
+
+            arma::vec2 botOrientationInWorld = {-std::sin(angleInRad), std::cos(angleInRad)};
+            arma::vec2 botOrientation = transformWorldToBodyFrame(robotOriginInWorld,
+                                      angle, botOrientationInWorld);
+
             arma::vec2 ballvel = ballData.vel;
             double const botStopBeforeBallDistance = 300;
             if (arma::norm(ballvel) > 2000) {
@@ -165,17 +177,23 @@ public:
             arma::vec2 interpolatedPosition = ballData.pos + interpolationRate * ballvel -
                                               botStopBeforeBallDistance * botOrientation; // Calculate offset
 
+//            std::printf(">InterPos< 1. pos: < %f , %f >  \n", interpolatedPosition(0), interpolatedPosition(1));
+//            std::printf("XBotOrienX 1. pos: < %f , %f >  \n", botOrientation(0), botOrientation(1));
+
+
             double absDeltaAngle = abs(toAngle(ballData.pos - botData.pos) - 90);
             double ballToBotDis = abs(arma::norm(ballData.pos - botData.pos));
 
-            std::printf("[DeltaAngle] %f \n", absDeltaAngle);
-            std::printf("[ballToBotDis] %f \n", ballToBotDis);
+//            std::printf("[DeltaAngle] %f \n", absDeltaAngle);
+//            std::printf("[ballToBotDis] %f \n", ballToBotDis);
 
             command.frame = ReferenceFrame::BodyFrame;
-            if (absDeltaAngle > 20.0 && ballToBotDis > 1000.0) {
+            if (absDeltaAngle > 20.0 || ballToBotDis > 1000.0) {
+//                std::cout << "#### using interpolation\n";
                 command.mode = CtrlMode::TDRD;
                 command.setpoint3d = {interpolatedPosition(0), interpolatedPosition(1), angle};
             } else {
+//                std::cout << "#### NOT using interpolation\n";
                 command.mode = CtrlMode::TDRD;
                 command.setpoint3d = {ballData.pos(0), ballData.pos(1), angle};
 //                command.mode = CtrlMode::TVRV;
@@ -202,7 +220,8 @@ public:
 
     MotionCommand
     autoBallCaptureSolution(bool isHoldingBall, const BallData &ballData, const BotData &botData,
-                            double const interpolationRate, double angle) {
+                            double const interpolationRate, double angle,
+                            arma::vec2 &robotOriginInWorld) {
         // To-do
         return defaultMotionCommand();
     }

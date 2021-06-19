@@ -12,6 +12,7 @@
     ITPS::FieldSubscriber<BotData> filteredBotDataSub("From:DataProcessorModule", "BotData(BodyFrame)");
     ITPS::FieldSubscriber<BallData> filteredBallDataSub("From:DataProcessorModule", "BallData(BodyFrame)");
     ITPS::FieldSubscriber<bool> isHoldingBallSub("From:DataProcessorModule", "IsHoldingBall");
+    ITPS::FieldSubscriber<arma::vec2> robotOriginInWorldSub("From:TcpReceiveModule", "RobotOrigin(WorldFrame)");
 
     ITPS::FieldPublisher<MotionCommand> ballAutoCapMotionCommandPub("From:BallAutoCaptureModule", "MotionCommand(BodyFrame)", defaultMotionCommand());
     ITPS::FieldPublisher<bool> ballCapStatusPub("From:BallCaptureModule", "isDribbled", false);
@@ -26,6 +27,7 @@
         filteredBallDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         filteredBotDataSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
         isHoldingBallSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
+        robotOriginInWorldSub.subscribe(DEFAULT_SUBSCRIBER_TIMEOUT);
     }
     catch(std::exception& e) {
         BLogger logger;
@@ -43,6 +45,8 @@
             auto isHoldingBall = isHoldingBallSub.getMsg();
             auto ballData = filteredBallDataSub.getMsg();
             auto botData = filteredBotDataSub.getMsg();
+            arma::vec2 robotOrigin = robotOriginInWorldSub.getMsg();
+
             if(isHoldingBall) {
                 ballCapStatusPub.publish(true);
             } else {
@@ -56,7 +60,8 @@
                     angle = botData.ang;
                 }
 
-                auto mCmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData, 0.5, angle);
+                auto mCmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData, 0.5, angle,
+                                                                      robotOrigin);
                 
                 ballAutoCapMotionCommandPub.publish(mCmd); 
             } else {

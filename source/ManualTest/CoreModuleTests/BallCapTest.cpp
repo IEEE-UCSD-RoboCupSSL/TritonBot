@@ -23,7 +23,7 @@ bool BallCapTest::test(ThreadPool &threadPool) {
     double interpolationRate = 1.0;
 
     MotionCommand cmd = config.botConfig->autoBallCaptureSolution(isHoldingBall, ballData, botData, interpolationRate,
-                                                                  0);
+                                                                  0, botData.vel);
 
     std::cout << "cmd.setpoint3d: " << cmd.setpoint3d << std::endl;
     std::cout << "cmd.frame" << cmd.frame << std::endl;
