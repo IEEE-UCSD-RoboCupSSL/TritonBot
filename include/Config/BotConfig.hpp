@@ -194,7 +194,7 @@ public:
                 command.setpoint3d = {interpolatedPosition(0), interpolatedPosition(1), angle};
             } else {
 //                std::cout << "#### NOT using interpolation\n";
-                command.mode = CtrlMode::TDRD;
+                command.mode = CtrlMode::NSTDRD;
                 arma::vec2 receptionPoint = ballData.pos;
                 receptionPoint -= arma::normalise(botOrientation) * (dribblerOffset - 2.00f);
                 command.setpoint3d = {receptionPoint(0), receptionPoint(1), angle};
