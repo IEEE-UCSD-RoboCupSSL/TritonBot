@@ -84,10 +84,11 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
             logger.log(Error, e.what());
             safetyEnablePub.publish(false);
 
-            // To-do: handle disconnect
-            while(1) { // has delay (good for reducing high CPU usage)
-                delay(1000);
-            }
+            // // To-do: handle disconnect
+            // while(1) { // has delay (good for reducing high CPU usage)
+            //     delay(1000);
+            // }
+            std::cout << "Error in TcpReceiveModule.cpp" << std::endl;
         }
     
         // Tokenize the received input
@@ -130,6 +131,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
         mu.lock();
         asio::write(socket, asio::buffer(rtnStr + "\n"));
         mu.unlock();
+        delay(1);
     }
  
 }
