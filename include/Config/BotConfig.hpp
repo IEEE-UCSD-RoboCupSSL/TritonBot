@@ -68,10 +68,10 @@ class GrSimBotConfig : public VirtualBotConfig {
 
 private:
     // unit: mm
-    float const dribblerOffset = 101.5;
-    float const ballNearBotZoneWidth = 500.0;
-    float const ballNearBotZoneHeight = 300.0;
-    float const holdBallZoneWidth = 100.0;
+    float const dribblerOffset = 85.0;
+    float const ballNearBotZoneWidth = 300.0;
+    float const ballNearBotZoneHeight = 200.0;
+    float const holdBallZoneWidth = 64.0;
     float const holdBallZoneHeight = 40.0;
 
     std::chrono::steady_clock::time_point t0;
@@ -194,7 +194,7 @@ public:
                 command.setpoint3d = {interpolatedPosition(0), interpolatedPosition(1), angle};
             } else {
 //                std::cout << "#### NOT using interpolation\n";
-                command.mode = CtrlMode::NSTDRD;
+                command.mode = CtrlMode::TDRD;
                 arma::vec2 receptionPoint = ballData.pos;
                 receptionPoint -= arma::normalise(botOrientation) * (dribblerOffset - 2.00f);
                 command.setpoint3d = {receptionPoint(0), receptionPoint(1), angle};
