@@ -69,15 +69,15 @@ class GrSimBotConfig : public VirtualBotConfig {
 private:
     // unit: mm
     float const dribblerOffset = 85.0;
-    float const ballNearBotZoneWidth = 300.0;
-    float const ballNearBotZoneHeight = 200.0;
+    float const ballNearBotZoneWidth = 500.0;
+    float const ballNearBotZoneHeight = 300.0;
     float const holdBallZoneWidth = 64.0;
-    float const holdBallZoneHeight = 40.0;
+    float const holdBallZoneHeight = 50.0;
 
     std::chrono::steady_clock::time_point t0;
-    long samplingFrequency = 10; // Hz
+    long samplingFrequency = 50; // Hz
     long hbCnt = 0, roundTotal = 0;
-    float percentThreshHold = 0.6; // if hbCnt/roundTotal >= 60 %, ball is dribbled 
+    float percentThreshHold = 0.75; // if hbCnt/roundTotal >= 60 %, ball is dribbled 
     bool hbResult = false;
 
 public:
