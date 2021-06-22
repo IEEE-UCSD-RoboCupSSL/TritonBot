@@ -72,7 +72,7 @@ private:
     float const ballNearBotZoneWidth = 500.0;
     float const ballNearBotZoneHeight = 300.0;
     float const holdBallZoneWidth = 64.0;
-    float const holdBallZoneHeight = 50.0;
+    float const holdBallZoneHeight = 43.0;
 
     std::chrono::steady_clock::time_point t0;
     long samplingFrequency = 50; // Hz
