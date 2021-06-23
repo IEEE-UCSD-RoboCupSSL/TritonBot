@@ -43,9 +43,10 @@ class Module {
     
     protected:
         static void periodic_session(std::function<void()> func, std::chrono::duration<float> period) {
-            auto t = std::chrono::steady_clock::now();
+            //auto t = std::chrono::steady_clock::now();
             func();
-            std::this_thread::sleep_until(t + period);
+            //std::this_thread::sleep_until(t + period);
+            std::this_thread::sleep_for(period); // ad hoc for competition to lower cpu usage
         }
 
     private:

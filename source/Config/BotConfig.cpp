@@ -60,8 +60,16 @@ void processIni(std::string filepath, std::shared_ptr<BotConfig> config) {
                     "pid_tvrd_corr", 1.0);
     config->pidTvrvCorr = reader.GetFloat("pid controller constants", 
                     "pid_tvrv_corr", 1.0);
-    
 
+
+
+    config->dribblerOffset = reader.GetFloat("dribbler setting", "dribblerOffset", 85.0);
+    config->ballNearBotZoneHeight = reader.GetFloat("dribbler setting", "ballNearBotZoneHeight", 500.0);
+    config->ballNearBotZoneWidth = reader.GetFloat("dribbler setting", "ballNearBotZoneWidth", 300.0);
+    config->holdBallZoneHeight = reader.GetFloat("dribbler setting", "holdBallZoneHeight", 64.0);
+    config->holdBallZoneWidth = reader.GetFloat("dribbler setting", "holdBallZoneWidth", 85.0);
+    config->holdBallPercentThreshHold = reader.GetFloat("dribbler setting", "holdBallPercentThreshHold", 0.6);
+    config->botStopBeforeBallDistance = reader.GetFloat("dribbler setting", "botStopBeforeBallDistance", 500);
 
 
     logger.log(Info, "Parsed from " + filepath + ":");

@@ -71,7 +71,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
     threadPool.execute(boost::bind(&backgndTask, boost::ref(ballCapStatusSub), boost::ref(socket)));
 
 
-    while(true) { // No delay, blocking-socket-read is used, usually won't use too much CPU resources
+    while(true) { 
         // get first line seperated string from the receiving buffer
         std::istream inputStream(&read_buf);
 
@@ -131,7 +131,7 @@ void TcpReceiveModule::task(ThreadPool& threadPool) {
         mu.lock();
         asio::write(socket, asio::buffer(rtnStr + "\n"));
         mu.unlock();
-        delay(1);
+        delay(10);
     }
  
 }
@@ -140,7 +140,7 @@ void backgndTask(ITPS::FieldSubscriber<bool>& ballCapStatusSub, asio::ip::tcp::s
     bool prevBallCapStatus = true; // deliberately set it true to have a extra socket send at the begining
     auto period = TO_PERIOD(TCP_RECEIVE_FREQUENCY);
     while(true) { 
-        auto t = CHRONO_NOW;
+        //auto t = CHRONO_NOW;
 
         std::string sendStr;
         auto ballCapStatus = ballCapStatusSub.getMsg(); 
@@ -157,6 +157,7 @@ void backgndTask(ITPS::FieldSubscriber<bool>& ballCapStatusSub, asio::ip::tcp::s
         }
         prevBallCapStatus = ballCapStatus;
 
-        std::this_thread::sleep_until(t + period);   
+        //std::this_thread::sleep_until(t + period); 
+        delay(period);  
     }
 }

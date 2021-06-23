@@ -9,12 +9,27 @@
 #include "Config/ModuleFrequencies.hpp"
 
 
+
+
+
+
+
 /** will separate this into a couple files in the future, I'm too lazy rn **/
 
 class BotConfig {
 public:
+    // unit: mm
+    float dribblerOffset = 85.0;
+    float ballNearBotZoneWidth = 500.0;
+    float ballNearBotZoneHeight = 300.0;
+    float holdBallZoneWidth = 64.0;
+    float holdBallZoneHeight = 43.0;
+    float holdBallPercentThreshHold = 0.60; // if hbCnt/roundTotal >= 60 %, ball is dribbled
+    float botStopBeforeBallDistance = 500;
+
+
     boost::mutex mu;
-    unsigned int pidControlFrequency;
+    int pidControlFrequency;
     PIDConstants posPidConsts;
     PIDConstants anglePidConsts;
     float noSlowDownPidAmp;
@@ -67,17 +82,10 @@ public:
 class GrSimBotConfig : public VirtualBotConfig {
 
 private:
-    // unit: mm
-    float const dribblerOffset = 85.0;
-    float const ballNearBotZoneWidth = 500.0;
-    float const ballNearBotZoneHeight = 300.0;
-    float const holdBallZoneWidth = 64.0;
-    float const holdBallZoneHeight = 43.0;
 
     std::chrono::steady_clock::time_point t0;
-    long samplingFrequency = 50; // Hz
-    long hbCnt = 0, roundTotal = 0;
-    float percentThreshHold = 0.75; // if hbCnt/roundTotal >= 60 %, ball is dribbled 
+    long samplingFrequency = 100; // Hz
+    long hbCnt = 0, roundTotal = 0; 
     bool hbResult = false;
 
 public:
@@ -124,7 +132,7 @@ public:
         roundTotal++;
 
         if (CHRONO_NOW - t0 > TO_PERIOD(samplingFrequency)) {
-            if ((float) hbCnt / (float) roundTotal >= percentThreshHold) {
+            if ((float) hbCnt / (float) roundTotal >= holdBallPercentThreshHold) {
                 hbResult = true;
             } else {
                 hbResult = false;
@@ -170,7 +178,6 @@ public:
                                       angle, botOrientationInWorld);
 
             arma::vec2 ballvel = ballData.vel;
-            double const botStopBeforeBallDistance = 300;
             if (arma::norm(ballvel) > 2000) {
                 ballvel = 2000 * arma::normalise(ballvel);
             }
